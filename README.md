@@ -18,6 +18,11 @@ pip install -U optimesh
 to install or upgrade. Use `sudo -H` to install as root or the `--user` option
 of `pip` to install in `$HOME`.
 
+### Relevant publications
+
+ * [Long Chen, Michael Holst, _Efficient mesh optimization schemes based on Optimal Delaunay Triangulations_,
+    Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984.](https://doi.org/10.1016/j.cma.2010.11.007)
+
 
 ### Testing
 

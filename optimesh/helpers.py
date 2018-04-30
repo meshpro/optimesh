@@ -175,18 +175,20 @@ def print_stats(data_list):
 
 
 def write(mesh, filetype, k):
-    from matplotlib import pyplot as plt
     if filetype == 'png':
+        from matplotlib import pyplot as plt
         fig = mesh.plot(
             show_coedges=False,
             show_centroids=False,
             show_axes=False
             )
         fig.suptitle('step {}'.format(k), fontsize=20)
-        plt.savefig('lloyd{:4d}.png'.format(k))
+        plt.savefig('lloyd{:04d}.png'.format(k))
         plt.close(fig)
-    else:
-        mesh.write('lloyd{:4d}.{}'.format(k, filetype))
+        return
+
+    mesh.write('lloyd{:04d}.{}'.format(k, filetype))
+    return
 
 
 def sit_in_plane(X, tol=1.0e-15):

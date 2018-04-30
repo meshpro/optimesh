@@ -69,8 +69,8 @@ def lloyd(X,
             )
 
         if verbose:
-            print('\nstep: %d' % k)
-            print('  maximum move: %.15e' % max_move)
+            print('\nstep: {}'.format(k))
+            print('  maximum move: {:15e}'.format(max_move))
             print_stats([gather_stats(mesh)])
 
     # Flip one last time.
@@ -110,8 +110,8 @@ def lloyd_submesh(X, cells, submeshes, tol,
             if ratio > 1.5:
                 print((
                     4*' ' + 'Subdomain boundary inhomogeneous ' +
-                    '(edge length ratio %1.3f). Skipping.'
-                    ) % ratio)
+                    '(edge length ratio {:1.3f}). Skipping.'
+                    ).format(ratio))
                 continue
 
         # perform lloyd smoothing
