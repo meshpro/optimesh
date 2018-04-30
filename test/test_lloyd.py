@@ -52,7 +52,7 @@ def test_simple_lloyd(max_steps=5, output_filetype=None):
 def test_pacman_lloyd(max_steps=1000, output_filetype=None):
     filename = download_mesh(
         'pacman.msh',
-        '2da8ff96537f844a95a83abb48471b6a'
+        '601a51e53d573ff58bfec96aef790f0bb6c531a221fd7841693eaa20'
         )
     X, cells, _, _, _ = meshio.read(filename)
 

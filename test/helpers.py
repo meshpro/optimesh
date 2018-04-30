@@ -12,7 +12,7 @@ import requests
 
 
 # The tests files are located on sourceforge.
-def download_mesh(name, md5):
+def download_mesh(name, sha3):
 
     filename = os.path.join('/tmp', name)
     if not os.path.exists(filename):
@@ -31,11 +31,11 @@ def download_mesh(name, md5):
             shutil.copyfileobj(r.raw, f)
 
     # check MD5
-    file_md5 = hashlib.md5(open(filename, 'rb').read()).hexdigest()
+    file_sha3 = hashlib.sha3_224(open(filename, 'rb').read()).hexdigest()
 
-    if file_md5 != md5:
+    if file_sha3 != sha3:
         raise RuntimeError(
-            'Checksums not matching ({} != {}).'.format(file_md5, md5)
+            'Checksums not matching ({} != {}).'.format(file_sha3, sha3)
             )
 
     return filename
