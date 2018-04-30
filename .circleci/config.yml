@@ -10,7 +10,7 @@ jobs:
       - run: apt install -y git python3-pip
       - run: pip3 install -U pytest pytest-cov pylint
       - checkout
-      - run: pip3 install .
+      - run: pip3 install .[all]
       # lint
       - run: pylint setup.py optimesh/ test/*.py
       # The tests

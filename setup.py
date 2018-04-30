@@ -33,6 +33,10 @@ setup(
         'numpy',
         'voropy',
         ],
+    extras_require={
+        'all': ['matplotlib'],
+        'png': ['matplotlib'],
+        },
     classifiers=[
         about['__status__'],
         about['__license__'],

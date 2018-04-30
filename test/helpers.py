@@ -16,12 +16,13 @@ def download_mesh(name, md5):
 
     filename = os.path.join('/tmp', name)
     if not os.path.exists(filename):
-        print('Downloading %s...' % name)
+        print('Downloading {}...'.format(name))
         url = 'https://sourceforge.net/projects/meshzoo-data/files/'
         r = requests.get(url + name + '/download', stream=True)
         if not r.ok:
             raise RuntimeError(
-                'Download error (%s, return code %s).' % (r.url, r.status_code)
+                'Download error ({}, return code {}).'
+                .format(r.url, r.status_code)
                 )
 
         # save the mesh in /tmp
@@ -34,7 +35,7 @@ def download_mesh(name, md5):
 
     if file_md5 != md5:
         raise RuntimeError(
-            'Checksums not matching (%s != %s).' % (file_md5, md5)
+            'Checksums not matching ({} != {}).'.format(file_md5, md5)
             )
 
     return filename
