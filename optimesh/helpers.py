@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 #
+from __future__ import print_function
+
 import numpy
 
 from voropy.mesh_tri import MeshTri
@@ -22,9 +24,9 @@ def flip_until_delaunay(mesh):
         numpy.logical_not(mesh.is_boundary_edge_individual),
         mesh.get_ce_ratios_per_edge() < 0.0
         )
-    is_flipped = any(needs_flipping)
+    is_flipped = numpy.any(needs_flipping)
     k = 0
-    while any(needs_flipping):
+    while numpy.any(needs_flipping):
         k += 1
         mesh = flip_edges(mesh, needs_flipping)
         #
@@ -156,16 +158,18 @@ def print_stats(data_list):
         assert len(data[0]) == n
 
     # find largest hist value
-    max_val = max([max(data[0]) for data in data_list])
+    max_val = numpy.max([numpy.max(data[0]) for data in data_list])
     digits_max_val = len(str(max_val))
+    fmt = (
+        9*' '
+        + '{{:3.0f}} < angle < {{:3.0f}}:   {{:{:d}d}}'.format(digits_max_val)
+        )
 
     print('  angles (in degrees):\n')
     for i in range(n):
         for data in data_list:
             hist, bin_edges = data
-            tple = (bin_edges[i], bin_edges[i+1], hist[i])
-            fmt = '         %%3d < angle < %%3d:   %%%dd' % digits_max_val
-            print(fmt % tple, end='')
+            print(fmt.format(bin_edges[i], bin_edges[i+1], hist[i]), end='')
         print('\n', end='')
     return
 
@@ -178,11 +182,11 @@ def write(mesh, filetype, k):
             show_centroids=False,
             show_axes=False
             )
-        fig.suptitle('step %d' % k, fontsize=20)
-        plt.savefig('lloyd%04d.png' % k)
+        fig.suptitle('step {}'.format(k), fontsize=20)
+        plt.savefig('lloyd{:4d}.png'.format(k))
         plt.close(fig)
     else:
-        mesh.write('lloyd%04d.%s' % (k, filetype))
+        mesh.write('lloyd{:4d}.{}'.format(k, filetype))
 
 
 def sit_in_plane(X, tol=1.0e-15):

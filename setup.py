@@ -30,6 +30,8 @@ setup(
     license=about['__license__'],
     platforms='any',
     install_requires=[
+        'numpy',
+        'voropy',
         ],
     classifiers=[
         about['__status__'],
