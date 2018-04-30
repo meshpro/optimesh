@@ -3,7 +3,7 @@
 import numpy
 
 import meshio
-import voropy
+import optimesh
 
 from helpers import download_mesh
 
@@ -25,7 +25,7 @@ def test_simple_lloyd(max_steps=5, output_filetype=None):
 
     submesh_bools = {0: numpy.ones(len(cells), dtype=bool)}
 
-    X, cells = voropy.smoothing.lloyd_submesh(
+    X, cells = optimesh.lloyd_submesh(
         X, cells, submesh_bools,
         1.0e-2,
         skip_inhomogenous_submeshes=True,
@@ -58,7 +58,7 @@ def test_pacman_lloyd(max_steps=1000, output_filetype=None):
 
     submesh_bools = {0: numpy.ones(len(cells['triangle']), dtype=bool)}
 
-    X, cells = voropy.smoothing.lloyd_submesh(
+    X, cells = optimesh.lloyd_submesh(
         X, cells['triangle'], submesh_bools,
         1.0e-2,
         skip_inhomogenous_submeshes=False,

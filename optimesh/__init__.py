@@ -2,6 +2,16 @@
 #
 from __future__ import print_function
 
+from .__about__ import (
+    __version__,
+    __author__,
+    __author_email__,
+    __website__,
+    __status__,
+    __license__,
+    )
+
+from .lloyd import (lloyd, lloyd_submesh)
 
 try:
     import pipdate
