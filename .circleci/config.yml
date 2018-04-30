@@ -12,7 +12,7 @@ jobs:
       - checkout
       - run: pip3 install .
       # lint
-      -run: pylint setup.py optimesh/ test/*.py
+      - run: pylint setup.py optimesh/ test/*.py
       # The tests
       - run: cd test/ && pytest --maxfail=1 --cov optimesh
       # submit to codecov
