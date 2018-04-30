@@ -25,7 +25,6 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
     initial_stats = gather_stats(mesh)
 
     for k in range(num_steps):
-        print(k)
         if output_filetype:
             write(mesh, output_filetype, k)
 

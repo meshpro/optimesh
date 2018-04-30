@@ -55,8 +55,8 @@ def test_pacman(num_steps=10, output_filetype=None):
 
     X, cells = optimesh.laplace(
         X, cells['triangle'], num_steps,
-        verbose=False,
-        output_filetype=output_filetype
+        verbose=True,
+        output_filetype=output_filetype,
         )
 
     # Test if we're dealing with the mesh we expect.
