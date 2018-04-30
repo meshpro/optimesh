@@ -3,7 +3,7 @@
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/optimesh/master.svg)](https://circleci.com/gh/nschloe/optimesh)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg)](https://codecov.io/gh/nschloe/optimesh)
 [![Codacy grade](https://img.shields.io/codacy/grade/8ce98e78f7ef427292593d08815c4fa3.svg)](https://app.codacy.com/app/nschloe/optimesh/dashboard)
-[![awesome](https://img.shields.io/badge/awesome-yes-ff69b4.svg)](https://github.com/nschloe/optimesh)
+[![smooth](https://img.shields.io/badge/smooth-yes-ff69b4.svg)](https://github.com/nschloe/optimesh)
 [![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg)](https://pypi.org/project/optimesh)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?logo=github&label=Stars)](https://github.com/nschloe/optimesh)
 
