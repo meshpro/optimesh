@@ -8,7 +8,7 @@ import optimesh
 from helpers import download_mesh
 
 
-def test_simple(num_steps=5, output_filetype=None):
+def test_simple(num_steps=10, output_filetype=None):
     X = numpy.array([
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
@@ -23,10 +23,8 @@ def test_simple(num_steps=5, output_filetype=None):
         [3, 0, 4],
         ])
 
-    submesh_bools = {0: numpy.ones(len(cells), dtype=bool)}
-
     X, cells = optimesh.laplace(
-        X, cells, 10,
+        X, cells, num_steps,
         verbose=False,
         output_filetype=output_filetype
         )
@@ -48,17 +46,15 @@ def test_simple(num_steps=5, output_filetype=None):
     return
 
 
-def test_pacman(num_steps=1000, output_filetype=None):
+def test_pacman(num_steps=10, output_filetype=None):
     filename = download_mesh(
         'pacman.msh',
         '2da8ff96537f844a95a83abb48471b6a'
         )
     X, cells, _, _, _ = meshio.read(filename)
 
-    submesh_bools = {0: numpy.ones(len(cells['triangle']), dtype=bool)}
-
     X, cells = optimesh.laplace(
-        X, cells['triangle'], 10,
+        X, cells['triangle'], num_steps,
         verbose=False,
         output_filetype=output_filetype
         )

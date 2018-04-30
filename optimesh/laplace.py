@@ -5,7 +5,9 @@ from __future__ import print_function
 import numpy
 from voropy.mesh_tri import MeshTri
 
-from .helpers import (sit_in_plane, gather_stats, write, flip_until_delaunay)
+from .helpers import (
+    sit_in_plane, gather_stats, write, flip_until_delaunay, print_stats
+    )
 
 
 def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
@@ -27,7 +29,7 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
         if output_filetype:
             write(mesh, output_filetype, k)
 
-        mesh, is_flipped_del = flip_until_delaunay(mesh)
+        mesh, _ = flip_until_delaunay(mesh)
 
         # move interior points into average of their neighbors
         # <https://stackoverflow.com/a/43096495/353337>
@@ -45,10 +47,8 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
         # Keep the boundary vertices in place
         new_points[boundary_verts] = mesh.node_coords[boundary_verts]
 
-        # new_points = mesh.get_control_volume_centroids()
-        # new_points[boundary_verts] = mesh.node_coords[boundary_verts]
-        # diff = new_points - mesh.node_coords
-        # max_move = numpy.sqrt(numpy.max(numpy.sum(diff*diff, axis=1)))
+        diff = new_points - mesh.node_coords
+        max_move = numpy.sqrt(numpy.max(numpy.einsum('ij,ij->i', diff, diff)))
 
         mesh = MeshTri(
             new_points,
@@ -63,7 +63,6 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
 
     # Flip one last time.
     mesh, _ = flip_until_delaunay(mesh)
-    # mesh, is_flipped_six = flip_for_six(mesh)
 
     if verbose:
         print('\nBefore:' + 35*' ' + 'After:')

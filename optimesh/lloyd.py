@@ -7,10 +7,11 @@ from voropy.mesh_tri import MeshTri
 
 from .helpers import (
     extract_submesh_entities, get_boundary_edge_ratio, sit_in_plane,
-    gather_stats, print_stats, flip_until_delaunay
+    gather_stats, print_stats, flip_until_delaunay, write
     )
 
 
+# pylint: disable=too-many-arguments,too-many-locals
 def lloyd(X,
           cells,
           tol,
@@ -85,7 +86,7 @@ def lloyd(X,
             ])
 
     if output_filetype:
-        _write(mesh, output_filetype, max_steps)
+        write(mesh, output_filetype, max_steps)
 
     return mesh.node_coords, mesh.cells['nodes']
 
