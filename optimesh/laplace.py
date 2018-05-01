@@ -26,7 +26,7 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
 
     for k in range(num_steps):
         if output_filetype:
-            write(mesh, output_filetype, k)
+            write(mesh, 'laplace', output_filetype, k)
 
         mesh, _ = flip_until_delaunay(mesh)
 
@@ -71,6 +71,6 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
             ])
 
     if output_filetype:
-        write(mesh, output_filetype, num_steps)
+        write(mesh, 'laplace', output_filetype, num_steps)
 
     return mesh.node_coords, mesh.cells['nodes']

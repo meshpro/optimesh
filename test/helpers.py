@@ -13,7 +13,6 @@ import requests
 
 # The tests files are located on sourceforge.
 def download_mesh(name, sha3):
-
     filename = os.path.join('/tmp', name)
     if not os.path.exists(filename):
         print('Downloading {}...'.format(name))

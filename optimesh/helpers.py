@@ -174,7 +174,7 @@ def print_stats(data_list):
     return
 
 
-def write(mesh, filetype, k):
+def write(mesh, file_prefix, filetype, k):
     if filetype == 'png':
         from matplotlib import pyplot as plt
         fig = mesh.plot(
@@ -183,11 +183,11 @@ def write(mesh, filetype, k):
             show_axes=False
             )
         fig.suptitle('step {}'.format(k), fontsize=20)
-        plt.savefig('lloyd{:04d}.png'.format(k))
+        plt.savefig('{}{:04d}.png'.format(file_prefix, k))
         plt.close(fig)
         return
 
-    mesh.write('lloyd{:04d}.{}'.format(k, filetype))
+    mesh.write('{}{:04d}.{}'.format(file_prefix, k, filetype))
     return
 
 

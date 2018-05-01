@@ -38,7 +38,7 @@ def lloyd(X,
         if max_move < tol:
             break
         if output_filetype:
-            write(mesh, output_filetype, k)
+            write(mesh, 'lloyd', output_filetype, k)
 
         if k == next_flip_at:
             mesh, is_flipped_del = flip_until_delaunay(mesh)
@@ -86,7 +86,7 @@ def lloyd(X,
             ])
 
     if output_filetype:
-        write(mesh, output_filetype, max_steps)
+        write(mesh, 'lloyd', output_filetype, max_steps)
 
     return mesh.node_coords, mesh.cells['nodes']
 
