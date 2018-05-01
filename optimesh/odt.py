@@ -32,8 +32,9 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
     mesh = MeshTri(X, cells, flat_cell_correction=None)
     initial_stats = gather_stats(mesh)
 
-    # pylint: disable=invalid-unary-operand-type
-    is_interior_node = ~mesh.is_boundary_node
+    mesh.mark_boundary()
+
+    is_interior_node = numpy.logical_not(mesh.is_boundary_node)
 
     # flat triangles
     gdim = 2
