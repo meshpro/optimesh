@@ -2,20 +2,16 @@
 #
 from __future__ import print_function
 
-import itertools
-
 from dolfin import (
     Mesh, MeshEditor, FunctionSpace, Expression, assemble, dx
     )
 import numpy
-from scipy import sparse
 import scipy.optimize
-import optipy
 from voropy.mesh_tri import MeshTri
 
 
 from .helpers import (
-    sit_in_plane, gather_stats, write, flip_until_delaunay, print_stats
+    gather_stats, flip_until_delaunay, print_stats
     )
 
 
@@ -26,7 +22,7 @@ from .helpers import (
 #     <https://doi.org/10.1016/j.cma.2010.11.007>.
 
 
-def odt(X, cells, verbose=True, output_filetype=None, tol=1.0e-5):
+def odt(X, cells, verbose=True, tol=1.0e-5):
     '''Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
     interior vertex to the arithmetic average of its neighboring points.
     '''
@@ -36,8 +32,7 @@ def odt(X, cells, verbose=True, output_filetype=None, tol=1.0e-5):
     mesh = MeshTri(X, cells, flat_cell_correction=None)
     initial_stats = gather_stats(mesh)
 
-    boundary_verts = mesh.get_boundary_vertices()
-
+    # pylint: disable=invalid-unary-operand-type
     is_interior_node = ~mesh.is_boundary_node
 
     # flat triangles
@@ -73,7 +68,7 @@ def odt(X, cells, verbose=True, output_filetype=None, tol=1.0e-5):
         editor.close()
 
         V = FunctionSpace(dolfin_mesh, 'CG', 1)
-        q = Expression('x[0]*x[0] + x[1]*x[1]', element = V.ufl_element())
+        q = Expression('x[0]*x[0] + x[1]*x[1]', element=V.ufl_element())
         out = assemble(q * dx(dolfin_mesh))
         # print(out)
         return out
@@ -90,7 +85,12 @@ def odt(X, cells, verbose=True, output_filetype=None, tol=1.0e-5):
         voropy_mesh, _ = flip_until_delaunay(voropy_mesh)
 
         grad = numpy.zeros(coords.shape)
-        for cell, cc, vol in zip(voropy_mesh.cells['nodes'], voropy_mesh.get_cell_circumcenters(), voropy_mesh.cell_volumes):
+        z = zip(
+            voropy_mesh.cells['nodes'],
+            voropy_mesh.get_cell_circumcenters(),
+            voropy_mesh.cell_volumes
+            )
+        for cell, cc, vol in z:
             grad[cell] += (coords[cell] - cc) * vol
         grad *= 2 / (gdim+1)
 

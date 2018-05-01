@@ -4,7 +4,6 @@ import numpy
 
 import meshio
 import optimesh
-import pygmsh
 
 from helpers import download_mesh
 
@@ -162,4 +161,4 @@ if __name__ == '__main__':
     # test_simple2()
     # test_simple3()
     # test_circle()
-    # test_pacman()
+    test_pacman()
