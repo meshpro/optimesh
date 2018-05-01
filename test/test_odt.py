@@ -4,6 +4,7 @@ import numpy
 
 import meshio
 import optimesh
+import pygmsh
 
 from helpers import download_mesh
 
@@ -23,7 +24,7 @@ def test_simple1():
         [3, 0, 4],
         ])
 
-    X, cells = optimesh.odt(X, cells)
+    X, cells = optimesh.odt(X, cells, tol=1.0e-5)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -32,9 +33,9 @@ def test_simple1():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 5.0
+    ref = 4.999994919473657
     assert abs(norm1 - ref) < tol * ref
-    ref = 2.1213203435596424
+    ref = 2.1213191460738456
     assert abs(norm2 - ref) < tol * ref
     ref = 1.0
     assert abs(normi - ref) < tol * ref
@@ -68,11 +69,11 @@ def test_simple2():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 5.0
+    ref = 7.374076666666667
     assert abs(norm1 - ref) < tol * ref
-    ref = 2.1213203435596424
+    ref = 2.8007819180622477
     assert abs(norm2 - ref) < tol * ref
-    ref = 1.0
+    ref = 1.7
     assert abs(normi - ref) < tol * ref
 
     return
@@ -109,14 +110,21 @@ def test_simple3():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 5.0
+    ref = 12.000000734595783
     assert abs(norm1 - ref) < tol * ref
-    ref = 2.1213203435596424
+    ref = 3.9828838201616144
     assert abs(norm2 - ref) < tol * ref
-    ref = 1.0
+    ref = 2.0
     assert abs(normi - ref) < tol * ref
 
     return
+
+
+# def test_circle():
+#     X, cells, _, _, _ = meshio.read('circle.vtk')
+#     cells = cells['triangle']
+#     X, cells = optimesh.odt(X, cells)
+#     return
 
 
 def test_pacman():
@@ -129,6 +137,7 @@ def test_pacman():
     X, cells = optimesh.odt(
         X, cells['triangle'],
         verbose=True,
+        tol=1.0e-5
         )
 
     # Test if we're dealing with the mesh we expect.
@@ -138,9 +147,9 @@ def test_pacman():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 1917.9950540725958
+    ref = 1918.8077833218122
     assert abs(norm1 - ref) < tol * ref
-    ref = 74.99386491032608
+    ref = 75.21321080665695
     assert abs(norm2 - ref) < tol * ref
     ref = 5.0
     assert abs(normi - ref) < tol * ref
@@ -152,4 +161,5 @@ if __name__ == '__main__':
     # test_simple1()
     # test_simple2()
     # test_simple3()
-    test_pacman()
+    # test_circle()
+    # test_pacman()
