@@ -7,6 +7,7 @@ from dolfin import (
     )
 import numpy
 import scipy.optimize
+import voropy
 from voropy.mesh_tri import MeshTri
 
 
@@ -186,6 +187,92 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
 
     if verbose:
         print('\nBefore:' + 35*' ' + 'After:')
+        print_stats([
+            initial_stats,
+            gather_stats(mesh),
+            ])
+
+    return mesh.node_coords, mesh.cells['nodes']
+
+
+def odt_chen(X, cells, verbose=True, tol=1.0e-5):
+    '''From
+
+    Long Chen, Michael Holst,
+    Efficient mesh optimization schemes based on Optimal Delaunay
+    Triangulations,
+    Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
+    https://doi.org/10.1016/j.cma.2010.11.007.
+
+    Idea: Move interior mesh points into the weighted circumcenters of their
+    adjacent cells. If a triangle gets negative signed volume, don't move quite
+    so far.
+    '''
+    # flat mesh
+    assert numpy.all(abs(X[:, 2]) < 1.0e-15)
+    X = X[:, :2]
+
+    mesh = MeshTri(X, cells, flat_cell_correction=None)
+    mesh, _ = flip_until_delaunay(mesh)
+    original_orient = voropy.get_signed_tri_areas(
+        mesh.cells['nodes'], mesh.node_coords
+        ) > 0.0
+
+    initial_stats = gather_stats(mesh)
+
+    mesh.mark_boundary()
+
+    is_interior_node = numpy.logical_not(mesh.is_boundary_node)
+
+    # flat triangles
+    gdim = 2
+
+    k = 0
+    while True:
+        k += 1
+        weighted_cc_average = numpy.zeros(mesh.node_coords.shape)
+        omega = numpy.zeros(len(mesh.node_coords))
+        z = zip(
+            mesh.cells['nodes'],
+            mesh.get_cell_circumcenters(),
+            mesh.cell_volumes
+            )
+        # Compute weighted circumcenter average
+        for cell, cc, vol in z:
+            weighted_cc_average[cell] += vol * cc
+            omega[cell] += vol
+        weighted_cc_average  = (weighted_cc_average.T / omega).T
+
+        # Step unless the orientation of any cell changes.
+        alpha = 1.0
+        xnew = (1-alpha) * mesh.node_coords + alpha * weighted_cc_average
+        # Preserve boundary nodes
+        xnew[mesh.is_boundary_node] = mesh.node_coords[mesh.is_boundary_node]
+        new_orient = voropy.get_signed_tri_areas(
+            mesh.cells['nodes'], xnew
+            ) > 0.0
+        while numpy.any(numpy.logical_xor(original_orient, new_orient)):
+            alpha /= 2
+            xnew = (1-alpha) * mesh.node_coords + alpha * weighted_cc_average
+            xnew[mesh.is_boundary_node] = \
+                mesh.node_coords[mesh.is_boundary_node]
+            new_orient = voropy.get_signed_tri_areas(cells, xnew) > 0.0
+
+        # Abort the loop if the update is small
+        diff = xnew - mesh.node_coords
+        if numpy.all(numpy.einsum('ij,ij->i', diff, diff) < tol**2):
+            break
+
+        mesh = MeshTri(xnew, mesh.cells['nodes'], flat_cell_correction=None)
+        mesh, _ = flip_until_delaunay(mesh)
+        mesh.mark_boundary()
+        original_orient = voropy.get_signed_tri_areas(
+            mesh.cells['nodes'], mesh.node_coords
+            ) > 0.0
+
+
+    if verbose:
+        print('\nBefore:' + 35*' ' + 'After ({} steps):'.format(k))
         print_stats([
             initial_stats,
             gather_stats(mesh),

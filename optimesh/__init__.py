@@ -13,7 +13,7 @@ from .__about__ import (
 
 from .laplace import laplace
 from .lloyd import (lloyd, lloyd_submesh)
-from .odt import odt
+from .odt import odt, odt_chen
 
 # try:
 #     import pipdate
