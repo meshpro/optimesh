@@ -232,17 +232,17 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
     k = 0
     while True:
         k += 1
-        weighted_cc_average = numpy.zeros(mesh.node_coords.shape)
+
         cc = mesh.get_cell_circumcenters()
         scaled_cc = (cc.T * mesh.cell_volumes).T
-        numpy.add.at(weighted_cc_average, mesh.cells['nodes'][:, 0], scaled_cc)
-        numpy.add.at(weighted_cc_average, mesh.cells['nodes'][:, 1], scaled_cc)
-        numpy.add.at(weighted_cc_average, mesh.cells['nodes'][:, 2], scaled_cc)
+
+        weighted_cc_average = numpy.zeros(mesh.node_coords.shape)
+        for i in mesh.cells['nodes'].T:
+            numpy.add.at(weighted_cc_average, i, scaled_cc)
 
         omega = numpy.zeros(len(mesh.node_coords))
-        numpy.add.at(omega, mesh.cells['nodes'][:, 0], mesh.cell_volumes)
-        numpy.add.at(omega, mesh.cells['nodes'][:, 1], mesh.cell_volumes)
-        numpy.add.at(omega, mesh.cells['nodes'][:, 2], mesh.cell_volumes)
+        for i in mesh.cells['nodes'].T:
+            numpy.add.at(omega, i, mesh.cell_volumes)
 
         weighted_cc_average  = (weighted_cc_average.T / omega).T
 
@@ -267,7 +267,7 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
         if numpy.all(numpy.einsum('ij,ij->i', diff, diff) < tol**2):
             break
 
-        mesh = MeshTri(xnew, mesh.cells['nodes'], flat_cell_correction=None)
+        mesh.update_node_coordinates(xnew)
         mesh, _ = flip_until_delaunay(mesh)
         mesh.mark_boundary()
         original_orient = voropy.get_signed_tri_areas(
