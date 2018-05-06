@@ -233,16 +233,17 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
     while True:
         k += 1
         weighted_cc_average = numpy.zeros(mesh.node_coords.shape)
+        cc = mesh.get_cell_circumcenters()
+        scaled_cc = (cc.T * mesh.cell_volumes).T
+        numpy.add.at(weighted_cc_average, mesh.cells['nodes'][:, 0], scaled_cc)
+        numpy.add.at(weighted_cc_average, mesh.cells['nodes'][:, 1], scaled_cc)
+        numpy.add.at(weighted_cc_average, mesh.cells['nodes'][:, 2], scaled_cc)
+
         omega = numpy.zeros(len(mesh.node_coords))
-        z = zip(
-            mesh.cells['nodes'],
-            mesh.get_cell_circumcenters(),
-            mesh.cell_volumes
-            )
-        # Compute weighted circumcenter average
-        for cell, cc, vol in z:
-            weighted_cc_average[cell] += vol * cc
-            omega[cell] += vol
+        numpy.add.at(omega, mesh.cells['nodes'][:, 0], mesh.cell_volumes)
+        numpy.add.at(omega, mesh.cells['nodes'][:, 1], mesh.cell_volumes)
+        numpy.add.at(omega, mesh.cells['nodes'][:, 2], mesh.cell_volumes)
+
         weighted_cc_average  = (weighted_cc_average.T / omega).T
 
         # Step unless the orientation of any cell changes.
