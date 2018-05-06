@@ -32,9 +32,9 @@ def test_simple1():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 4.999994919473657
+    ref = 5.0
     assert abs(norm1 - ref) < tol * ref
-    ref = 2.1213191460738456
+    ref = 2.1213203435596424
     assert abs(norm2 - ref) < tol * ref
     ref = 1.0
     assert abs(normi - ref) < tol * ref
@@ -68,9 +68,9 @@ def test_simple2():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 7.374076666666667
+    ref = 7.374074074074074
     assert abs(norm1 - ref) < tol * ref
-    ref = 2.8007819180622477
+    ref = 2.8007812940925643
     assert abs(norm2 - ref) < tol * ref
     ref = 1.7
     assert abs(normi - ref) < tol * ref
@@ -109,21 +109,14 @@ def test_simple3():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 12.000000734595783
+    ref = 12.0007628895125
     assert abs(norm1 - ref) < tol * ref
-    ref = 3.9828838201616144
+    ref = 3.983106753697756
     assert abs(norm2 - ref) < tol * ref
     ref = 2.0
     assert abs(normi - ref) < tol * ref
 
     return
-
-
-# def test_circle():
-#     X, cells, _, _, _ = meshio.read('circle.vtk')
-#     cells = cells['triangle']
-#     X, cells = optimesh.odt_chen(X, cells)
-#     return
 
 
 def test_pacman():
@@ -136,7 +129,7 @@ def test_pacman():
     X, cells = optimesh.odt_chen(
         X, cells['triangle'],
         verbose=True,
-        tol=1.0e-5
+        tol=1.0e-3
         )
 
     # Test if we're dealing with the mesh we expect.
@@ -145,10 +138,10 @@ def test_pacman():
     norm2 = numpy.linalg.norm(nc, ord=2)
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
-    tol = 1.0e-6
-    ref = 1918.8077833218122
+    tol = 1.0e-10
+    ref = 1918.7549067113366
     assert abs(norm1 - ref) < tol * ref
-    ref = 75.21321080665695
+    ref = 75.21580023744087
     assert abs(norm2 - ref) < tol * ref
     ref = 5.0
     assert abs(normi - ref) < tol * ref
@@ -159,6 +152,5 @@ def test_pacman():
 if __name__ == '__main__':
     # test_simple1()
     # test_simple2()
-    # test_simple3()
-    # test_circle()
-    test_pacman()
+    test_simple3()
+    # test_pacman()

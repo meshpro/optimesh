@@ -195,7 +195,7 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
     return mesh.node_coords, mesh.cells['nodes']
 
 
-def odt_chen(X, cells, verbose=True, tol=1.0e-5):
+def odt_chen(X, cells, verbose=True, tol=1.0e-3):
     '''From
 
     Long Chen, Michael Holst,
@@ -217,6 +217,8 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-5):
     original_orient = voropy.get_signed_tri_areas(
         mesh.cells['nodes'], mesh.node_coords
         ) > 0.0
+
+    # mesh.save_png('step{:03d}'.format(0), show_centroids=False, show_coedges=False)
 
     initial_stats = gather_stats(mesh)
 
@@ -260,6 +262,7 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-5):
 
         # Abort the loop if the update is small
         diff = xnew - mesh.node_coords
+        print(k, alpha, numpy.sqrt(numpy.max(numpy.einsum('ij,ij->i', diff, diff))))
         if numpy.all(numpy.einsum('ij,ij->i', diff, diff) < tol**2):
             break
 
@@ -269,6 +272,8 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-5):
         original_orient = voropy.get_signed_tri_areas(
             mesh.cells['nodes'], mesh.node_coords
             ) > 0.0
+
+        # mesh.save_png('step{:03d}'.format(k), show_centroids=False, show_coedges=False)
 
 
     if verbose:
