@@ -63,7 +63,12 @@ def lloyd(X,
         diff = new_points - mesh.node_coords
         max_move = numpy.sqrt(numpy.max(numpy.sum(diff*diff, axis=1)))
 
-        mesh.update_node_coordinates(new_points)
+        mesh = MeshTri(
+            new_points,
+            mesh.cells['nodes'],
+            flat_cell_correction=fcc_type
+            )
+        # mesh.update_node_coordinates(new_points)
 
         if verbose:
             print('\nstep: {}'.format(k))
