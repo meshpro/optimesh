@@ -6,7 +6,7 @@ import numpy
 from voropy.mesh_tri import MeshTri
 
 from .helpers import (
-    sit_in_plane, gather_stats, write, flip_until_delaunay, print_stats
+    sit_in_plane, gather_stats, write, print_stats
     )
 
 
@@ -28,7 +28,7 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
         if output_filetype:
             write(mesh, 'laplace', output_filetype, k)
 
-        mesh, _ = flip_until_delaunay(mesh)
+        mesh.flip_until_delaunay()
 
         # move interior points into average of their neighbors
         # <https://stackoverflow.com/a/43096495/353337>
@@ -61,7 +61,7 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
             print_stats([gather_stats(mesh)])
 
     # Flip one last time.
-    mesh, _ = flip_until_delaunay(mesh)
+    mesh.flip_until_delaunay()
 
     if verbose:
         print('\nBefore:' + 35*' ' + 'After:')

@@ -7,7 +7,7 @@ from voropy.mesh_tri import MeshTri
 
 from .helpers import (
     extract_submesh_entities, get_boundary_edge_ratio, sit_in_plane,
-    gather_stats, print_stats, flip_until_delaunay, write
+    gather_stats, print_stats, write
     )
 
 
@@ -41,7 +41,7 @@ def lloyd(X,
             write(mesh, 'lloyd', output_filetype, k)
 
         if k == next_flip_at:
-            mesh, is_flipped_del = flip_until_delaunay(mesh)
+            is_flipped_del = mesh.flip_until_delaunay()
             # mesh, is_flipped_six = flip_for_six(mesh)
             # is_flipped = numpy.logical_or(is_flipped_del, is_flipped_six)
             is_flipped = is_flipped_del
@@ -63,11 +63,7 @@ def lloyd(X,
         diff = new_points - mesh.node_coords
         max_move = numpy.sqrt(numpy.max(numpy.sum(diff*diff, axis=1)))
 
-        mesh = MeshTri(
-            new_points,
-            mesh.cells['nodes'],
-            flat_cell_correction=fcc_type
-            )
+        mesh.update_node_coordinates(new_points)
 
         if verbose:
             print('\nstep: {}'.format(k))
@@ -75,7 +71,7 @@ def lloyd(X,
             print_stats([gather_stats(mesh)])
 
     # Flip one last time.
-    mesh, _ = flip_until_delaunay(mesh)
+    mesh.flip_until_delaunay()
     # mesh, is_flipped_six = flip_for_six(mesh)
 
     if verbose:
@@ -102,7 +98,7 @@ def lloyd_submesh(X, cells, submeshes, tol,
         if skip_inhomogenous_submeshes:
             # Since we don't have access to the density field here, voropy's
             # Lloyd smoothing will always make all cells roughly equally large.
-            # This is inappropriate if the mesh is meant to be inhomegenous,
+            # This is inappropriate if the mesh is meant to be inhomogeneous,
             # e.g., if there are boundary layers. As a heuristic for
             # inhomogenous meshes, check the lengths of the longest and the
             # shortest boundary edge. If they are roughtly equal, perform Lloyd

@@ -119,6 +119,30 @@ def test_simple3():
     return
 
 
+def test_circle():
+    import pygmsh
+    geom = pygmsh.built_in.Geometry()
+
+    geom.add_circle(
+        [0.0, 0.0, 0.0],
+        1.0,
+        1.0e-2,
+        num_sections=4,
+        # If compound==False, the section borders have to be points of the
+        # discretization. If using a compound circle, they don't; gmsh can
+        # choose by itself where to point the circle points.
+        compound=True
+        )
+    X, cells, _, _, _ = pygmsh.generate_mesh(geom)
+
+    X, cells = optimesh.odt_chen(
+        X, cells['triangle'],
+        verbose=True,
+        tol=1.0e-3
+        )
+    return
+
+
 def test_pacman():
     filename = download_mesh(
         'pacman.msh',
@@ -153,4 +177,5 @@ if __name__ == '__main__':
     # test_simple1()
     # test_simple2()
     # test_simple3()
-    test_pacman()
+    test_circle()
+    # test_pacman()

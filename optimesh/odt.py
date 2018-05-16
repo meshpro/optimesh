@@ -2,18 +2,11 @@
 #
 from __future__ import print_function
 
-from dolfin import (
-    Mesh, MeshEditor, FunctionSpace, Expression, assemble, dx
-    )
 import numpy
-import scipy.optimize
 import voropy
 from voropy.mesh_tri import MeshTri
 
-
-from .helpers import (
-    gather_stats, flip_until_delaunay, print_stats
-    )
+from .helpers import gather_stats, print_stats
 
 
 # [1] Long Chen, Michael Holst,
@@ -24,9 +17,11 @@ from .helpers import (
 
 
 def odt(X, cells, verbose=True, tol=1.0e-5):
-    '''Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
-    interior vertex to the arithmetic average of its neighboring points.
-    '''
+    import scipy.optimize
+    # TODO remove dolfin
+    from dolfin import (
+        Mesh, MeshEditor, FunctionSpace, Expression, assemble, dx
+        )
     # flat mesh
     assert numpy.all(abs(X[:, 2]) < 1.0e-15)
 
@@ -50,7 +45,7 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
 
         voropy_mesh = MeshTri(coords, cells, flat_cell_correction=None)
         # voropy_mesh.show()
-        voropy_mesh, _ = flip_until_delaunay(voropy_mesh)
+        voropy_mesh.flip_until_delaunay()
 
         # if verbose:
         #     print('\nstep: {}'.format(k))
@@ -84,7 +79,7 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
         coords[is_interior_node] = interior_coords
 
         voropy_mesh = MeshTri(coords, cells, flat_cell_correction=None)
-        voropy_mesh, _ = flip_until_delaunay(voropy_mesh)
+        voropy_mesh.flip_until_delaunay()
 
         grad = numpy.zeros(coords.shape)
         z = zip(
@@ -109,7 +104,7 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
     #     coords[is_interior_node] = interior_coords
 
     #     voropy_mesh = MeshTri(coords, cells, flat_cell_correction=None)
-    #     voropy_mesh, _ = flip_until_delaunay(voropy_mesh)
+    #     voropy_mesh.flip_until_delaunay()
 
     #     # Create Hessian
     #     I = []
@@ -183,7 +178,7 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
     coords[is_interior_node] = interior_coords
 
     mesh = MeshTri(coords, cells, flat_cell_correction=None)
-    mesh, _ = flip_until_delaunay(mesh)
+    mesh.flip_until_delaunay()
 
     if verbose:
         print('\nBefore:' + 35*' ' + 'After:')
@@ -213,7 +208,8 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
     X = X[:, :2]
 
     mesh = MeshTri(X, cells, flat_cell_correction=None)
-    mesh, _ = flip_until_delaunay(mesh)
+    mesh.flip_until_delaunay()
+
     original_orient = voropy.get_signed_tri_areas(
         mesh.cells['nodes'], mesh.node_coords
         ) > 0.0
@@ -223,8 +219,6 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
     initial_stats = gather_stats(mesh)
 
     mesh.mark_boundary()
-
-    is_interior_node = numpy.logical_not(mesh.is_boundary_node)
 
     # flat triangles
     gdim = 2
@@ -263,19 +257,16 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
 
         # Abort the loop if the update is small
         diff = xnew - mesh.node_coords
-        print(k, alpha, numpy.sqrt(numpy.max(numpy.einsum('ij,ij->i', diff, diff))))
         if numpy.all(numpy.einsum('ij,ij->i', diff, diff) < tol**2):
             break
 
         mesh.update_node_coordinates(xnew)
-        mesh, _ = flip_until_delaunay(mesh)
-        mesh.mark_boundary()
+        mesh.flip_until_delaunay()
         original_orient = voropy.get_signed_tri_areas(
             mesh.cells['nodes'], mesh.node_coords
             ) > 0.0
 
         # mesh.save_png('step{:03d}'.format(k), show_centroids=False, show_coedges=False)
-
 
     if verbose:
         print('\nBefore:' + 35*' ' + 'After ({} steps):'.format(k))
