@@ -251,7 +251,6 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
                 break
             alpha /= 2
 
-        mesh.update_node_coordinates(xnew)
         mesh.flip_until_delaunay()
 
         # Abort the loop if the update is small
