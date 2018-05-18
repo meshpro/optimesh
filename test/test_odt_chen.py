@@ -109,9 +109,9 @@ def test_simple3():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 12.0007628895125
+    ref = 12.000268061419682
     assert abs(norm1 - ref) < tol * ref
-    ref = 3.983106753697756
+    ref = 3.9829396222966804
     assert abs(norm2 - ref) < tol * ref
     ref = 2.0
     assert abs(normi - ref) < tol * ref
@@ -126,6 +126,7 @@ def test_circle():
     geom.add_circle(
         [0.0, 0.0, 0.0],
         1.0,
+        # 5.0e-3,
         1.0e-2,
         num_sections=4,
         # If compound==False, the section borders have to be points of the
@@ -163,9 +164,9 @@ def test_pacman():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-10
-    ref = 1918.7549067113366
+    ref = 1918.756560192194
     assert abs(norm1 - ref) < tol * ref
-    ref = 75.21580023744087
+    ref = 75.21580844291586
     assert abs(norm2 - ref) < tol * ref
     ref = 5.0
     assert abs(normi - ref) < tol * ref

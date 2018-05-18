@@ -210,10 +210,6 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
     mesh = MeshTri(X, cells, flat_cell_correction=None)
     mesh.flip_until_delaunay()
 
-    original_orient = voropy.get_signed_tri_areas(
-        mesh.cells['nodes'], mesh.node_coords
-        ) > 0.0
-
     # mesh.save_png('step{:03d}'.format(0), show_centroids=False, show_coedges=False)
 
     initial_stats = gather_stats(mesh)
@@ -241,30 +237,36 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
         weighted_cc_average  = (weighted_cc_average.T / omega).T
 
         # Step unless the orientation of any cell changes.
+        original_orient = mesh.get_signed_tri_areas() > 0.0
+        original_coords = mesh.node_coords.copy()
         alpha = 1.0
-        xnew = (1-alpha) * mesh.node_coords + alpha * weighted_cc_average
+        xnew = (1-alpha) * original_coords + alpha * weighted_cc_average
         # Preserve boundary nodes
-        xnew[mesh.is_boundary_node] = mesh.node_coords[mesh.is_boundary_node]
+        xnew[mesh.is_boundary_node] = original_coords[mesh.is_boundary_node]
         new_orient = voropy.get_signed_tri_areas(
             mesh.cells['nodes'], xnew
             ) > 0.0
+
+        # mesh.update_node_coordinates(xnew)
+        # new_orient = mesh.get_signed_tri_areas() > 0.0
+        # print(numpy.max(abs(
+        #     voropy.get_signed_tri_areas(mesh.cells['nodes'], xnew)
+        #     - mesh.get_signed_tri_areas()
+        #     )))
+
         while numpy.any(numpy.logical_xor(original_orient, new_orient)):
             alpha /= 2
-            xnew = (1-alpha) * mesh.node_coords + alpha * weighted_cc_average
-            xnew[mesh.is_boundary_node] = \
-                mesh.node_coords[mesh.is_boundary_node]
+            xnew = (1-alpha) * original_coords + alpha * weighted_cc_average
+            xnew[mesh.is_boundary_node] = original_coords[mesh.is_boundary_node]
             new_orient = voropy.get_signed_tri_areas(cells, xnew) > 0.0
-
-        # Abort the loop if the update is small
-        diff = xnew - mesh.node_coords
-        if numpy.all(numpy.einsum('ij,ij->i', diff, diff) < tol**2):
-            break
 
         mesh.update_node_coordinates(xnew)
         mesh.flip_until_delaunay()
-        original_orient = voropy.get_signed_tri_areas(
-            mesh.cells['nodes'], mesh.node_coords
-            ) > 0.0
+
+        # Abort the loop if the update is small
+        diff = mesh.node_coords - original_coords
+        if numpy.all(numpy.einsum('ij,ij->i', diff, diff) < tol**2):
+            break
 
         # mesh.save_png('step{:03d}'.format(k), show_centroids=False, show_coedges=False)
 
