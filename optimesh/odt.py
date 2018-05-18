@@ -236,29 +236,20 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
 
         weighted_cc_average  = (weighted_cc_average.T / omega).T
 
-        # Step unless the orientation of any cell changes.
         original_orient = mesh.get_signed_tri_areas() > 0.0
         original_coords = mesh.node_coords.copy()
+
+        # Step unless the orientation of any cell changes.
         alpha = 1.0
-        xnew = (1-alpha) * original_coords + alpha * weighted_cc_average
-        # Preserve boundary nodes
-        xnew[mesh.is_boundary_node] = original_coords[mesh.is_boundary_node]
-        new_orient = voropy.get_signed_tri_areas(
-            mesh.cells['nodes'], xnew
-            ) > 0.0
-
-        # mesh.update_node_coordinates(xnew)
-        # new_orient = mesh.get_signed_tri_areas() > 0.0
-        # print(numpy.max(abs(
-        #     voropy.get_signed_tri_areas(mesh.cells['nodes'], xnew)
-        #     - mesh.get_signed_tri_areas()
-        #     )))
-
-        while numpy.any(numpy.logical_xor(original_orient, new_orient)):
-            alpha /= 2
+        while True:
             xnew = (1-alpha) * original_coords + alpha * weighted_cc_average
+            # Preserve boundary nodes
             xnew[mesh.is_boundary_node] = original_coords[mesh.is_boundary_node]
-            new_orient = voropy.get_signed_tri_areas(cells, xnew) > 0.0
+            mesh.update_node_coordinates(xnew)
+            new_orient = mesh.get_signed_tri_areas() > 0.0
+            if numpy.all(original_orient == new_orient):
+                break
+            alpha /= 2
 
         mesh.update_node_coordinates(xnew)
         mesh.flip_until_delaunay()
