@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import numpy
+import fastfunc
 import voropy
 from voropy.mesh_tri import MeshTri
 
@@ -227,12 +228,13 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
         scaled_cc = (cc.T * mesh.cell_volumes).T
 
         weighted_cc_average = numpy.zeros(mesh.node_coords.shape)
+
         for i in mesh.cells['nodes'].T:
-            numpy.add.at(weighted_cc_average, i, scaled_cc)
+            fastfunc.add.at(weighted_cc_average, i, scaled_cc)
 
         omega = numpy.zeros(len(mesh.node_coords))
         for i in mesh.cells['nodes'].T:
-            numpy.add.at(omega, i, mesh.cell_volumes)
+            fastfunc.add.at(omega, i, mesh.cell_volumes)
 
         weighted_cc_average  = (weighted_cc_average.T / omega).T
 
@@ -252,13 +254,12 @@ def odt_chen(X, cells, verbose=True, tol=1.0e-3):
             alpha /= 2
 
         mesh.flip_until_delaunay()
+        # mesh.save_png('step{:03d}'.format(k), show_centroids=False, show_coedges=False)
 
         # Abort the loop if the update is small
         diff = mesh.node_coords - original_coords
         if numpy.all(numpy.einsum('ij,ij->i', diff, diff) < tol**2):
             break
-
-        # mesh.save_png('step{:03d}'.format(k), show_centroids=False, show_coedges=False)
 
     if verbose:
         print('\nBefore:' + 35*' ' + 'After ({} steps):'.format(k))
