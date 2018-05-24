@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 #
+import os.path
+
 import numpy
 
 import meshio
@@ -120,27 +122,32 @@ def test_simple3():
 
 
 def test_circle():
-    import pygmsh
-    geom = pygmsh.built_in.Geometry()
-
-    geom.add_circle(
-        [0.0, 0.0, 0.0],
-        1.0,
-        5.0e-3,
-        # 1.0e-2,
-        num_sections=4,
-        # If compound==False, the section borders have to be points of the
-        # discretization. If using a compound circle, they don't; gmsh can
-        # choose by itself where to point the circle points.
-        compound=True
-        )
-    X, cells, _, _, _ = pygmsh.generate_mesh(
+    filename = 'circle.vtk'
+    if not os.path.isfile(filename):
+        import pygmsh
+        geom = pygmsh.built_in.Geometry()
+        geom.add_circle(
+            [0.0, 0.0, 0.0],
+            1.0,
+            5.0e-3,
+            # 1.0e-2,
+            num_sections=4,
+            # If compound==False, the section borders have to be points of the
+            # discretization. If using a compound circle, they don't; gmsh can
+            # choose by itself where to point the circle points.
+            compound=True
+            )
+        X, cells, _, _, _ = pygmsh.generate_mesh(
             geom, fast_conversion=True,
             remove_faces=True
             )
+        meshio.write(filename, X, cells)
+
+    X, cells, _, _, _ = meshio.read(filename)
+    c = cells['triangle'].astype(numpy.int)
 
     X, cells = optimesh.odt_chen(
-        X, cells['triangle'],
+        X, c,
         verbose=True,
         tol=1.0e-3
         )
