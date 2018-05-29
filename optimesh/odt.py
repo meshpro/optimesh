@@ -24,7 +24,7 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
         Mesh, MeshEditor, FunctionSpace, Expression, assemble, dx
         )
     # flat mesh
-    assert numpy.all(abs(X[:, 2]) < 1.0e-15)
+    assert X.shape[1] == 2
 
     mesh = MeshTri(X, cells, flat_cell_correction=None)
     initial_stats = gather_stats(mesh)
@@ -38,9 +38,6 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
 
     def f(x):
         interior_coords = x.reshape(-1, 2)
-        interior_coords = numpy.column_stack([
-            interior_coords, numpy.zeros(len(interior_coords))
-            ])
         coords = X.copy()
         coords[is_interior_node] = interior_coords
 
@@ -73,9 +70,6 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
 
     def jac(x):
         interior_coords = x.reshape(-1, 2)
-        interior_coords = numpy.column_stack([
-            interior_coords, numpy.zeros(len(interior_coords))
-            ])
         coords = X.copy()
         coords[is_interior_node] = interior_coords
 
@@ -172,9 +166,6 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
     assert out.success, out.message
 
     interior_coords = out.x.reshape(-1, 2)
-    interior_coords = numpy.column_stack([
-        interior_coords, numpy.zeros(len(interior_coords))
-        ])
     coords = X.copy()
     coords[is_interior_node] = interior_coords
 
