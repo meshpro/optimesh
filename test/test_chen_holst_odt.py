@@ -25,7 +25,7 @@ def test_simple1():
         [3, 0, 4],
         ])
 
-    X, cells = optimesh.odt_chen(X, cells, tol=1.0e-5)
+    X, cells = optimesh.chen_holst.odt(X, cells, tol=1.0e-5)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -61,7 +61,7 @@ def test_simple2():
         [3, 0, 4],
         ])
 
-    X, cells = optimesh.odt_chen(X, cells)
+    X, cells = optimesh.chen_holst.odt(X, cells)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -102,7 +102,7 @@ def test_simple3():
         [5, 0, 6],
         ])
 
-    X, cells = optimesh.odt_chen(X, cells)
+    X, cells = optimesh.chen_holst.odt(X, cells)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -146,7 +146,7 @@ def test_circle():
     X, cells, _, _, _ = meshio.read(filename)
     c = cells['triangle'].astype(numpy.int)
 
-    X, cells = optimesh.odt_chen(
+    X, cells = optimesh.chen_holst.odt(
         X, c,
         verbose=True,
         tol=1.0e-3
@@ -161,7 +161,7 @@ def test_pacman():
         )
     X, cells, _, _, _ = meshio.read(filename)
 
-    X, cells = optimesh.odt_chen(
+    X, cells = optimesh.chen_holst.odt(
         X, cells['triangle'],
         verbose=True,
         tol=1.0e-3
