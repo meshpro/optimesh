@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 #
+import os
+
 import numpy
 
 import meshio
@@ -119,13 +121,6 @@ def test_simple3():
     return
 
 
-# def test_circle():
-#     X, cells, _, _, _ = meshio.read('circle.vtk')
-#     cells = cells['triangle']
-#     X, cells = optimesh.odt(X, cells)
-#     return
-
-
 def test_pacman():
     filename = download_mesh(
         'pacman.msh',
@@ -137,7 +132,6 @@ def test_pacman():
 
     X, cells = optimesh.odt(
         X, cells['triangle'],
-        verbose=True,
         tol=1.0e-5
         )
 
@@ -147,10 +141,10 @@ def test_pacman():
     norm2 = numpy.linalg.norm(nc, ord=2)
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
-    tol = 1.0e-6
-    ref = 1918.8077833218122
+    tol = 1.0e-8
+    ref = 1919.249752617539
     assert abs(norm1 - ref) < tol * ref
-    ref = 75.21321080665695
+    ref = 75.22699025430875
     assert abs(norm2 - ref) < tol * ref
     ref = 5.0
     assert abs(normi - ref) < tol * ref
@@ -158,9 +152,45 @@ def test_pacman():
     return
 
 
+def circle():
+    filename = 'circle.vtk'
+    if not os.path.isfile(filename):
+        import pygmsh
+        geom = pygmsh.built_in.Geometry()
+        geom.add_circle(
+            [0.0, 0.0, 0.0],
+            1.0,
+            5.0e-3,
+            # 1.0e-2,
+            num_sections=4,
+            # If compound==False, the section borders have to be points of the
+            # discretization. If using a compound circle, they don't; gmsh can
+            # choose by itself where to point the circle points.
+            compound=True
+            )
+        X, cells, _, _, _ = pygmsh.generate_mesh(
+            geom, fast_conversion=True,
+            remove_faces=True
+            )
+        meshio.write(filename, X, cells)
+
+    X, cells, _, _, _ = meshio.read(filename)
+
+    # TODO remove this
+    X = X[:, :2]
+
+    c = cells['triangle'].astype(numpy.int)
+
+    X, cells = optimesh.odt(
+        X, c,
+        tol=1.0e-8
+        )
+    return
+
+
 if __name__ == '__main__':
     # test_simple1()
     # test_simple2()
     # test_simple3()
-    test_circle()
     # test_pacman()
+    circle()

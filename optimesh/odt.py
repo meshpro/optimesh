@@ -3,25 +3,35 @@
 from __future__ import print_function
 
 import numpy
+import fastfunc
 import voropy
 from voropy.mesh_tri import MeshTri
 
 from .helpers import gather_stats, print_stats
 
 
-# [1] Long Chen, Michael Holst,
-#     Efficient mesh optimization schemes based on Optimal Delaunay
-#     Triangulations,
-#     Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
-#     <https://doi.org/10.1016/j.cma.2010.11.007>.
+def odt(X, cells, verbose=False, tol=1.0e-5):
+    '''Optimal Delaunay Triangulation smoothing.
 
+    This method minimized the energy
 
-def odt(X, cells, verbose=True, tol=1.0e-5):
+        E = int_Omega |u_l(x) - u(x)| rho(x) dx
+
+    where u(x) = ||x||^2, u_l is its piecewise linear nodal interpolation and
+    rho is the density. Since u(x) is convex, u_l >= u everywhere and
+
+        u_l(x) = sum_i phi_i(x) u(x_i)
+
+    where phi_i is the hat function at x_i. With rho(x)=1, this gives
+
+        E = int_Omega sum_i phi_i(x) u(x_i) - u(x)
+          = 1/(d+1) sum_i ||x_i||^2 |omega_i| - int_Omega ||x||^2
+
+    where d is the spatial dimension and omega_i is the star of x_i (the set of
+    all simplices containing x_i).
+    '''
     import scipy.optimize
-    # TODO remove dolfin
-    from dolfin import (
-        Mesh, MeshEditor, FunctionSpace, Expression, assemble, dx
-        )
+    # TODO remove this assertion and test
     # flat mesh
     assert X.shape[1] == 2
 
@@ -39,136 +49,72 @@ def odt(X, cells, verbose=True, tol=1.0e-5):
         interior_coords = x.reshape(-1, 2)
         coords = X.copy()
         coords[is_interior_node] = interior_coords
+        mesh.update_node_coordinates(coords)
 
-        voropy_mesh = MeshTri(coords, cells, flat_cell_correction=None)
-        # voropy_mesh.show()
-        voropy_mesh.flip_until_delaunay()
-
-        # if verbose:
-        #     print('\nstep: {}'.format(k))
-        #     print_stats([gather_stats(voropy_mesh)])
-
-        # create dolfin mesh
-        editor = MeshEditor()
-        dolfin_mesh = Mesh()
-        # topological and geometrical dimension 2
-        editor.open(dolfin_mesh, 'triangle', 2, 2, 1)
-        editor.init_vertices(len(voropy_mesh.node_coords))
-        editor.init_cells(len(cells))
-        for k, point in enumerate(voropy_mesh.node_coords):
-            editor.add_vertex(k, point[:2])
-        for k, cell in enumerate(voropy_mesh.cells['nodes'].astype(numpy.uintp)):
-            editor.add_cell(k, cell)
-        editor.close()
-
-        V = FunctionSpace(dolfin_mesh, 'CG', 1)
-        q = Expression('x[0]*x[0] + x[1]*x[1]', element=V.ufl_element())
-        out = assemble(q * dx(dolfin_mesh))
-        # print(out)
+        # E~ = 1/(d+1) sum_i ||x_i||^2 |omega_i|
+        # This also adds the values on
+        star_volume = numpy.zeros(X.shape[0])
+        for i in range(3):
+            fastfunc.add.at(
+                star_volume, mesh.cells['nodes'][:, i], mesh.cell_volumes
+                )
+        x2 = numpy.einsum('ij,ij->i', mesh.node_coords, mesh.node_coords)
+        out = 1/(gdim+1) * numpy.dot(star_volume, x2)
         return out
 
+    # TODO put f and jac together
     def jac(x):
         interior_coords = x.reshape(-1, 2)
         coords = X.copy()
         coords[is_interior_node] = interior_coords
 
-        voropy_mesh = MeshTri(coords, cells, flat_cell_correction=None)
-        voropy_mesh.flip_until_delaunay()
+        mesh.update_node_coordinates(coords)
 
         grad = numpy.zeros(coords.shape)
-        z = zip(
-            voropy_mesh.cells['nodes'],
-            voropy_mesh.get_cell_circumcenters(),
-            voropy_mesh.cell_volumes
-            )
-        for cell, cc, vol in z:
-            grad[cell] += (coords[cell] - cc) * vol
+        cc = mesh.get_cell_circumcenters()
+        for i in range(3):
+            mcn = mesh.cells['nodes'][:, i]
+            fastfunc.add.at(
+                grad,
+                mcn,
+                ((coords[mcn] - cc).T * mesh.cell_volumes).T
+                )
         grad *= 2 / (gdim+1)
-
         return grad[is_interior_node, :2].flatten()
 
-    # TODO exact Hessian
-    # The article [1] gives partial_ii correctly.
-    # def get_hessian(x):
-    #     interior_coords = x.reshape(-1, 2)
-    #     interior_coords = numpy.column_stack([
-    #         interior_coords, numpy.zeros(len(interior_coords))
-    #         ])
-    #     coords = X.copy()
-    #     coords[is_interior_node] = interior_coords
+    def flip_delaunay(x):
+        flip_delaunay.step += 1
+        # Flip the edges
+        interior_coords = x.reshape(-1, 2)
+        coords = X.copy()
+        coords[is_interior_node] = interior_coords
+        mesh.update_node_coordinates(coords)
+        mesh.flip_until_delaunay()
 
-    #     voropy_mesh = MeshTri(coords, cells, flat_cell_correction=None)
-    #     voropy_mesh.flip_until_delaunay()
+        if verbose:
+            print('\nstep: {}'.format(flip_delaunay.step))
+            print_stats([gather_stats(mesh)])
 
-    #     # Create Hessian
-    #     I = []
-    #     J = []
-    #     V = []
-    #     for cell, vol in zip(voropy_mesh.cells['nodes'], voropy_mesh.cell_volumes):
-    #         idx = numpy.array(list(itertools.product(cell, repeat=2)))
-    #         I.extend(idx[:, 0])
-    #         J.extend(idx[:, 1])
-    #         V += len(idx) * [vol]
-    #     I = numpy.array(I)
-    #     J = numpy.array(J)
-    #     V = numpy.array(V)
-
-    #     V *= 2 / (gdim+1)
-
-    #     n = len(voropy_mesh.node_coords)
-    #     matrix = sparse.coo_matrix((V, (I, J)),shape=(n, n)).tolil()
-
-    #     # remove boundary rows and columns
-    #     matrix = matrix[is_interior_node, :]
-    #     matrix = matrix[:, is_interior_node]
-    #     return matrix.tocsr()
-
-    # def newton_direction(x, grad):
-    #     hess = get_hessian(x)
-
-    #     import betterspy
-    #     betterspy.show(hess)
-    #     # print(numpy.sort(numpy.linalg.eigvalsh(hess.toarray())))
-
-    #     return -scipy.sparse.linalg.spsolve(hess, grad)
+        # mesh.show()
+        # exit(1)
+        return
+    flip_delaunay.step = 0
 
     x0 = X[is_interior_node, :2].flatten()
-
-    # eps = 1.0e-10
-    # M = []
-    # for k in range(len(x0)):
-    #     p = numpy.zeros(x0.shape)
-    #     p[k] = 1.0
-    #     M.append((jac(x0 + eps*p) - jac(x0 - eps*p)) / (2*eps))
-    # M = numpy.column_stack(M)
-    # print(M)
-    # print()
-    # import betterspy
-    # betterspy.show(sparse.lil_matrix(M), colormap='viridis')
-    # hess = get_hessian(x0)
-    # print(hess)
-    # betterspy.show(hess)
-    # exit(1)
 
     out = scipy.optimize.minimize(
         f, x0,
         jac=jac,
         method='CG',
-        tol=tol
+        tol=tol,
+        callback=flip_delaunay
         )
-    # out = optipy.minimize(
-    #     f, x0,
-    #     jac=jac,
-    #     get_search_direction=newton_direction,
-    #     tol=tol
-    #     )
     assert out.success, out.message
 
     interior_coords = out.x.reshape(-1, 2)
     coords = X.copy()
     coords[is_interior_node] = interior_coords
-
-    mesh = MeshTri(coords, cells, flat_cell_correction=None)
+    mesh.update_node_coordinates(coords)
     mesh.flip_until_delaunay()
 
     if verbose:
