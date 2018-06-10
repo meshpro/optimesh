@@ -132,6 +132,7 @@ def test_pacman():
 
     X, cells = optimesh.odt(
         X, cells['triangle'],
+        verbose=True,
         tol=1.0e-5
         )
 
@@ -183,7 +184,9 @@ def circle():
 
     X, cells = optimesh.odt(
         X, c,
-        tol=1.0e-8
+        verbose=True,
+        # tol=3.0e-8
+        tol=2.0e-8
         )
     return
 

@@ -6,14 +6,15 @@ import numpy
 import fastfunc
 import voropy
 from voropy.mesh_tri import MeshTri
+import asciiplotlib as apl
 
-from .helpers import gather_stats, print_stats
+from .helpers import gather_stats, print_stats, energy
 
 
 def odt(X, cells, verbose=False, tol=1.0e-5):
-    '''Optimal Delaunay Triangulation smoothing.
+    """Optimal Delaunay Triangulation smoothing.
 
-    This method minimized the energy
+    This method minimizes the energy
 
         E = int_Omega |u_l(x) - u(x)| rho(x) dx
 
@@ -29,14 +30,26 @@ def odt(X, cells, verbose=False, tol=1.0e-5):
 
     where d is the spatial dimension and omega_i is the star of x_i (the set of
     all simplices containing x_i).
-    '''
+    """
     import scipy.optimize
+
     # TODO remove this assertion and test
     # flat mesh
     assert X.shape[1] == 2
 
     mesh = MeshTri(X, cells, flat_cell_correction=None)
-    initial_stats = gather_stats(mesh)
+
+    if verbose:
+        print("step 0:")
+        hist, bin_edges, angles = gather_stats(mesh)
+        grid = apl.subplot_grid((1, 3), column_widths=[30, 25, 25], border_style=None)
+        grid[0, 0].hist(hist, bin_edges, grid=[24], bar_width=1, strip=True)
+        grid[0, 1].aprint("min angle:     {}".format(numpy.min(angles)))
+        grid[0, 1].aprint("av angle:      60")
+        grid[0, 1].aprint("max angle:     {}".format(numpy.max(angles)))
+        grid[0, 1].aprint("std dev angle: {}".format(numpy.std(angles)))
+        grid.show()
+        # print(f(x))
 
     mesh.mark_boundary()
 
@@ -50,17 +63,7 @@ def odt(X, cells, verbose=False, tol=1.0e-5):
         coords = X.copy()
         coords[is_interior_node] = interior_coords
         mesh.update_node_coordinates(coords)
-
-        # E~ = 1/(d+1) sum_i ||x_i||^2 |omega_i|
-        # This also adds the values on
-        star_volume = numpy.zeros(X.shape[0])
-        for i in range(3):
-            fastfunc.add.at(
-                star_volume, mesh.cells['nodes'][:, i], mesh.cell_volumes
-                )
-        x2 = numpy.einsum('ij,ij->i', mesh.node_coords, mesh.node_coords)
-        out = 1/(gdim+1) * numpy.dot(star_volume, x2)
-        return out
+        return energy(mesh, gdim)
 
     # TODO put f and jac together
     def jac(x):
@@ -73,13 +76,9 @@ def odt(X, cells, verbose=False, tol=1.0e-5):
         grad = numpy.zeros(coords.shape)
         cc = mesh.get_cell_circumcenters()
         for i in range(3):
-            mcn = mesh.cells['nodes'][:, i]
-            fastfunc.add.at(
-                grad,
-                mcn,
-                ((coords[mcn] - cc).T * mesh.cell_volumes).T
-                )
-        grad *= 2 / (gdim+1)
+            mcn = mesh.cells["nodes"][:, i]
+            fastfunc.add.at(grad, mcn, ((coords[mcn] - cc).T * mesh.cell_volumes).T)
+        grad *= 2 / (gdim + 1)
         return grad[is_interior_node, :2].flatten()
 
     def flip_delaunay(x):
@@ -92,36 +91,42 @@ def odt(X, cells, verbose=False, tol=1.0e-5):
         mesh.flip_until_delaunay()
 
         if verbose:
-            print('\nstep: {}'.format(flip_delaunay.step))
-            print_stats([gather_stats(mesh)])
+            print("\nstep {}:".format(flip_delaunay.step))
+            grid = apl.subplot_grid(
+                (1, 3), column_widths=[30, 25, 25], border_style=None
+            )
+            grid[0, 0].hist(hist, bin_edges, grid=[24], bar_width=1, strip=True)
+            grid[0, 1].aprint("min angle:     {}".format(numpy.min(angles)))
+            grid[0, 1].aprint("av angle:      60")
+            grid[0, 1].aprint("max angle:     {}".format(numpy.max(angles)))
+            grid[0, 1].aprint("std dev angle: {}".format(numpy.std(angles)))
+            grid[0, 2].aprint("energy: {}".format(f(x)))
+            grid.show()
 
         # mesh.show()
         # exit(1)
         return
+
     flip_delaunay.step = 0
 
     x0 = X[is_interior_node, :2].flatten()
 
     out = scipy.optimize.minimize(
-        f, x0,
+        f,
+        x0,
         jac=jac,
-        method='CG',
+        method="CG",
+        # method='newton-cg',
         tol=tol,
-        callback=flip_delaunay
-        )
+        callback=flip_delaunay,
+    )
     assert out.success, out.message
 
+    # One last edge flip
     interior_coords = out.x.reshape(-1, 2)
     coords = X.copy()
     coords[is_interior_node] = interior_coords
     mesh.update_node_coordinates(coords)
     mesh.flip_until_delaunay()
 
-    if verbose:
-        print('\nBefore:' + 35*' ' + 'After:')
-        print_stats([
-            initial_stats,
-            gather_stats(mesh),
-            ])
-
-    return mesh.node_coords, mesh.cells['nodes']
+    return mesh.node_coords, mesh.cells["nodes"]

@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 import numpy
-
+import fastfunc
 from voropy.mesh_tri import MeshTri
 
 
@@ -21,9 +21,9 @@ def gather_stats(mesh):
 
     hist, bin_edges = numpy.histogram(
         angles,
-        bins=numpy.linspace(0.0, 180.0, num=19, endpoint=True)
+        bins=numpy.linspace(0.0, 180.0, num=73, endpoint=True)
         )
-    return hist, bin_edges
+    return hist, bin_edges, angles
 
 
 def print_stats(data_list):
@@ -96,3 +96,21 @@ def extract_submesh_entities(X, cells, cell_in_submesh):
     #
     submesh_cells = uidx.reshape(submesh_cells.shape)
     return submesh_X, submesh_cells, submesh_verts
+
+
+def energy(mesh, gdim):
+    '''The mesh energy is defined as
+
+    E = int_Omega |u_l(x) - u(x)| rho(x) dx
+
+    where u(x) = ||x||^2 and u_l is its piecewise linearization on the mesh.
+    '''
+    # E~ = 1/(d+1) sum_i ||x_i||^2 |omega_i|
+    star_volume = numpy.zeros(mesh.node_coords.shape[0])
+    for i in range(3):
+        fastfunc.add.at(
+            star_volume, mesh.cells['nodes'][:, i], mesh.cell_volumes
+            )
+    x2 = numpy.einsum('ij,ij->i', mesh.node_coords, mesh.node_coords)
+    out = 1/(gdim+1) * numpy.dot(star_volume, x2)
+    return out
