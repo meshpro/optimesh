@@ -67,7 +67,10 @@ def _run(get_reference_points_, X, cells, verbose=True, tol=1.0e-3):
     #     'step{:03d}'.format(0), show_centroids=False, show_coedges=False
     #     )
 
-    initial_stats = gather_stats(mesh)
+    if verbose:
+        print("Before:")
+        hist, bin_edges, angles = gather_stats(mesh)
+        print_stats(hist, bin_edges, angles)
 
     mesh.mark_boundary()
 
@@ -119,10 +122,8 @@ def _run(get_reference_points_, X, cells, verbose=True, tol=1.0e-3):
             break
 
     if verbose:
-        print('\nBefore:' + 35*' ' + 'After ({} steps):'.format(k))
-        print_stats([
-            initial_stats,
-            gather_stats(mesh),
-            ])
+        print("\nAfter:")
+        hist, bin_edges, angles = gather_stats(mesh)
+        print_stats(hist, bin_edges, angles)
 
     return mesh.node_coords, mesh.cells['nodes']

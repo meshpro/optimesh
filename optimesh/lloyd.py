@@ -30,7 +30,9 @@ def lloyd(X,
 
     max_move = tol + 1
 
-    initial_stats = gather_stats(mesh)
+    if verbose:
+        print('\nstep: {}'.format(0))
+        print_stats(*gather_stats(mesh))
 
     next_flip_at = 0
     flip_skip = 1
@@ -71,20 +73,13 @@ def lloyd(X,
         # mesh.update_node_coordinates(new_points)
 
         if verbose:
-            print('\nstep: {}'.format(k))
+            print('\nstep: {}'.format(0))
             print('  maximum move: {:15e}'.format(max_move))
-            print_stats([gather_stats(mesh)])
+            print_stats(*gather_stats(mesh))
 
     # Flip one last time.
     mesh.flip_until_delaunay()
     # mesh, is_flipped_six = flip_for_six(mesh)
-
-    if verbose:
-        print('\nBefore:' + 35*' ' + 'After:')
-        print_stats([
-            initial_stats,
-            gather_stats(mesh),
-            ])
 
     if output_filetype:
         write(mesh, 'lloyd', output_filetype, max_steps)

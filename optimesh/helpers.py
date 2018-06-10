@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-from __future__ import print_function
-
 import numpy
 import fastfunc
 from voropy.mesh_tri import MeshTri
+
+import asciiplotlib as apl
 
 
 def gather_stats(mesh):
@@ -26,26 +26,14 @@ def gather_stats(mesh):
     return hist, bin_edges, angles
 
 
-def print_stats(data_list):
-    # make sure that all data sets have the same length
-    n = len(data_list[0][0])
-    for data in data_list:
-        assert len(data[0]) == n
-
-    # find largest hist value
-    max_val = numpy.max([numpy.max(data[0]) for data in data_list])
-    digits_max_val = len(str(max_val))
-    fmt = (
-        9*' '
-        + '{{:3.0f}} < angle < {{:3.0f}}:   {{:{:d}d}}'.format(digits_max_val)
-        )
-
-    print('  angles (in degrees):\n')
-    for i in range(n):
-        for data in data_list:
-            hist, bin_edges = data
-            print(fmt.format(bin_edges[i], bin_edges[i+1], hist[i]), end='')
-        print('\n', end='')
+def print_stats(hist, bin_edges, angles):
+    grid = apl.subplot_grid((1, 3), column_widths=[30, 25, 25], border_style=None)
+    grid[0, 0].hist(hist, bin_edges, grid=[24], bar_width=1, strip=True)
+    grid[0, 1].aprint("min angle:     {}".format(numpy.min(angles)))
+    grid[0, 1].aprint("av angle:      60")
+    grid[0, 1].aprint("max angle:     {}".format(numpy.max(angles)))
+    grid[0, 1].aprint("std dev angle: {}".format(numpy.std(angles)))
+    grid.show()
     return
 
 

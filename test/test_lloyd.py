@@ -86,8 +86,8 @@ def test_pacman_lloyd(max_steps=1000, output_filetype=None):
 
 
 if __name__ == '__main__':
-    # test_pacman_lloyd(
-    test_simple_lloyd(
+    # test_simple_lloyd(
+    test_pacman_lloyd(
         max_steps=100,
         output_filetype='png'
         )

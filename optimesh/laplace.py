@@ -22,7 +22,10 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
 
     boundary_verts = mesh.get_boundary_vertices()
 
-    initial_stats = gather_stats(mesh)
+    if verbose:
+        print("step 0:")
+        hist, bin_edges, angles = gather_stats(mesh)
+        print_stats(hist, bin_edges, angles)
 
     for k in range(num_steps):
         if output_filetype:
@@ -58,17 +61,10 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
         if verbose:
             print('\nstep: {}'.format(k))
             print('  maximum move: {:.15e}'.format(max_move))
-            print_stats([gather_stats(mesh)])
+            print_stats(*gather_stats(mesh))
 
     # Flip one last time.
     mesh.flip_until_delaunay()
-
-    if verbose:
-        print('\nBefore:' + 35*' ' + 'After:')
-        print_stats([
-            initial_stats,
-            gather_stats(mesh),
-            ])
 
     if output_filetype:
         write(mesh, 'laplace', output_filetype, num_steps)

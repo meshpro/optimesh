@@ -42,14 +42,7 @@ def odt(X, cells, verbose=False, tol=1.0e-5):
     if verbose:
         print("step 0:")
         hist, bin_edges, angles = gather_stats(mesh)
-        grid = apl.subplot_grid((1, 3), column_widths=[30, 25, 25], border_style=None)
-        grid[0, 0].hist(hist, bin_edges, grid=[24], bar_width=1, strip=True)
-        grid[0, 1].aprint("min angle:     {}".format(numpy.min(angles)))
-        grid[0, 1].aprint("av angle:      60")
-        grid[0, 1].aprint("max angle:     {}".format(numpy.max(angles)))
-        grid[0, 1].aprint("std dev angle: {}".format(numpy.std(angles)))
-        grid.show()
-        # print(f(x))
+        print_stats(hist, bin_edges, angles)
 
     mesh.mark_boundary()
 
@@ -92,16 +85,10 @@ def odt(X, cells, verbose=False, tol=1.0e-5):
 
         if verbose:
             print("\nstep {}:".format(flip_delaunay.step))
-            grid = apl.subplot_grid(
-                (1, 3), column_widths=[30, 25, 25], border_style=None
-            )
-            grid[0, 0].hist(hist, bin_edges, grid=[24], bar_width=1, strip=True)
-            grid[0, 1].aprint("min angle:     {}".format(numpy.min(angles)))
-            grid[0, 1].aprint("av angle:      60")
-            grid[0, 1].aprint("max angle:     {}".format(numpy.max(angles)))
-            grid[0, 1].aprint("std dev angle: {}".format(numpy.std(angles)))
-            grid[0, 2].aprint("energy: {}".format(f(x)))
-            grid.show()
+            hist, bin_edges, angles = gather_stats(mesh)
+            print_stats(hist, bin_edges, angles)
+            # grid[0, 2].aprint("energy: {}".format(f(x)))
+            # grid.show()
 
         # mesh.show()
         # exit(1)
