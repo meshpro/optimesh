@@ -11,6 +11,7 @@ jobs:
       - run: pip3 install -U pytest pytest-cov pylint
       - checkout
       - run: pip3 install .[all]
+      - run: pip3 install -r test_requirements.txt
       # lint
       - run: pylint setup.py optimesh/ test/*.py
       # The tests
