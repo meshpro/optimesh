@@ -11,19 +11,16 @@ from helpers import download_mesh
 
 
 def test_simple1():
-    X = numpy.array([
-        [0.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0],
-        [1.0, 1.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.4, 0.5, 0.0],
-        ])
-    cells = numpy.array([
-        [0, 1, 4],
-        [1, 2, 4],
-        [2, 3, 4],
-        [3, 0, 4],
-        ])
+    X = numpy.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.4, 0.5, 0.0],
+        ]
+    )
+    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
 
     X, cells = optimesh.chen_holst.cpt(X, cells, tol=1.0e-5)
 
@@ -45,21 +42,17 @@ def test_simple1():
 
 
 def test_simple2():
-    X = numpy.array([
-        [0.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0],
-        [1.0, 1.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.7, 0.5, 0.0],
-        [1.7, 0.5, 0.0],
-        ])
-    cells = numpy.array([
-        [0, 1, 4],
-        [1, 5, 4],
-        [2, 4, 5],
-        [2, 3, 4],
-        [3, 0, 4],
-        ])
+    X = numpy.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.7, 0.5, 0.0],
+            [1.7, 0.5, 0.0],
+        ]
+    )
+    cells = numpy.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
 
     X, cells = optimesh.chen_holst.cpt(X, cells)
 
@@ -81,26 +74,30 @@ def test_simple2():
 
 
 def test_simple3():
-    X = numpy.array([
-        [0.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0],
-        [2.0, 0.0, 0.0],
-        [2.0, 1.0, 0.0],
-        [1.0, 1.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.7, 0.5, 0.0],
-        [1.7, 0.5, 0.0],
-        ])
-    cells = numpy.array([
-        [0, 1, 6],
-        [1, 7, 6],
-        [1, 2, 7],
-        [2, 3, 7],
-        [3, 4, 7],
-        [4, 6, 7],
-        [4, 5, 6],
-        [5, 0, 6],
-        ])
+    X = numpy.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [2.0, 0.0, 0.0],
+            [2.0, 1.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.7, 0.5, 0.0],
+            [1.7, 0.5, 0.0],
+        ]
+    )
+    cells = numpy.array(
+        [
+            [0, 1, 6],
+            [1, 7, 6],
+            [1, 2, 7],
+            [2, 3, 7],
+            [3, 4, 7],
+            [4, 6, 7],
+            [4, 5, 6],
+            [5, 0, 6],
+        ]
+    )
 
     X, cells = optimesh.chen_holst.cpt(X, cells)
 
@@ -122,9 +119,10 @@ def test_simple3():
 
 
 def test_circle():
-    filename = 'circle.vtk'
+    filename = "circle.vtk"
     if not os.path.isfile(filename):
         import pygmsh
+
         geom = pygmsh.built_in.Geometry()
         geom.add_circle(
             [0.0, 0.0, 0.0],
@@ -135,37 +133,29 @@ def test_circle():
             # If compound==False, the section borders have to be points of the
             # discretization. If using a compound circle, they don't; gmsh can
             # choose by itself where to point the circle points.
-            compound=True
-            )
+            compound=True,
+        )
         X, cells, _, _, _ = pygmsh.generate_mesh(
-            geom, fast_conversion=True,
-            remove_faces=True
-            )
+            geom, fast_conversion=True, remove_faces=True
+        )
         meshio.write(filename, X, cells)
 
     mesh = meshio.read(filename)
-    c = mesh.cells['triangle'].astype(numpy.int)
+    c = mesh.cells["triangle"].astype(numpy.int)
 
-    X, cells = optimesh.chen_holst.cpt(
-        mesh.points, c,
-        verbose=True,
-        tol=1.0e-3
-        )
+    X, cells = optimesh.chen_holst.cpt(mesh.points, c, verbose=True, tol=1.0e-3)
     return
 
 
 def test_pacman():
     filename = download_mesh(
-        'pacman.msh',
-        '601a51e53d573ff58bfec96aef790f0bb6c531a221fd7841693eaa20'
-        )
+        "pacman.msh", "601a51e53d573ff58bfec96aef790f0bb6c531a221fd7841693eaa20"
+    )
     mesh = meshio.read(filename)
 
     X, cells = optimesh.chen_holst.cpt(
-        mesh.points, mesh.cells['triangle'],
-        verbose=True,
-        tol=1.0e-3
-        )
+        mesh.points, mesh.cells["triangle"], verbose=True, tol=1.0e-3
+    )
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -184,7 +174,7 @@ def test_pacman():
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # test_simple1()
     # test_simple2()
     # test_simple3()

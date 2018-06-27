@@ -9,10 +9,10 @@ from .__about__ import (
     __website__,
     __status__,
     __license__,
-    )
+)
 
 from .laplace import laplace
-from .lloyd import (lloyd, lloyd_submesh)
+from .lloyd import lloyd, lloyd_submesh
 from .odt import odt
 from . import chen_holst
 

@@ -11,18 +11,19 @@ def gather_stats(mesh):
     # The cosines of the angles are the negative dot products of
     # the normalized edges adjacent to the angle.
     norms = numpy.sqrt(mesh.ei_dot_ei)
-    normalized_ei_dot_ej = numpy.array([
-        mesh.ei_dot_ej[0] / norms[1] / norms[2],
-        mesh.ei_dot_ej[1] / norms[2] / norms[0],
-        mesh.ei_dot_ej[2] / norms[0] / norms[1],
-        ])
+    normalized_ei_dot_ej = numpy.array(
+        [
+            mesh.ei_dot_ej[0] / norms[1] / norms[2],
+            mesh.ei_dot_ej[1] / norms[2] / norms[0],
+            mesh.ei_dot_ej[2] / norms[0] / norms[1],
+        ]
+    )
     # pylint: disable=invalid-unary-operand-type
-    angles = numpy.arccos(-normalized_ei_dot_ej) / (2*numpy.pi) * 360.0
+    angles = numpy.arccos(-normalized_ei_dot_ej) / (2 * numpy.pi) * 360.0
 
     hist, bin_edges = numpy.histogram(
-        angles,
-        bins=numpy.linspace(0.0, 180.0, num=73, endpoint=True)
-        )
+        angles, bins=numpy.linspace(0.0, 180.0, num=73, endpoint=True)
+    )
     return hist, bin_edges, angles
 
 
@@ -38,40 +39,35 @@ def print_stats(hist, bin_edges, angles):
 
 
 def write(mesh, file_prefix, filetype, k):
-    if filetype == 'png':
+    if filetype == "png":
         from matplotlib import pyplot as plt
-        fig = mesh.plot(
-            show_coedges=False,
-            show_centroids=False,
-            show_axes=False
-            )
-        fig.suptitle('step {}'.format(k), fontsize=20)
-        plt.savefig('{}{:04d}.png'.format(file_prefix, k))
+
+        fig = mesh.plot(show_coedges=False, show_centroids=False, show_axes=False)
+        fig.suptitle("step {}".format(k), fontsize=20)
+        plt.savefig("{}{:04d}.png".format(file_prefix, k))
         plt.close(fig)
         return
 
-    mesh.write('{}{:04d}.{}'.format(file_prefix, k, filetype))
+    mesh.write("{}{:04d}.{}".format(file_prefix, k, filetype))
     return
 
 
 def sit_in_plane(X, tol=1.0e-15):
-    '''Checks if all points X sit in a plane.
-    '''
+    """Checks if all points X sit in a plane.
+    """
     orth = numpy.cross(X[1] - X[0], X[2] - X[0])
     orth /= numpy.sqrt(numpy.dot(orth, orth))
     return (abs(numpy.dot(X - X[0], orth)) < tol).all()
 
 
 def get_boundary_edge_ratio(X, cells):
-    '''Gets the ratio of the longest vs. the shortest boundary edge.
-    '''
-    submesh = MeshTri(X, cells, flat_cell_correction='full')
+    """Gets the ratio of the longest vs. the shortest boundary edge.
+    """
+    submesh = MeshTri(X, cells, flat_cell_correction="full")
     submesh.create_edges()
-    x = submesh.node_coords[
-        submesh.idx_hierarchy[..., submesh.is_boundary_edge]
-        ]
+    x = submesh.node_coords[submesh.idx_hierarchy[..., submesh.is_boundary_edge]]
     e = x[0] - x[1]
-    edge_lengths2 = numpy.einsum('ij, ij->i', e, e)
+    edge_lengths2 = numpy.einsum("ij, ij->i", e, e)
     return numpy.sqrt(max(edge_lengths2) / min(edge_lengths2))
 
 
@@ -87,18 +83,16 @@ def extract_submesh_entities(X, cells, cell_in_submesh):
 
 
 def energy(mesh, gdim):
-    '''The mesh energy is defined as
+    """The mesh energy is defined as
 
     E = int_Omega |u_l(x) - u(x)| rho(x) dx
 
     where u(x) = ||x||^2 and u_l is its piecewise linearization on the mesh.
-    '''
+    """
     # E~ = 1/(d+1) sum_i ||x_i||^2 |omega_i|
     star_volume = numpy.zeros(mesh.node_coords.shape[0])
     for i in range(3):
-        fastfunc.add.at(
-            star_volume, mesh.cells['nodes'][:, i], mesh.cell_volumes
-            )
-    x2 = numpy.einsum('ij,ij->i', mesh.node_coords, mesh.node_coords)
-    out = 1/(gdim+1) * numpy.dot(star_volume, x2)
+        fastfunc.add.at(star_volume, mesh.cells["nodes"][:, i], mesh.cell_volumes)
+    x2 = numpy.einsum("ij,ij->i", mesh.node_coords, mesh.node_coords)
+    out = 1 / (gdim + 1) * numpy.dot(star_volume, x2)
     return out

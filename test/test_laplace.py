@@ -9,25 +9,20 @@ from helpers import download_mesh
 
 
 def test_simple(num_steps=10, output_filetype=None):
-    X = numpy.array([
-        [0.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0],
-        [1.0, 1.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.4, 0.5, 0.0],
-        ])
-    cells = numpy.array([
-        [0, 1, 4],
-        [1, 2, 4],
-        [2, 3, 4],
-        [3, 0, 4],
-        ])
+    X = numpy.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.4, 0.5, 0.0],
+        ]
+    )
+    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
 
     X, cells = optimesh.laplace(
-        X, cells, num_steps,
-        verbose=False,
-        output_filetype=output_filetype
-        )
+        X, cells, num_steps, verbose=False, output_filetype=output_filetype
+    )
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -48,16 +43,17 @@ def test_simple(num_steps=10, output_filetype=None):
 
 def test_pacman(num_steps=10, output_filetype=None):
     filename = download_mesh(
-        'pacman.msh',
-        '601a51e53d573ff58bfec96aef790f0bb6c531a221fd7841693eaa20'
-        )
+        "pacman.msh", "601a51e53d573ff58bfec96aef790f0bb6c531a221fd7841693eaa20"
+    )
     mesh = meshio.read(filename)
 
     X, cells = optimesh.laplace(
-        mesh.points, mesh.cells['triangle'], num_steps,
+        mesh.points,
+        mesh.cells["triangle"],
+        num_steps,
         verbose=True,
         output_filetype=output_filetype,
-        )
+    )
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -76,9 +72,6 @@ def test_pacman(num_steps=10, output_filetype=None):
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # test_laplace(
-    test_pacman(
-        num_steps=100,
-        output_filetype='png'
-        )
+    test_pacman(num_steps=100, output_filetype="png")

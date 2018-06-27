@@ -6,20 +6,26 @@ import numpy
 from voropy.mesh_tri import MeshTri
 
 from .helpers import (
-    extract_submesh_entities, get_boundary_edge_ratio, sit_in_plane,
-    gather_stats, print_stats, write
-    )
+    extract_submesh_entities,
+    get_boundary_edge_ratio,
+    sit_in_plane,
+    gather_stats,
+    print_stats,
+    write,
+)
 
 
 # pylint: disable=too-many-arguments,too-many-locals
-def lloyd(X,
-          cells,
-          tol,
-          max_steps=10000,
-          fcc_type='full',
-          flip_frequency=0,
-          verbose=True,
-          output_filetype=None):
+def lloyd(
+    X,
+    cells,
+    tol,
+    max_steps=10000,
+    fcc_type="full",
+    flip_frequency=0,
+    verbose=True,
+    output_filetype=None,
+):
     # flat mesh
     assert sit_in_plane(X)
 
@@ -31,7 +37,7 @@ def lloyd(X,
     max_move = tol + 1
 
     if verbose:
-        print('\nstep: {}'.format(0))
+        print("\nstep: {}".format(0))
         print_stats(*gather_stats(mesh))
 
     next_flip_at = 0
@@ -40,7 +46,7 @@ def lloyd(X,
         if max_move < tol:
             break
         if output_filetype:
-            write(mesh, 'lloyd', output_filetype, k)
+            write(mesh, "lloyd", output_filetype, k)
 
         if k == next_flip_at:
             is_flipped_del = mesh.flip_until_delaunay()
@@ -63,18 +69,14 @@ def lloyd(X,
         new_points = mesh.get_control_volume_centroids()
         new_points[boundary_verts] = mesh.node_coords[boundary_verts]
         diff = new_points - mesh.node_coords
-        max_move = numpy.sqrt(numpy.max(numpy.sum(diff*diff, axis=1)))
+        max_move = numpy.sqrt(numpy.max(numpy.sum(diff * diff, axis=1)))
 
-        mesh = MeshTri(
-            new_points,
-            mesh.cells['nodes'],
-            flat_cell_correction=fcc_type
-            )
+        mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=fcc_type)
         # mesh.update_node_coordinates(new_points)
 
         if verbose:
-            print('\nstep: {}'.format(0))
-            print('  maximum move: {:15e}'.format(max_move))
+            print("\nstep: {}".format(0))
+            print("  maximum move: {:15e}".format(max_move))
             print_stats(*gather_stats(mesh))
 
     # Flip one last time.
@@ -82,18 +84,17 @@ def lloyd(X,
     # mesh, is_flipped_six = flip_for_six(mesh)
 
     if output_filetype:
-        write(mesh, 'lloyd', output_filetype, max_steps)
+        write(mesh, "lloyd", output_filetype, max_steps)
 
-    return mesh.node_coords, mesh.cells['nodes']
+    return mesh.node_coords, mesh.cells["nodes"]
 
 
-def lloyd_submesh(X, cells, submeshes, tol,
-                  skip_inhomogenous_submeshes=True,
-                  **kwargs):
+def lloyd_submesh(X, cells, submeshes, tol, skip_inhomogenous_submeshes=True, **kwargs):
     # perform lloyd on each submesh separately
     for cell_in_submesh in submeshes.values():
-        submesh_X, submesh_cells, submesh_verts = \
-            extract_submesh_entities(X, cells, cell_in_submesh)
+        submesh_X, submesh_cells, submesh_verts = extract_submesh_entities(
+            X, cells, cell_in_submesh
+        )
 
         if skip_inhomogenous_submeshes:
             # Since we don't have access to the density field here, voropy's
@@ -105,10 +106,13 @@ def lloyd_submesh(X, cells, submeshes, tol,
             # smoothing.
             ratio = get_boundary_edge_ratio(submesh_X, submesh_cells)
             if ratio > 1.5:
-                print((
-                    4*' ' + 'Subdomain boundary inhomogeneous ' +
-                    '(edge length ratio {:1.3f}). Skipping.'
-                    ).format(ratio))
+                print(
+                    (
+                        4 * " "
+                        + "Subdomain boundary inhomogeneous "
+                        + "(edge length ratio {:1.3f}). Skipping."
+                    ).format(ratio)
+                )
                 continue
 
         # perform lloyd smoothing
