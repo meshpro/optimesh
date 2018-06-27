@@ -15,7 +15,6 @@ from .helpers import (
 )
 
 
-# pylint: disable=too-many-arguments,too-many-locals
 def lloyd(
     X,
     cells,

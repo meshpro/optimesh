@@ -9,7 +9,6 @@ from setuptools import setup, find_packages
 base_dir = os.path.abspath(os.path.dirname(__file__))
 about = {}
 with open(os.path.join(base_dir, "optimesh", "__about__.py"), "rb") as f:
-    # pylint: disable=exec-used
     exec(f.read(), about)
 
 
@@ -29,7 +28,7 @@ setup(
     url=about["__website__"],
     license=about["__license__"],
     platforms="any",
-    install_requires=["numpy", "voropy"],
+    install_requires=["asciiplotlib", "numpy", "voropy"],
     extras_require={"all": ["matplotlib"], "png": ["matplotlib"]},
     classifiers=[
         about["__status__"],

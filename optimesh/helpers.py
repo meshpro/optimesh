@@ -18,7 +18,6 @@ def gather_stats(mesh):
             mesh.ei_dot_ej[2] / norms[0] / norms[1],
         ]
     )
-    # pylint: disable=invalid-unary-operand-type
     angles = numpy.arccos(-normalized_ei_dot_ej) / (2 * numpy.pi) * 360.0
 
     hist, bin_edges = numpy.histogram(
