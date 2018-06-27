@@ -54,12 +54,12 @@ def test_pacman_lloyd(max_steps=1000, output_filetype=None):
         'pacman.msh',
         '601a51e53d573ff58bfec96aef790f0bb6c531a221fd7841693eaa20'
         )
-    X, cells, _, _, _ = meshio.read(filename)
+    mesh = meshio.read(filename)
 
-    submesh_bools = {0: numpy.ones(len(cells['triangle']), dtype=bool)}
+    submesh_bools = {0: numpy.ones(len(mesh.cells['triangle']), dtype=bool)}
 
     X, cells = optimesh.lloyd_submesh(
-        X, cells['triangle'], submesh_bools,
+        mesh.points, mesh.cells['triangle'], submesh_bools,
         1.0e-2,
         skip_inhomogenous_submeshes=False,
         max_steps=max_steps,

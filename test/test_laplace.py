@@ -51,10 +51,10 @@ def test_pacman(num_steps=10, output_filetype=None):
         'pacman.msh',
         '601a51e53d573ff58bfec96aef790f0bb6c531a221fd7841693eaa20'
         )
-    X, cells, _, _, _ = meshio.read(filename)
+    mesh = meshio.read(filename)
 
     X, cells = optimesh.laplace(
-        X, cells['triangle'], num_steps,
+        mesh.points, mesh.cells['triangle'], num_steps,
         verbose=True,
         output_filetype=output_filetype,
         )

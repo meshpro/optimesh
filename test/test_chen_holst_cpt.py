@@ -143,11 +143,11 @@ def test_circle():
             )
         meshio.write(filename, X, cells)
 
-    X, cells, _, _, _ = meshio.read(filename)
-    c = cells['triangle'].astype(numpy.int)
+    mesh = meshio.read(filename)
+    c = mesh.cells['triangle'].astype(numpy.int)
 
     X, cells = optimesh.chen_holst.cpt(
-        X, c,
+        mesh.points, c,
         verbose=True,
         tol=1.0e-3
         )
@@ -159,10 +159,10 @@ def test_pacman():
         'pacman.msh',
         '601a51e53d573ff58bfec96aef790f0bb6c531a221fd7841693eaa20'
         )
-    X, cells, _, _, _ = meshio.read(filename)
+    mesh = meshio.read(filename)
 
     X, cells = optimesh.chen_holst.cpt(
-        X, cells['triangle'],
+        mesh.points, mesh.cells['triangle'],
         verbose=True,
         tol=1.0e-3
         )

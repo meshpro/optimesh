@@ -126,12 +126,12 @@ def test_pacman():
         'pacman.msh',
         '601a51e53d573ff58bfec96aef790f0bb6c531a221fd7841693eaa20'
         )
-    X, cells, _, _, _ = meshio.read(filename)
-    assert numpy.all(numpy.abs(X[:, 2]) < 1.0e-15)
-    X = X[:, :2]
+    mesh = meshio.read(filename)
+    assert numpy.all(numpy.abs(mesh.points[:, 2]) < 1.0e-15)
+    X = mesh.points[:, :2]
 
     X, cells = optimesh.odt(
-        X, cells['triangle'],
+        X, mesh.cells['triangle'],
         verbose=True,
         tol=1.0e-5
         )
@@ -175,12 +175,12 @@ def circle():
             )
         meshio.write(filename, X, cells)
 
-    X, cells, _, _, _ = meshio.read(filename)
+    mesh = meshio.read(filename)
 
     # TODO remove this
-    X = X[:, :2]
+    X = mesh.points[:, :2]
 
-    c = cells['triangle'].astype(numpy.int)
+    c = mesh.cells['triangle'].astype(numpy.int)
 
     X, cells = optimesh.odt(
         X, c,
