@@ -4,9 +4,11 @@ from __future__ import print_function
 
 import numpy
 import fastfunc
-import voropy
+
+# import voropy
 from voropy.mesh_tri import MeshTri
-import asciiplotlib as apl
+
+# import asciiplotlib as apl
 
 from .helpers import gather_stats, print_stats, energy
 

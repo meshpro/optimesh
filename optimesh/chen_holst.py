@@ -67,7 +67,7 @@ def _run(get_reference_points_, X, cells, verbose=True, tol=1.0e-3):
     mesh.mark_boundary()
 
     # flat triangles
-    gdim = 2
+    # gdim = 2
 
     k = 0
     while True:

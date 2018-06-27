@@ -16,6 +16,20 @@ from .lloyd import lloyd, lloyd_submesh
 from .odt import odt
 from . import chen_holst
 
+__all__ = [
+    "__version__",
+    "__author__",
+    "__author_email__",
+    "__website__",
+    "__status__",
+    "__license__",
+    "laplace",
+    "lloyd",
+    "lloyd_submesh",
+    "odt",
+    "chen_holst",
+]
+
 # try:
 #     import pipdate
 # except ImportError:
