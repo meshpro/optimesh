@@ -2,6 +2,7 @@
 #
 import numpy
 import fastfunc
+import quadpy
 from voropy.mesh_tri import MeshTri
 
 import asciiplotlib as apl
@@ -96,7 +97,7 @@ def energy(mesh):
 
     where u(x) = ||x||^2 and u_l is its piecewise linearization on the mesh.
     """
-    # E~ = 1/(d+1) sum_i ||x_i||^2 |omega_i|
+    # E = 1/(d+1) sum_i ||x_i||^2 |omega_i| - int_Omega_i ||x||^2
     star_volume = numpy.zeros(mesh.node_coords.shape[0])
 
     dim = mesh.cells["nodes"].shape[1] - 1
@@ -106,4 +107,15 @@ def energy(mesh):
     x2 = numpy.einsum("ij,ij->i", mesh.node_coords, mesh.node_coords)
     out = 1 / (dim + 1) * numpy.dot(star_volume, x2)
 
-    return out
+    # could be cached
+    assert dim == 2
+    x = mesh.node_coords[:, :2]
+    triangles = numpy.moveaxis(x[mesh.cells["nodes"]], 0, 1)
+    val = quadpy.triangle.integrate(
+        lambda x: x[0]**2 + x[1]**2, triangles,
+        # Take any scheme with order 2
+        quadpy.triangle.Dunavant(2)
+    )
+    val = numpy.sum(val)
+
+    return out - val
