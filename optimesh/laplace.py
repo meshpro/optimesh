@@ -8,7 +8,7 @@ from voropy.mesh_tri import MeshTri
 from .helpers import sit_in_plane, gather_stats, write, print_stats
 
 
-def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
+def laplace(X, cells, num_steps, verbosity=0, output_filetype=None):
     """Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
     interior vertex to the arithmetic average of its neighboring points.
     """
@@ -20,7 +20,7 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
 
     boundary_verts = mesh.get_boundary_vertices()
 
-    if verbose:
+    if verbosity > 0:
         print("step 0:")
         hist, bin_edges, angles = gather_stats(mesh)
         print_stats(hist, bin_edges, angles)
@@ -52,10 +52,19 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
 
         mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=None)
 
-        if verbose:
-            print("\nstep: {}".format(k))
-            print("  maximum move: {:.15e}".format(max_move))
-            print_stats(*gather_stats(mesh))
+        if verbosity > 1:
+            print("\nstep: {}".format(k + 1))
+            print_stats(
+                *gather_stats(mesh),
+                extra_cols=["  maximum move: {:.5e}".format(max_move)]
+            )
+
+    if verbosity == 1:
+        print("\nstep: {}".format(k))
+        print_stats(
+            *gather_stats(mesh),
+            extra_cols=["  maximum move: {:.5e}".format(max_move)]
+        )
 
     # Flip one last time.
     mesh.flip_until_delaunay()

@@ -22,7 +22,7 @@ def lloyd(
     max_steps=10000,
     fcc_type="full",
     flip_frequency=0,
-    verbose=True,
+    verbosity=1,
     output_filetype=None,
 ):
     # flat mesh
@@ -35,7 +35,7 @@ def lloyd(
 
     max_move = tol + 1
 
-    if verbose:
+    if verbosity > 0:
         print("\nstep: {}".format(0))
         print_stats(*gather_stats(mesh))
 
@@ -73,10 +73,15 @@ def lloyd(
         mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=fcc_type)
         # mesh.update_node_coordinates(new_points)
 
-        if verbose:
+        if verbosity > 1:
             print("\nstep: {}".format(0))
             print("  maximum move: {:15e}".format(max_move))
             print_stats(*gather_stats(mesh))
+
+    if verbosity == 1:
+        print("\nstep: {}".format(0))
+        print("  maximum move: {:15e}".format(max_move))
+        print_stats(*gather_stats(mesh))
 
     # Flip one last time.
     mesh.flip_until_delaunay()

@@ -26,13 +26,21 @@ def gather_stats(mesh):
     return hist, bin_edges, angles
 
 
-def print_stats(hist, bin_edges, angles):
-    grid = apl.subplot_grid((1, 3), column_widths=[30, 25, 25], border_style=None)
+def print_stats(hist, bin_edges, angles, extra_cols=None):
+    extra_cols = [] if extra_cols is None else extra_cols
+
+    n = len(extra_cols)
+
+    grid = apl.subplot_grid((1, 2 + n), column_widths=None, border_style=None)
     grid[0, 0].hist(hist, bin_edges, grid=[24], bar_width=1, strip=True)
     grid[0, 1].aprint("min angle:     {}".format(numpy.min(angles)))
     grid[0, 1].aprint("av angle:      60")
     grid[0, 1].aprint("max angle:     {}".format(numpy.max(angles)))
     grid[0, 1].aprint("std dev angle: {}".format(numpy.std(angles)))
+
+    for k, col in enumerate(extra_cols):
+        grid[0, 2 + k].aprint(col)
+
     grid.show()
     return
 

@@ -21,7 +21,7 @@ def test_simple(num_steps=10, output_filetype=None):
     cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
 
     X, cells = optimesh.laplace(
-        X, cells, num_steps, verbose=False, output_filetype=output_filetype
+        X, cells, num_steps, output_filetype=output_filetype
     )
 
     # Test if we're dealing with the mesh we expect.
@@ -51,7 +51,7 @@ def test_pacman(num_steps=10, output_filetype=None):
         mesh.points,
         mesh.cells["triangle"],
         num_steps,
-        verbose=True,
+        verbosity=2,
         output_filetype=output_filetype,
     )
 
@@ -74,4 +74,5 @@ def test_pacman(num_steps=10, output_filetype=None):
 
 if __name__ == "__main__":
     # test_laplace(
-    test_pacman(num_steps=100, output_filetype="png")
+    # test_pacman(num_steps=100, output_filetype="png")
+    test_pacman(num_steps=100, output_filetype=None)
