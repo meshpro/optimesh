@@ -5,7 +5,7 @@ from __future__ import print_function
 import numpy
 from voropy.mesh_tri import MeshTri
 
-from .helpers import sit_in_plane, gather_stats, write, print_stats
+from .helpers import sit_in_plane, gather_stats, write, print_stats, energy
 
 
 def laplace(X, cells, num_steps, verbosity=0, output_filetype=None):
@@ -21,9 +21,10 @@ def laplace(X, cells, num_steps, verbosity=0, output_filetype=None):
     boundary_verts = mesh.get_boundary_vertices()
 
     if verbosity > 0:
-        print("Before")
+        print("Before:")
         hist, bin_edges, angles = gather_stats(mesh)
-        print_stats(hist, bin_edges, angles)
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        print_stats(hist, bin_edges, angles, extra_cols)
 
     for k in range(num_steps):
         if output_filetype:
@@ -60,11 +61,9 @@ def laplace(X, cells, num_steps, verbosity=0, output_filetype=None):
             )
 
     if verbosity == 1:
-        print("\nFinal:")
-        print_stats(
-            *gather_stats(mesh),
-            extra_cols=["  maximum move: {:.5e}".format(max_move)]
-        )
+        print("\nFinal ({} steps):".format(k + 1))
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        print_stats(*gather_stats(mesh), extra_cols=extra_cols)
 
     # Flip one last time.
     mesh.flip_until_delaunay()

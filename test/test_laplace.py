@@ -51,7 +51,7 @@ def test_pacman(num_steps=10, output_filetype=None):
         mesh.points,
         mesh.cells["triangle"],
         num_steps,
-        verbosity=2,
+        verbosity=1,
         output_filetype=output_filetype,
     )
 
