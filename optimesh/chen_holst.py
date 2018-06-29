@@ -13,7 +13,7 @@ import numpy
 import fastfunc
 from voropy.mesh_tri import MeshTri
 
-from .helpers import gather_stats, print_stats
+from .helpers import gather_stats, print_stats, energy
 
 
 def odt(X, cells, verbosity=1, tol=1.0e-3):
@@ -25,7 +25,11 @@ def odt(X, cells, verbosity=1, tol=1.0e-3):
     process, don't move quite so far.
     """
     return _run(
-        lambda mesh: mesh.get_cell_circumcenters(), X, cells, verbosity=verbosity, tol=tol
+        lambda mesh: mesh.get_cell_circumcenters(),
+        X,
+        cells,
+        verbosity=verbosity,
+        tol=tol,
     )
 
 
@@ -39,7 +43,9 @@ def cpt(X, cells, verbosity=1, tol=1.0e-3):
     (barycenters) of their adjacent cells. If a triangle cell switches
     orientation in the process, don't move quite so far.
     """
-    return _run(lambda mesh: mesh.get_centroids(), X, cells, verbosity=verbosity, tol=tol)
+    return _run(
+        lambda mesh: mesh.get_centroids(), X, cells, verbosity=verbosity, tol=tol
+    )
 
 
 def _run(get_reference_points_, X, cells, verbosity=1, tol=1.0e-3):
@@ -59,15 +65,16 @@ def _run(get_reference_points_, X, cells, verbosity=1, tol=1.0e-3):
     #     'step{:03d}'.format(0), show_centroids=False, show_coedges=False
     #     )
 
+    # flat triangles
+    gdim = 2
+
     if verbosity > 0:
         print("Before:")
         hist, bin_edges, angles = gather_stats(mesh)
-        print_stats(hist, bin_edges, angles)
+        extra_cols = ["energy: {:.5e}".format(energy(mesh, gdim))]
+        print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
 
     mesh.mark_boundary()
-
-    # flat triangles
-    # gdim = 2
 
     k = 0
     while True:
@@ -118,8 +125,9 @@ def _run(get_reference_points_, X, cells, verbosity=1, tol=1.0e-3):
             break
 
     if verbosity > 0:
-        print("\nFinal:")
+        print("\nFinal ({} steps):".format(k))
         hist, bin_edges, angles = gather_stats(mesh)
-        print_stats(hist, bin_edges, angles)
+        extra_cols = ["energy: {:.5e}".format(energy(mesh, gdim))]
+        print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
 
     return mesh.node_coords, mesh.cells["nodes"]

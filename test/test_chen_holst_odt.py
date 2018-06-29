@@ -142,7 +142,7 @@ def test_circle():
     mesh = meshio.read(filename)
     c = mesh.cells["triangle"].astype(numpy.int)
 
-    X, cells = optimesh.chen_holst.odt(mesh.points, c, verbosity=2, tol=1.0e-3)
+    X, cells = optimesh.chen_holst.odt(mesh.points, c, verbosity=1, tol=1.0e-3)
     return
 
 

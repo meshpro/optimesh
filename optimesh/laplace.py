@@ -21,7 +21,7 @@ def laplace(X, cells, num_steps, verbosity=0, output_filetype=None):
     boundary_verts = mesh.get_boundary_vertices()
 
     if verbosity > 0:
-        print("step 0:")
+        print("Before")
         hist, bin_edges, angles = gather_stats(mesh)
         print_stats(hist, bin_edges, angles)
 
@@ -53,14 +53,14 @@ def laplace(X, cells, num_steps, verbosity=0, output_filetype=None):
         mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=None)
 
         if verbosity > 1:
-            print("\nstep {}:".format(k + 1))
+            print("\nStep {}:".format(k + 1))
             print_stats(
                 *gather_stats(mesh),
                 extra_cols=["  maximum move: {:.5e}".format(max_move)]
             )
 
     if verbosity == 1:
-        print("\nstep {}:".format(k))
+        print("\nFinal:")
         print_stats(
             *gather_stats(mesh),
             extra_cols=["  maximum move: {:.5e}".format(max_move)]

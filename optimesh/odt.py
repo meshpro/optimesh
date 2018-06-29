@@ -39,17 +39,18 @@ def odt(X, cells, verbosity=1, tol=1.0e-5):
 
     mesh = MeshTri(X, cells, flat_cell_correction=None)
 
+    # flat triangles
+    gdim = 2
+
     if verbosity > 0:
-        print("step 0:")
+        print("Before:")
         hist, bin_edges, angles = gather_stats(mesh)
-        print_stats(hist, bin_edges, angles)
+        extra_cols = ["energy: {:.5e}".format(energy(mesh, gdim))]
+        print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
 
     mesh.mark_boundary()
 
     is_interior_node = numpy.logical_not(mesh.is_boundary_node)
-
-    # flat triangles
-    gdim = 2
 
     def f(x):
         interior_coords = x.reshape(-1, 2)
@@ -84,7 +85,7 @@ def odt(X, cells, verbosity=1, tol=1.0e-5):
         mesh.flip_until_delaunay()
 
         if verbosity > 1:
-            print("\nstep {}:".format(flip_delaunay.step))
+            print("\nStep {}:".format(flip_delaunay.step))
             hist, bin_edges, angles = gather_stats(mesh)
             print_stats(hist, bin_edges, angles, extra_cols=["energy: {}".format(f(x))])
 
@@ -115,8 +116,9 @@ def odt(X, cells, verbosity=1, tol=1.0e-5):
     mesh.flip_until_delaunay()
 
     if verbosity > 0:
-        print("\nfinal:")
+        print("\nFinal ({} steps):".format(out.nit))
         hist, bin_edges, angles = gather_stats(mesh)
-        print_stats(hist, bin_edges, angles)
+        extra_cols = ["energy: {:.5e}".format(energy(mesh, gdim))]
+        print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
 
     return mesh.node_coords, mesh.cells["nodes"]
