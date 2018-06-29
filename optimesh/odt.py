@@ -8,12 +8,10 @@ import fastfunc
 # import voropy
 from voropy.mesh_tri import MeshTri
 
-# import asciiplotlib as apl
-
 from .helpers import gather_stats, print_stats, energy
 
 
-def odt(X, cells, verbose=False, tol=1.0e-5):
+def odt(X, cells, verbosity=1, tol=1.0e-5):
     """Optimal Delaunay Triangulation smoothing.
 
     This method minimizes the energy
@@ -41,7 +39,7 @@ def odt(X, cells, verbose=False, tol=1.0e-5):
 
     mesh = MeshTri(X, cells, flat_cell_correction=None)
 
-    if verbose:
+    if verbosity > 0:
         print("step 0:")
         hist, bin_edges, angles = gather_stats(mesh)
         print_stats(hist, bin_edges, angles)
@@ -85,12 +83,10 @@ def odt(X, cells, verbose=False, tol=1.0e-5):
         mesh.update_node_coordinates(coords)
         mesh.flip_until_delaunay()
 
-        if verbose:
+        if verbosity > 1:
             print("\nstep {}:".format(flip_delaunay.step))
             hist, bin_edges, angles = gather_stats(mesh)
-            print_stats(hist, bin_edges, angles)
-            # grid[0, 2].aprint("energy: {}".format(f(x)))
-            # grid.show()
+            print_stats(hist, bin_edges, angles, extra_cols=["energy: {}".format(f(x))])
 
         # mesh.show()
         # exit(1)
@@ -117,5 +113,10 @@ def odt(X, cells, verbose=False, tol=1.0e-5):
     coords[is_interior_node] = interior_coords
     mesh.update_node_coordinates(coords)
     mesh.flip_until_delaunay()
+
+    if verbosity > 0:
+        print("\nfinal:")
+        hist, bin_edges, angles = gather_stats(mesh)
+        print_stats(hist, bin_edges, angles)
 
     return mesh.node_coords, mesh.cells["nodes"]

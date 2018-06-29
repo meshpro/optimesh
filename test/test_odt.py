@@ -111,7 +111,7 @@ def test_pacman():
     assert numpy.all(numpy.abs(mesh.points[:, 2]) < 1.0e-15)
     X = mesh.points[:, :2]
 
-    X, cells = optimesh.odt(X, mesh.cells["triangle"], verbose=True, tol=1.0e-5)
+    X, cells = optimesh.odt(X, mesh.cells["triangle"], verbosity=1, tol=1.0e-5)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -162,7 +162,7 @@ def circle():
     X, cells = optimesh.odt(
         X,
         c,
-        verbose=True,
+        verbosity=1,
         # tol=3.0e-8
         tol=2.0e-8,
     )
@@ -173,5 +173,5 @@ if __name__ == "__main__":
     # test_simple1()
     # test_simple2()
     # test_simple3()
-    # test_pacman()
-    circle()
+    test_pacman()
+    # circle()

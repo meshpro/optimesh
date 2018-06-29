@@ -16,7 +16,7 @@ from voropy.mesh_tri import MeshTri
 from .helpers import gather_stats, print_stats
 
 
-def odt(X, cells, verbose=True, tol=1.0e-3):
+def odt(X, cells, verbosity=1, tol=1.0e-3):
     """Optimal Delaunay Triangulation.
 
     Idea:
@@ -25,11 +25,11 @@ def odt(X, cells, verbose=True, tol=1.0e-3):
     process, don't move quite so far.
     """
     return _run(
-        lambda mesh: mesh.get_cell_circumcenters(), X, cells, verbose=verbose, tol=tol
+        lambda mesh: mesh.get_cell_circumcenters(), X, cells, verbosity=verbosity, tol=tol
     )
 
 
-def cpt(X, cells, verbose=True, tol=1.0e-3):
+def cpt(X, cells, verbosity=1, tol=1.0e-3):
     """Centroidal Patch Triangulation. Mimics the definition of Centroidal
     Voronoi Tessellations for which the generator and centroid of each Voronoi
     region coincide.
@@ -39,10 +39,10 @@ def cpt(X, cells, verbose=True, tol=1.0e-3):
     (barycenters) of their adjacent cells. If a triangle cell switches
     orientation in the process, don't move quite so far.
     """
-    return _run(lambda mesh: mesh.get_centroids(), X, cells, verbose=verbose, tol=tol)
+    return _run(lambda mesh: mesh.get_centroids(), X, cells, verbosity=verbosity, tol=tol)
 
 
-def _run(get_reference_points_, X, cells, verbose=True, tol=1.0e-3):
+def _run(get_reference_points_, X, cells, verbosity=1, tol=1.0e-3):
     """Idea:
     Move interior mesh points into the weighted averages of the circumcenters
     of their adjacent cells. If a triangle cell switches orientation in the
@@ -59,7 +59,7 @@ def _run(get_reference_points_, X, cells, verbose=True, tol=1.0e-3):
     #     'step{:03d}'.format(0), show_centroids=False, show_coedges=False
     #     )
 
-    if verbose:
+    if verbosity > 0:
         print("Before:")
         hist, bin_edges, angles = gather_stats(mesh)
         print_stats(hist, bin_edges, angles)
@@ -107,13 +107,18 @@ def _run(get_reference_points_, X, cells, verbose=True, tol=1.0e-3):
         #     'step{:03d}'.format(k), show_centroids=False, show_coedges=False
         #     )
 
+        if verbosity > 1:
+            print("\nstep {}:".format(k + 1))
+            hist, bin_edges, angles = gather_stats(mesh)
+            print_stats(hist, bin_edges, angles)
+
         # Abort the loop if the update is small
         diff = mesh.node_coords - original_coords
         if numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2):
             break
 
-    if verbose:
-        print("\nAfter:")
+    if verbosity > 0:
+        print("\nFinal:")
         hist, bin_edges, angles = gather_stats(mesh)
         print_stats(hist, bin_edges, angles)
 

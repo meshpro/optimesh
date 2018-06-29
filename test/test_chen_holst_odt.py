@@ -128,7 +128,6 @@ def test_circle():
             [0.0, 0.0, 0.0],
             1.0,
             5.0e-3,
-            # 1.0e-2,
             num_sections=4,
             # If compound==False, the section borders have to be points of the
             # discretization. If using a compound circle, they don't; gmsh can
@@ -143,7 +142,7 @@ def test_circle():
     mesh = meshio.read(filename)
     c = mesh.cells["triangle"].astype(numpy.int)
 
-    X, cells = optimesh.chen_holst.odt(mesh.points, c, verbose=True, tol=1.0e-3)
+    X, cells = optimesh.chen_holst.odt(mesh.points, c, verbosity=2, tol=1.0e-3)
     return
 
 
@@ -154,7 +153,7 @@ def test_pacman():
     mesh = meshio.read(filename)
 
     X, cells = optimesh.chen_holst.odt(
-        mesh.points, mesh.cells["triangle"], verbose=True, tol=1.0e-3
+        mesh.points, mesh.cells["triangle"], verbosity=1, tol=1.0e-3
     )
 
     # Test if we're dealing with the mesh we expect.
