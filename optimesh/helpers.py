@@ -89,7 +89,7 @@ def extract_submesh_entities(X, cells, cell_in_submesh):
     return submesh_X, submesh_cells, submesh_verts
 
 
-def energy(mesh, gdim):
+def energy(mesh):
     """The mesh energy is defined as
 
     E = int_Omega |u_l(x) - u(x)| rho(x) dx
@@ -98,8 +98,12 @@ def energy(mesh, gdim):
     """
     # E~ = 1/(d+1) sum_i ||x_i||^2 |omega_i|
     star_volume = numpy.zeros(mesh.node_coords.shape[0])
+
+    dim = mesh.cells["nodes"].shape[1] - 1
+
     for i in range(3):
         fastfunc.add.at(star_volume, mesh.cells["nodes"][:, i], mesh.cell_volumes)
     x2 = numpy.einsum("ij,ij->i", mesh.node_coords, mesh.node_coords)
-    out = 1 / (gdim + 1) * numpy.dot(star_volume, x2)
+    out = 1 / (dim + 1) * numpy.dot(star_volume, x2)
+
     return out

@@ -49,11 +49,6 @@ def cpt(X, cells, verbosity=1, tol=1.0e-3):
 
 
 def _run(get_reference_points_, X, cells, verbosity=1, tol=1.0e-3):
-    """Idea:
-    Move interior mesh points into the weighted averages of the circumcenters
-    of their adjacent cells. If a triangle cell switches orientation in the
-    process, don't move quite so far.
-    """
     # flat mesh
     assert numpy.all(abs(X[:, 2]) < 1.0e-15)
     X = X[:, :2]
@@ -65,13 +60,10 @@ def _run(get_reference_points_, X, cells, verbosity=1, tol=1.0e-3):
     #     'step{:03d}'.format(0), show_centroids=False, show_coedges=False
     #     )
 
-    # flat triangles
-    gdim = 2
-
     if verbosity > 0:
         print("Before:")
         hist, bin_edges, angles = gather_stats(mesh)
-        extra_cols = ["energy: {:.5e}".format(energy(mesh, gdim))]
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
 
     mesh.mark_boundary()
@@ -127,7 +119,7 @@ def _run(get_reference_points_, X, cells, verbosity=1, tol=1.0e-3):
     if verbosity > 0:
         print("\nFinal ({} steps):".format(k))
         hist, bin_edges, angles = gather_stats(mesh)
-        extra_cols = ["energy: {:.5e}".format(energy(mesh, gdim))]
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
 
     return mesh.node_coords, mesh.cells["nodes"]

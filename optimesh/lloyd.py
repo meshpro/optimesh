@@ -36,11 +36,9 @@ def lloyd(
 
     max_move = tol + 1
 
-    gdim = 2
-
     if verbosity > 0:
         print("\nBefore:")
-        extra_cols = ["energy: {:.5e}".format(energy(mesh, gdim))]
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(*gather_stats(mesh), extra_cols=extra_cols)
 
     next_flip_at = 0
@@ -86,7 +84,7 @@ def lloyd(
 
     if verbosity == 1:
         print("\nFinal ({} steps):".format(k))
-        extra_cols = ["energy: {:.5e}".format(energy(mesh, gdim))]
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(*gather_stats(mesh), extra_cols=extra_cols)
 
     # Flip one last time.

@@ -39,13 +39,10 @@ def odt(X, cells, verbosity=1, tol=1.0e-5):
 
     mesh = MeshTri(X, cells, flat_cell_correction=None)
 
-    # flat triangles
-    gdim = 2
-
     if verbosity > 0:
         print("Before:")
         hist, bin_edges, angles = gather_stats(mesh)
-        extra_cols = ["energy: {:.5e}".format(energy(mesh, gdim))]
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
 
     mesh.mark_boundary()
@@ -57,7 +54,7 @@ def odt(X, cells, verbosity=1, tol=1.0e-5):
         coords = X.copy()
         coords[is_interior_node] = interior_coords
         mesh.update_node_coordinates(coords)
-        return energy(mesh, gdim)
+        return energy(mesh)
 
     # TODO put f and jac together
     def jac(x):
@@ -72,6 +69,7 @@ def odt(X, cells, verbosity=1, tol=1.0e-5):
         for i in range(3):
             mcn = mesh.cells["nodes"][:, i]
             fastfunc.add.at(grad, mcn, ((coords[mcn] - cc).T * mesh.cell_volumes).T)
+        gdim = 2
         grad *= 2 / (gdim + 1)
         return grad[is_interior_node, :2].flatten()
 
@@ -118,7 +116,7 @@ def odt(X, cells, verbosity=1, tol=1.0e-5):
     if verbosity > 0:
         print("\nFinal ({} steps):".format(out.nit))
         hist, bin_edges, angles = gather_stats(mesh)
-        extra_cols = ["energy: {:.5e}".format(energy(mesh, gdim))]
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
 
     return mesh.node_coords, mesh.cells["nodes"]
