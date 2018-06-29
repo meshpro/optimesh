@@ -33,10 +33,10 @@ def print_stats(hist, bin_edges, angles, extra_cols=None):
 
     grid = apl.subplot_grid((1, 2 + n), column_widths=None, border_style=None)
     grid[0, 0].hist(hist, bin_edges, grid=[24], bar_width=1, strip=True)
-    grid[0, 1].aprint("min angle:     {}".format(numpy.min(angles)))
-    grid[0, 1].aprint("av angle:      60")
-    grid[0, 1].aprint("max angle:     {}".format(numpy.max(angles)))
-    grid[0, 1].aprint("std dev angle: {}".format(numpy.std(angles)))
+    grid[0, 1].aprint("min angle:     {:7.3f}".format(numpy.min(angles)))
+    grid[0, 1].aprint("av angle:      {:7.3f}".format(60))
+    grid[0, 1].aprint("max angle:     {:7.3f}".format(numpy.max(angles)))
+    grid[0, 1].aprint("std dev angle: {:7.3f}".format(numpy.std(angles)))
 
     for k, col in enumerate(extra_cols):
         grid[0, 2 + k].aprint(col)

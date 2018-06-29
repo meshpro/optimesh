@@ -53,14 +53,14 @@ def laplace(X, cells, num_steps, verbosity=0, output_filetype=None):
         mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=None)
 
         if verbosity > 1:
-            print("\nstep: {}".format(k + 1))
+            print("\nstep {}:".format(k + 1))
             print_stats(
                 *gather_stats(mesh),
                 extra_cols=["  maximum move: {:.5e}".format(max_move)]
             )
 
     if verbosity == 1:
-        print("\nstep: {}".format(k))
+        print("\nstep {}:".format(k))
         print_stats(
             *gather_stats(mesh),
             extra_cols=["  maximum move: {:.5e}".format(max_move)]

@@ -36,7 +36,7 @@ def lloyd(
     max_move = tol + 1
 
     if verbosity > 0:
-        print("\nstep: {}".format(0))
+        print("\nstep {}:".format(0))
         print_stats(*gather_stats(mesh))
 
     next_flip_at = 0
@@ -74,14 +74,17 @@ def lloyd(
         # mesh.update_node_coordinates(new_points)
 
         if verbosity > 1:
-            print("\nstep: {}".format(0))
-            print("  maximum move: {:15e}".format(max_move))
-            print_stats(*gather_stats(mesh))
+            print("\nstep {}:".format(k + 1))
+            print_stats(
+                *gather_stats(mesh),
+                extra_cols=["  maximum move: {:5e}".format(max_move)]
+            )
 
     if verbosity == 1:
-        print("\nstep: {}".format(0))
-        print("  maximum move: {:15e}".format(max_move))
-        print_stats(*gather_stats(mesh))
+        print("\nstep {}:".format(k + 1))
+        print_stats(
+            *gather_stats(mesh), extra_cols=["  maximum move: {:5e}".format(max_move)]
+        )
 
     # Flip one last time.
     mesh.flip_until_delaunay()

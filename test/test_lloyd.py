@@ -30,7 +30,7 @@ def test_simple_lloyd(max_steps=5, output_filetype=None):
         skip_inhomogenous_submeshes=True,
         max_steps=max_steps,
         fcc_type="boundary",
-        verbose=True,
+        verbosity=2,
         output_filetype=output_filetype,
     )
 
@@ -65,7 +65,7 @@ def test_pacman_lloyd(max_steps=1000, output_filetype=None):
         max_steps=max_steps,
         fcc_type="boundary",
         flip_frequency=1,
-        verbose=False,
+        verbosity=1,
         output_filetype=output_filetype,
     )
 
