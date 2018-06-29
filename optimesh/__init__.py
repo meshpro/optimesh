@@ -15,6 +15,7 @@ from .laplace import laplace
 from .lloyd import lloyd, lloyd_submesh
 from .odt import odt
 from . import chen_holst
+from . import cli
 
 __all__ = [
     "__version__",
@@ -23,11 +24,12 @@ __all__ = [
     "__website__",
     "__status__",
     "__license__",
+    "chen_holst",
+    "cli",
     "laplace",
     "lloyd",
     "lloyd_submesh",
     "odt",
-    "chen_holst",
 ]
 
 # try:

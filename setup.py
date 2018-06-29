@@ -41,4 +41,5 @@ setup(
         "Topic :: Scientific/Engineering",
         "Topic :: Utilities",
     ],
+    entry_points={"console_scripts": ["optimesh = optimesh.cli:main"]},
 )
