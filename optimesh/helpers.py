@@ -118,4 +118,6 @@ def energy(mesh):
     )
     val = numpy.sum(val)
 
+    assert out >= val
+
     return out - val

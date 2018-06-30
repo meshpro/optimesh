@@ -148,7 +148,7 @@ def test_circle():
 
 def test_pacman():
     filename = download_mesh(
-        "pacman.msh", "601a51e53d573ff58bfec96aef790f0bb6c531a221fd7841693eaa20"
+        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
     )
     mesh = meshio.read(filename)
 

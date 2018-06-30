@@ -16,13 +16,12 @@ def download_mesh(name, sha3):
     filename = os.path.join("/tmp", name)
     if not os.path.exists(filename):
         print("Downloading {}...".format(name))
-        url = "https://sourceforge.net/projects/meshzoo-data/files/"
-        r = requests.get(url + name + "/download", stream=True)
+        url = "https://github.com/nschloe/meshzoo/raw/gh-pages/"
+        r = requests.get(url + name, stream=True)
         if not r.ok:
             raise RuntimeError(
                 "Download error ({}, return code {}).".format(r.url, r.status_code)
             )
-
         # save the mesh in /tmp
         with open(filename, "wb") as f:
             r.raw.decode_content = True
