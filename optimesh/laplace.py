@@ -8,7 +8,7 @@ from voropy.mesh_tri import MeshTri
 from .helpers import gather_stats, write, print_stats, energy
 
 
-def laplace(X, cells, tol, max_steps, verbosity=0, output_filetype=None):
+def laplace(X, cells, tol, max_num_steps, verbosity=0, output_filetype=None):
     """Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
     interior vertex to the arithmetic average of its neighboring points.
     """
@@ -29,7 +29,7 @@ def laplace(X, cells, tol, max_steps, verbosity=0, output_filetype=None):
 
     success = False
 
-    for k in range(max_steps):
+    for k in range(max_num_steps):
         if output_filetype:
             write(mesh, "laplace", output_filetype, k)
 
@@ -69,7 +69,7 @@ def laplace(X, cells, tol, max_steps, verbosity=0, output_filetype=None):
             break
 
     if not success:
-        num_steps = max_steps
+        num_steps = max_num_steps
 
     if verbosity == 1:
         print("\nFinal ({} steps):".format(num_steps + 1))

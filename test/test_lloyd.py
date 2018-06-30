@@ -8,7 +8,7 @@ import optimesh
 from helpers import download_mesh
 
 
-def test_simple_lloyd(max_steps=5, output_filetype=None):
+def test_simple_lloyd(max_num_steps=5, output_filetype=None):
     X = numpy.array(
         [
             [0.0, 0.0, 0.0],
@@ -28,7 +28,7 @@ def test_simple_lloyd(max_steps=5, output_filetype=None):
         submesh_bools,
         1.0e-2,
         skip_inhomogenous_submeshes=True,
-        max_steps=max_steps,
+        max_num_steps=max_num_steps,
         fcc_type="boundary",
         verbosity=2,
         output_filetype=output_filetype,
@@ -48,7 +48,7 @@ def test_simple_lloyd(max_steps=5, output_filetype=None):
     return
 
 
-def test_pacman_lloyd(max_steps=1000, output_filetype=None):
+def test_pacman_lloyd(max_num_steps=1000, output_filetype=None):
     filename = download_mesh(
         "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
     )
@@ -62,7 +62,7 @@ def test_pacman_lloyd(max_steps=1000, output_filetype=None):
         submesh_bools,
         1.0e-2,
         skip_inhomogenous_submeshes=False,
-        max_steps=max_steps,
+        max_num_steps=max_num_steps,
         fcc_type="boundary",
         flip_frequency=1,
         verbosity=1,
@@ -87,4 +87,4 @@ def test_pacman_lloyd(max_steps=1000, output_filetype=None):
 
 if __name__ == "__main__":
     # test_simple_lloyd(
-    test_pacman_lloyd(max_steps=100, output_filetype=None)
+    test_pacman_lloyd(max_num_steps=100, output_filetype=None)
