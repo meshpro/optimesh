@@ -5,6 +5,8 @@ import meshio
 import numpy
 
 from .__about__ import __version__
+from .laplace import laplace
+from .lloyd import lloyd
 from .odt import odt
 
 
@@ -25,6 +27,15 @@ def _get_parser():
         required=True,
         choices=["laplace", "lloyd", "odt", "chen_odt", "chen_cpt"],
         help="smoothing method",
+    )
+
+    parser.add_argument(
+        "--max-num-steps",
+        "-n",
+        metavar="MAX_NUM_STEPS",
+        type=int,
+        required=True,
+        help="maximum number of steps",
     )
 
     parser.add_argument(
@@ -61,17 +72,41 @@ def main(argv=None):
     parser = _get_parser()
     args = parser.parse_args(argv)
 
-    print(args)
     mesh = meshio.read(args.input_file)
 
     if mesh.points.shape[1] == 3:
         assert numpy.all(numpy.abs(mesh.points[:, 2]) < 1.0e-13)
         mesh.points = mesh.points[:, :2]
 
-    if args.method == "odt":
-        X, cells = odt(mesh.points, mesh.cells["triangle"], verbosity=1, tol=1.0e-5)
+    if args.method == "laplace":
+        X, cells = laplace(
+            mesh.points,
+            mesh.cells["triangle"],
+            args.tolerance,
+            args.max_num_steps,
+            verbosity=args.verbosity,
+        )
+    elif args.method == "odt":
+        X, cells = odt(
+            mesh.points,
+            mesh.cells["triangle"],
+            verbosity=args.verbosity,
+            tol=args.tolerance,
+        )
+    elif args.method == "lloyd":
+        X, cells = lloyd(
+            mesh.points,
+            mesh.cells["triangle"],
+            args.tolerance,
+            args.max_num_steps,
+            verbosity=args.verbosity,
+            fcc_type="boundary",
+        )
     else:
         assert False
+
+    if X.shape[1] != 3:
+        X = numpy.column_stack([X[:, 0], X[:, 1], numpy.zeros(X.shape[0])])
 
     meshio.write_points_cells(args.output_file, X, {"triangle": cells})
     return

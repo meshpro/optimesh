@@ -5,15 +5,16 @@ from __future__ import print_function
 import numpy
 from voropy.mesh_tri import MeshTri
 
-from .helpers import sit_in_plane, gather_stats, write, print_stats, energy
+from .helpers import gather_stats, write, print_stats, energy
 
 
-def laplace(X, cells, num_steps, verbosity=0, output_filetype=None):
+def laplace(X, cells, tol, max_steps, verbosity=0, output_filetype=None):
     """Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
     interior vertex to the arithmetic average of its neighboring points.
     """
+    # TODO bring back?
     # flat mesh
-    assert sit_in_plane(X)
+    # assert sit_in_plane(X)
 
     # create mesh data structure
     mesh = MeshTri(X, cells, flat_cell_correction=None)
@@ -26,7 +27,9 @@ def laplace(X, cells, num_steps, verbosity=0, output_filetype=None):
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(hist, bin_edges, angles, extra_cols)
 
-    for k in range(num_steps):
+    success = False
+
+    for k in range(max_steps):
         if output_filetype:
             write(mesh, "laplace", output_filetype, k)
 
@@ -60,8 +63,16 @@ def laplace(X, cells, num_steps, verbosity=0, output_filetype=None):
                 extra_cols=["  maximum move: {:.5e}".format(max_move)]
             )
 
+        if max_move < tol:
+            num_steps = k
+            success = True
+            break
+
+    if not success:
+        num_steps = max_steps
+
     if verbosity == 1:
-        print("\nFinal ({} steps):".format(k + 1))
+        print("\nFinal ({} steps):".format(num_steps + 1))
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(*gather_stats(mesh), extra_cols=extra_cols)
 

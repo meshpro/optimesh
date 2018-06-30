@@ -20,14 +20,15 @@ def lloyd(
     X,
     cells,
     tol,
-    max_steps=10000,
+    max_num_steps,
     fcc_type="full",
     flip_frequency=0,
     verbosity=1,
     output_filetype=None,
 ):
+    # TODO bring back?
     # flat mesh
-    assert sit_in_plane(X)
+    # assert sit_in_plane(X)
 
     # create mesh data structure
     mesh = MeshTri(X, cells, flat_cell_correction=fcc_type)
@@ -43,7 +44,7 @@ def lloyd(
 
     next_flip_at = 0
     flip_skip = 1
-    for k in range(max_steps):
+    for k in range(max_num_steps):
         if max_move < tol:
             break
         if output_filetype:
@@ -92,7 +93,7 @@ def lloyd(
     # mesh, is_flipped_six = flip_for_six(mesh)
 
     if output_filetype:
-        write(mesh, "lloyd", output_filetype, max_steps)
+        write(mesh, "lloyd", output_filetype, max_num_steps)
 
     return mesh.node_coords, mesh.cells["nodes"]
 
