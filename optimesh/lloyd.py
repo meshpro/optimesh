@@ -98,7 +98,9 @@ def lloyd(
     return mesh.node_coords, mesh.cells["nodes"]
 
 
-def lloyd_submesh(X, cells, tol, max_num_steps, submeshes, skip_inhomogenous_submeshes=True, **kwargs):
+def lloyd_submesh(
+    X, cells, tol, max_num_steps, submeshes, skip_inhomogenous_submeshes=True, **kwargs
+):
     # perform lloyd on each submesh separately
     for cell_in_submesh in submeshes.values():
         submesh_X, submesh_cells, submesh_verts = extract_submesh_entities(

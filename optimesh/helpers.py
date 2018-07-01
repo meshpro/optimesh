@@ -112,9 +112,10 @@ def energy(mesh):
     x = mesh.node_coords[:, :2]
     triangles = numpy.moveaxis(x[mesh.cells["nodes"]], 0, 1)
     val = quadpy.triangle.integrate(
-        lambda x: x[0]**2 + x[1]**2, triangles,
+        lambda x: x[0] ** 2 + x[1] ** 2,
+        triangles,
         # Take any scheme with order 2
-        quadpy.triangle.Dunavant(2)
+        quadpy.triangle.Dunavant(2),
     )
     val = numpy.sum(val)
 

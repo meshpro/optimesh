@@ -8,6 +8,7 @@ from .__about__ import __version__
 from .laplace import laplace
 from .lloyd import lloyd, lloyd_submesh
 from .odt import odt
+from . import chen_holst
 
 
 def _get_parser():
@@ -113,6 +114,14 @@ def main(argv=None):
             submesh_bools,
             verbosity=args.verbosity,
             fcc_type="boundary",
+        )
+    elif args.method == "chen_odt":
+        X, cells = chen_holst.odt(
+            mesh.points,
+            mesh.cells["triangle"],
+            args.tolerance,
+            args.max_num_steps,
+            verbosity=args.verbosity,
         )
     else:
         assert False

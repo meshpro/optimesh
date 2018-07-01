@@ -16,7 +16,7 @@ from voropy.mesh_tri import MeshTri
 from .helpers import gather_stats, print_stats, energy
 
 
-def odt(X, cells, verbosity=1, tol=1.0e-3):
+def odt(X, cells, tol, max_num_steps, verbosity=1):
     """Optimal Delaunay Triangulation.
 
     Idea:
@@ -28,12 +28,13 @@ def odt(X, cells, verbosity=1, tol=1.0e-3):
         lambda mesh: mesh.get_cell_circumcenters(),
         X,
         cells,
+        tol,
+        max_num_steps,
         verbosity=verbosity,
-        tol=tol,
     )
 
 
-def cpt(X, cells, verbosity=1, tol=1.0e-3):
+def cpt(X, cells, tol, max_num_steps, verbosity=1):
     """Centroidal Patch Triangulation. Mimics the definition of Centroidal
     Voronoi Tessellations for which the generator and centroid of each Voronoi
     region coincide.
@@ -44,11 +45,16 @@ def cpt(X, cells, verbosity=1, tol=1.0e-3):
     orientation in the process, don't move quite so far.
     """
     return _run(
-        lambda mesh: mesh.get_centroids(), X, cells, verbosity=verbosity, tol=tol
+        lambda mesh: mesh.get_centroids(),
+        X,
+        cells,
+        tol,
+        max_num_steps,
+        verbosity=verbosity,
     )
 
 
-def _run(get_reference_points_, X, cells, verbosity=1, tol=1.0e-3):
+def _run(get_reference_points_, X, cells, tol, max_num_steps, verbosity=1):
     # flat mesh
     assert numpy.all(abs(X[:, 2]) < 1.0e-15)
     X = X[:, :2]
@@ -114,6 +120,9 @@ def _run(get_reference_points_, X, cells, verbosity=1, tol=1.0e-3):
         # Abort the loop if the update is small
         diff = mesh.node_coords - original_coords
         if numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2):
+            break
+
+        if k >= max_num_steps:
             break
 
     if verbosity > 0:

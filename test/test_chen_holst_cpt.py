@@ -22,7 +22,7 @@ def test_simple1():
     )
     cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
 
-    X, cells = optimesh.chen_holst.cpt(X, cells, tol=1.0e-5)
+    X, cells = optimesh.chen_holst.cpt(X, cells, 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -54,7 +54,7 @@ def test_simple2():
     )
     cells = numpy.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
 
-    X, cells = optimesh.chen_holst.cpt(X, cells)
+    X, cells = optimesh.chen_holst.cpt(X, cells, 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -99,7 +99,7 @@ def test_simple3():
         ]
     )
 
-    X, cells = optimesh.chen_holst.cpt(X, cells)
+    X, cells = optimesh.chen_holst.cpt(X, cells, 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -143,7 +143,7 @@ def test_circle():
     mesh = meshio.read(filename)
     c = mesh.cells["triangle"].astype(numpy.int)
 
-    X, cells = optimesh.chen_holst.cpt(mesh.points, c, verbosity=1, tol=1.0e-3)
+    X, cells = optimesh.chen_holst.cpt(mesh.points, c, 1.0e-3, 100)
     return
 
 
@@ -153,9 +153,7 @@ def test_pacman():
     )
     mesh = meshio.read(filename)
 
-    X, cells = optimesh.chen_holst.cpt(
-        mesh.points, mesh.cells["triangle"], verbosity=1, tol=1.0e-3
-    )
+    X, cells = optimesh.chen_holst.cpt(mesh.points, mesh.cells["triangle"], 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
