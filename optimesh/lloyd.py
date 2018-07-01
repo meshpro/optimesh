@@ -6,42 +6,70 @@ import numpy
 from voropy.mesh_tri import MeshTri
 
 from .helpers import (
-    extract_submesh_entities, get_boundary_edge_ratio, sit_in_plane,
-    gather_stats, print_stats, flip_until_delaunay, write
-    )
+    extract_submesh_entities,
+    get_boundary_edge_ratio,
+    gather_stats,
+    print_stats,
+    write,
+    energy,
+)
 
 
-# pylint: disable=too-many-arguments,too-many-locals
-def lloyd(X,
-          cells,
-          tol,
-          max_steps=10000,
-          fcc_type='full',
-          flip_frequency=0,
-          verbose=True,
-          output_filetype=None):
+def lloyd(
+    X,
+    cells,
+    tol,
+    max_num_steps,
+    fcc_type="full",
+    flip_frequency=0,
+    verbosity=1,
+    output_filetype=None,
+    skip_inhomogenous=False,
+):
     # flat mesh
-    assert sit_in_plane(X)
+    if X.shape[1] == 3:
+        assert numpy.all(numpy.abs(X[:, 2]) < 1.0e-15)
+        X = X[:, :2]
 
     # create mesh data structure
     mesh = MeshTri(X, cells, flat_cell_correction=fcc_type)
 
     boundary_verts = mesh.get_boundary_vertices()
 
+    if skip_inhomogenous:
+        # Since we don't have access to the density field here, voropy's Lloyd smoothing
+        # will always make all cells roughly equally large.  This is inappropriate if
+        # the mesh is meant to be inhomogeneous, e.g., if there are boundary layers. As
+        # a heuristic for inhomogenous meshes, check the lengths of the longest and the
+        # shortest boundary edge. If they are roughtly equal, perform Lloyd smoothing.
+        ratio = get_boundary_edge_ratio(X, cells)
+        if ratio > 1.5:
+            print(
+                (
+                    4 * " "
+                    + "Subdomain boundary inhomogeneous "
+                    + "(edge length ratio {:1.3f}). Skipping."
+                ).format(ratio)
+            )
+            return X, cells
+
     max_move = tol + 1
 
-    initial_stats = gather_stats(mesh)
+    if verbosity > 0:
+        print("\nBefore:")
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        print_stats(*gather_stats(mesh), extra_cols=extra_cols)
 
     next_flip_at = 0
     flip_skip = 1
-    for k in range(max_steps):
+    for k in range(max_num_steps):
         if max_move < tol:
             break
         if output_filetype:
-            write(mesh, 'lloyd', output_filetype, k)
+            write(mesh, "lloyd", output_filetype, k)
 
         if k == next_flip_at:
-            mesh, is_flipped_del = flip_until_delaunay(mesh)
+            is_flipped_del = mesh.flip_until_delaunay()
             # mesh, is_flipped_six = flip_for_six(mesh)
             # is_flipped = numpy.logical_or(is_flipped_del, is_flipped_six)
             is_flipped = is_flipped_del
@@ -61,65 +89,54 @@ def lloyd(X,
         new_points = mesh.get_control_volume_centroids()
         new_points[boundary_verts] = mesh.node_coords[boundary_verts]
         diff = new_points - mesh.node_coords
-        max_move = numpy.sqrt(numpy.max(numpy.sum(diff*diff, axis=1)))
+        max_move = numpy.sqrt(numpy.max(numpy.sum(diff * diff, axis=1)))
 
-        mesh = MeshTri(
-            new_points,
-            mesh.cells['nodes'],
-            flat_cell_correction=fcc_type
+        mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=fcc_type)
+        # mesh.update_node_coordinates(new_points)
+
+        if verbosity > 1:
+            print("\nStep {}:".format(k + 1))
+            print_stats(
+                *gather_stats(mesh),
+                extra_cols=["  maximum move: {:5e}".format(max_move)]
             )
 
-        if verbose:
-            print('\nstep: {}'.format(k))
-            print('  maximum move: {:15e}'.format(max_move))
-            print_stats([gather_stats(mesh)])
+    if verbosity == 1:
+        print("\nFinal ({} steps):".format(k))
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        print_stats(*gather_stats(mesh), extra_cols=extra_cols)
 
     # Flip one last time.
-    mesh, _ = flip_until_delaunay(mesh)
+    mesh.flip_until_delaunay()
     # mesh, is_flipped_six = flip_for_six(mesh)
 
-    if verbose:
-        print('\nBefore:' + 35*' ' + 'After:')
-        print_stats([
-            initial_stats,
-            gather_stats(mesh),
-            ])
-
     if output_filetype:
-        write(mesh, 'lloyd', output_filetype, max_steps)
+        write(mesh, "lloyd", output_filetype, max_num_steps)
 
-    return mesh.node_coords, mesh.cells['nodes']
+    return mesh.node_coords, mesh.cells["nodes"]
 
 
-def lloyd_submesh(X, cells, submeshes, tol,
-                  skip_inhomogenous_submeshes=True,
-                  **kwargs):
+def lloyd_submesh(
+    X, cells, tol, max_num_steps, submeshes, skip_inhomogenous_submeshes=True, **kwargs
+):
     # perform lloyd on each submesh separately
     for cell_in_submesh in submeshes.values():
-        submesh_X, submesh_cells, submesh_verts = \
-            extract_submesh_entities(X, cells, cell_in_submesh)
-
-        if skip_inhomogenous_submeshes:
-            # Since we don't have access to the density field here, voropy's
-            # Lloyd smoothing will always make all cells roughly equally large.
-            # This is inappropriate if the mesh is meant to be inhomegenous,
-            # e.g., if there are boundary layers. As a heuristic for
-            # inhomogenous meshes, check the lengths of the longest and the
-            # shortest boundary edge. If they are roughtly equal, perform Lloyd
-            # smoothing.
-            ratio = get_boundary_edge_ratio(submesh_X, submesh_cells)
-            if ratio > 1.5:
-                print((
-                    4*' ' + 'Subdomain boundary inhomogeneous ' +
-                    '(edge length ratio {:1.3f}). Skipping.'
-                    ).format(ratio))
-                continue
+        submesh_X, submesh_cells, submesh_verts = extract_submesh_entities(
+            X, cells, cell_in_submesh
+        )
 
         # perform lloyd smoothing
-        X_out, cells_out = lloyd(submesh_X, submesh_cells, tol, **kwargs)
+        X_out, cells_out = lloyd(
+            submesh_X,
+            submesh_cells,
+            tol,
+            max_num_steps,
+            skip_inhomogenous=skip_inhomogenous_submeshes,
+            **kwargs
+        )
 
         # write the points and cells back
-        X[submesh_verts] = X_out
+        X[submesh_verts, :2] = X_out
         cells[cell_in_submesh] = submesh_verts[cells_out]
 
     return X, cells

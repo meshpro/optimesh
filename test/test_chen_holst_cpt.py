@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-import os
+import os.path
 
 import numpy
 
@@ -11,10 +11,18 @@ from helpers import download_mesh
 
 
 def test_simple1():
-    X = numpy.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.4, 0.5]])
+    X = numpy.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.4, 0.5, 0.0],
+        ]
+    )
     cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
 
-    X, cells = optimesh.odt(X, cells, 1.0e-5, 100)
+    X, cells = optimesh.chen_holst.cpt(X, cells, 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -23,9 +31,9 @@ def test_simple1():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 4.999994919473657
+    ref = 5.0
     assert abs(norm1 - ref) < tol * ref
-    ref = 2.1213191460738456
+    ref = 2.1213203435596424
     assert abs(norm2 - ref) < tol * ref
     ref = 1.0
     assert abs(normi - ref) < tol * ref
@@ -35,11 +43,18 @@ def test_simple1():
 
 def test_simple2():
     X = numpy.array(
-        [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.7, 0.5], [1.7, 0.5]]
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.7, 0.5, 0.0],
+            [1.7, 0.5, 0.0],
+        ]
     )
     cells = numpy.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
 
-    X, cells = optimesh.odt(X, cells, 1.0e-5, 100)
+    X, cells = optimesh.chen_holst.cpt(X, cells, 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -48,9 +63,9 @@ def test_simple2():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 7.374076666666667
+    ref = 7.390123456790124
     assert abs(norm1 - ref) < tol * ref
-    ref = 2.8007819180622477
+    ref = 2.804687217072868
     assert abs(norm2 - ref) < tol * ref
     ref = 1.7
     assert abs(normi - ref) < tol * ref
@@ -61,14 +76,14 @@ def test_simple2():
 def test_simple3():
     X = numpy.array(
         [
-            [0.0, 0.0],
-            [1.0, 0.0],
-            [2.0, 0.0],
-            [2.0, 1.0],
-            [1.0, 1.0],
-            [0.0, 1.0],
-            [0.7, 0.5],
-            [1.7, 0.5],
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [2.0, 0.0, 0.0],
+            [2.0, 1.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.7, 0.5, 0.0],
+            [1.7, 0.5, 0.0],
         ]
     )
     cells = numpy.array(
@@ -84,7 +99,7 @@ def test_simple3():
         ]
     )
 
-    X, cells = optimesh.odt(X, cells, 1.0e-5, 100)
+    X, cells = optimesh.chen_holst.cpt(X, cells, 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -93,9 +108,9 @@ def test_simple3():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 12.000000734595783
+    ref = 12.000175966581171
     assert abs(norm1 - ref) < tol * ref
-    ref = 3.9828838201616144
+    ref = 3.9766184197352734
     assert abs(norm2 - ref) < tol * ref
     ref = 2.0
     assert abs(normi - ref) < tol * ref
@@ -103,34 +118,7 @@ def test_simple3():
     return
 
 
-def test_pacman():
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
-    assert numpy.all(numpy.abs(mesh.points[:, 2]) < 1.0e-15)
-    X = mesh.points[:, :2]
-
-    X, cells = optimesh.odt(X, mesh.cells["triangle"], 1.0e-5, 100)
-
-    # Test if we're dealing with the mesh we expect.
-    nc = X.flatten()
-    norm1 = numpy.linalg.norm(nc, ord=1)
-    norm2 = numpy.linalg.norm(nc, ord=2)
-    normi = numpy.linalg.norm(nc, ord=numpy.inf)
-
-    tol = 1.0e-8
-    ref = 1919.249752617539
-    assert abs(norm1 - ref) < tol * ref
-    ref = 75.22699025430875
-    assert abs(norm2 - ref) < tol * ref
-    ref = 5.0
-    assert abs(normi - ref) < tol * ref
-
-    return
-
-
-def circle():
+def test_circle():
     filename = "circle.vtk"
     if not os.path.isfile(filename):
         import pygmsh
@@ -153,20 +141,34 @@ def circle():
         meshio.write_points_cells(filename, X, cells)
 
     mesh = meshio.read(filename)
-
-    # TODO remove this
-    X = mesh.points[:, :2]
-
     c = mesh.cells["triangle"].astype(numpy.int)
 
-    X, cells = optimesh.odt(
-        X,
-        c,
-        # 3.0e-8,
-        2.0e-8,
-        100,
-        verbosity=1,
+    X, cells = optimesh.chen_holst.cpt(mesh.points, c, 1.0e-3, 100)
+    return
+
+
+def test_pacman():
+    filename = download_mesh(
+        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
     )
+    mesh = meshio.read(filename)
+
+    X, cells = optimesh.chen_holst.cpt(mesh.points, mesh.cells["triangle"], 1.0e-3, 100)
+
+    # Test if we're dealing with the mesh we expect.
+    nc = X.flatten()
+    norm1 = numpy.linalg.norm(nc, ord=1)
+    norm2 = numpy.linalg.norm(nc, ord=2)
+    normi = numpy.linalg.norm(nc, ord=numpy.inf)
+
+    tol = 1.0e-10
+    ref = 1905.563081121851
+    assert abs(norm1 - ref) < tol * ref
+    ref = 74.72133890269812
+    assert abs(norm2 - ref) < tol * ref
+    ref = 5.0
+    assert abs(normi - ref) < tol * ref
+
     return
 
 
@@ -174,5 +176,5 @@ if __name__ == "__main__":
     # test_simple1()
     # test_simple2()
     # test_simple3()
+    # test_circle()
     test_pacman()
-    # circle()

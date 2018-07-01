@@ -5,30 +5,35 @@ from __future__ import print_function
 import numpy
 from voropy.mesh_tri import MeshTri
 
-from .helpers import (
-    sit_in_plane, gather_stats, write, flip_until_delaunay, print_stats
-    )
+from .helpers import gather_stats, write, print_stats, energy
 
 
-def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
-    '''Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
+def laplace(X, cells, tol, max_num_steps, verbosity=0, output_filetype=None):
+    """Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
     interior vertex to the arithmetic average of its neighboring points.
-    '''
+    """
+    # TODO bring back?
     # flat mesh
-    assert sit_in_plane(X)
+    # assert sit_in_plane(X)
 
     # create mesh data structure
     mesh = MeshTri(X, cells, flat_cell_correction=None)
 
     boundary_verts = mesh.get_boundary_vertices()
 
-    initial_stats = gather_stats(mesh)
+    if verbosity > 0:
+        print("Before:")
+        hist, bin_edges, angles = gather_stats(mesh)
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        print_stats(hist, bin_edges, angles, extra_cols)
 
-    for k in range(num_steps):
+    success = False
+
+    for k in range(max_num_steps):
         if output_filetype:
-            write(mesh, 'laplace', output_filetype, k)
+            write(mesh, "laplace", output_filetype, k)
 
-        mesh, _ = flip_until_delaunay(mesh)
+        mesh.flip_until_delaunay()
 
         # move interior points into average of their neighbors
         # <https://stackoverflow.com/a/43096495/353337>
@@ -36,7 +41,7 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
         #
         num_neighbors = numpy.zeros(mesh.node_coords.shape[0], dtype=int)
         new_points = numpy.zeros(mesh.node_coords.shape)
-        for edge in mesh.edges['nodes']:
+        for edge in mesh.edges["nodes"]:
             num_neighbors[edge[0]] += 1
             num_neighbors[edge[1]] += 1
             new_points[edge[0]] += mesh.node_coords[edge[1]]
@@ -47,30 +52,34 @@ def laplace(X, cells, num_steps, verbose=True, output_filetype=None):
         new_points[boundary_verts] = mesh.node_coords[boundary_verts]
 
         diff = new_points - mesh.node_coords
-        max_move = numpy.sqrt(numpy.max(numpy.einsum('ij,ij->i', diff, diff)))
+        max_move = numpy.sqrt(numpy.max(numpy.einsum("ij,ij->i", diff, diff)))
 
-        mesh = MeshTri(
-            new_points,
-            mesh.cells['nodes'],
-            flat_cell_correction=None
+        mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=None)
+
+        if verbosity > 1:
+            print("\nStep {}:".format(k + 1))
+            print_stats(
+                *gather_stats(mesh),
+                extra_cols=["  maximum move: {:.5e}".format(max_move)]
             )
 
-        if verbose:
-            print('\nstep: {}'.format(k))
-            print('  maximum move: {:.15e}'.format(max_move))
-            print_stats([gather_stats(mesh)])
+        if max_move < tol:
+            num_steps = k
+            success = True
+            break
+
+    if not success:
+        num_steps = max_num_steps
+
+    if verbosity == 1:
+        print("\nFinal ({} steps):".format(num_steps + 1))
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        print_stats(*gather_stats(mesh), extra_cols=extra_cols)
 
     # Flip one last time.
-    mesh, _ = flip_until_delaunay(mesh)
-
-    if verbose:
-        print('\nBefore:' + 35*' ' + 'After:')
-        print_stats([
-            initial_stats,
-            gather_stats(mesh),
-            ])
+    mesh.flip_until_delaunay()
 
     if output_filetype:
-        write(mesh, 'laplace', output_filetype, num_steps)
+        write(mesh, "laplace", output_filetype, num_steps)
 
-    return mesh.node_coords, mesh.cells['nodes']
+    return mesh.node_coords, mesh.cells["nodes"]
