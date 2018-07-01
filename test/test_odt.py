@@ -150,7 +150,7 @@ def circle():
         X, cells, _, _, _ = pygmsh.generate_mesh(
             geom, fast_conversion=True, remove_faces=True
         )
-        meshio.write(filename, X, cells)
+        meshio.write_points_cells(filename, X, cells)
 
     mesh = meshio.read(filename)
 
