@@ -25,6 +25,7 @@ def lloyd(
     flip_frequency=0,
     verbosity=1,
     output_filetype=None,
+    skip_inhomogenous=False,
 ):
     # TODO bring back?
     # flat mesh
@@ -34,6 +35,23 @@ def lloyd(
     mesh = MeshTri(X, cells, flat_cell_correction=fcc_type)
 
     boundary_verts = mesh.get_boundary_vertices()
+
+    if skip_inhomogenous:
+        # Since we don't have access to the density field here, voropy's Lloyd smoothing
+        # will always make all cells roughly equally large.  This is inappropriate if
+        # the mesh is meant to be inhomogeneous, e.g., if there are boundary layers. As
+        # a heuristic for inhomogenous meshes, check the lengths of the longest and the
+        # shortest boundary edge. If they are roughtly equal, perform Lloyd smoothing.
+        ratio = get_boundary_edge_ratio(X, cells)
+        if ratio > 1.5:
+            print(
+                (
+                    4 * " "
+                    + "Subdomain boundary inhomogeneous "
+                    + "(edge length ratio {:1.3f}). Skipping."
+                ).format(ratio)
+            )
+            return X, cells
 
     max_move = tol + 1
 
@@ -107,27 +125,15 @@ def lloyd_submesh(
             X, cells, cell_in_submesh
         )
 
-        if skip_inhomogenous_submeshes:
-            # Since we don't have access to the density field here, voropy's
-            # Lloyd smoothing will always make all cells roughly equally large.
-            # This is inappropriate if the mesh is meant to be inhomogeneous,
-            # e.g., if there are boundary layers. As a heuristic for
-            # inhomogenous meshes, check the lengths of the longest and the
-            # shortest boundary edge. If they are roughtly equal, perform Lloyd
-            # smoothing.
-            ratio = get_boundary_edge_ratio(submesh_X, submesh_cells)
-            if ratio > 1.5:
-                print(
-                    (
-                        4 * " "
-                        + "Subdomain boundary inhomogeneous "
-                        + "(edge length ratio {:1.3f}). Skipping."
-                    ).format(ratio)
-                )
-                continue
-
         # perform lloyd smoothing
-        X_out, cells_out = lloyd(submesh_X, submesh_cells, tol, max_num_steps, **kwargs)
+        X_out, cells_out = lloyd(
+            submesh_X,
+            submesh_cells,
+            tol,
+            max_num_steps,
+            skip_inhomogenous=skip_inhomogenous_submeshes,
+            **kwargs
+        )
 
         # write the points and cells back
         X[submesh_verts] = X_out

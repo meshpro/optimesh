@@ -96,25 +96,14 @@ def main(argv=None):
             verbosity=args.verbosity,
         )
     elif args.method == "lloyd":
-        # X, cells = lloyd(
-        #     mesh.points,
-        #     mesh.cells["triangle"],
-        #     args.tolerance,
-        #     args.max_num_steps,
-        #     verbosity=args.verbosity,
-        #     fcc_type="boundary",
-        # )
-
-        # TODO actual lloyd
-        submesh_bools = {0: numpy.ones(len(mesh.cells["triangle"]), dtype=bool)}
-        X, cells = lloyd_submesh(
+        X, cells = lloyd(
             mesh.points,
             mesh.cells["triangle"],
             args.tolerance,
             args.max_num_steps,
-            submesh_bools,
             verbosity=args.verbosity,
             fcc_type="boundary",
+            skip_inhomogenous=True,
         )
     elif args.method == "chen_odt":
         X, cells = chen_holst.odt(
