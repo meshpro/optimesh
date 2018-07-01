@@ -124,7 +124,14 @@ def main(argv=None):
             verbosity=args.verbosity,
         )
     else:
-        assert False
+        assert args.method == "chen_cpt"
+        X, cells = chen_holst.cpt(
+            mesh.points,
+            mesh.cells["triangle"],
+            args.tolerance,
+            args.max_num_steps,
+            verbosity=args.verbosity,
+        )
 
     if X.shape[1] != 3:
         X = numpy.column_stack([X[:, 0], X[:, 1], numpy.zeros(X.shape[0])])

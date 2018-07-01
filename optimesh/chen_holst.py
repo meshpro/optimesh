@@ -55,9 +55,10 @@ def cpt(X, cells, tol, max_num_steps, verbosity=1):
 
 
 def _run(get_reference_points_, X, cells, tol, max_num_steps, verbosity=1):
-    # flat mesh
-    assert numpy.all(abs(X[:, 2]) < 1.0e-15)
-    X = X[:, :2]
+    if X.shape[1] == 3:
+        # create flat mesh
+        assert numpy.all(abs(X[:, 2]) < 1.0e-15)
+        X = X[:, :2]
 
     mesh = MeshTri(X, cells, flat_cell_correction=None)
     mesh.flip_until_delaunay()
