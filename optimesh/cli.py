@@ -6,7 +6,7 @@ import numpy
 
 from .__about__ import __version__
 from .laplace import laplace
-from .lloyd import lloyd
+from .lloyd import lloyd, lloyd_submesh
 from .odt import odt
 
 
@@ -94,11 +94,23 @@ def main(argv=None):
             tol=args.tolerance,
         )
     elif args.method == "lloyd":
-        X, cells = lloyd(
+        # X, cells = lloyd(
+        #     mesh.points,
+        #     mesh.cells["triangle"],
+        #     args.tolerance,
+        #     args.max_num_steps,
+        #     verbosity=args.verbosity,
+        #     fcc_type="boundary",
+        # )
+
+        # TODO actual lloyd
+        submesh_bools = {0: numpy.ones(len(mesh.cells["triangle"]), dtype=bool)}
+        X, cells = lloyd_submesh(
             mesh.points,
             mesh.cells["triangle"],
             args.tolerance,
             args.max_num_steps,
+            submesh_bools,
             verbosity=args.verbosity,
             fcc_type="boundary",
         )
