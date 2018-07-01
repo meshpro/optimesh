@@ -8,7 +8,6 @@ from voropy.mesh_tri import MeshTri
 from .helpers import (
     extract_submesh_entities,
     get_boundary_edge_ratio,
-    sit_in_plane,
     gather_stats,
     print_stats,
     write,
@@ -27,9 +26,10 @@ def lloyd(
     output_filetype=None,
     skip_inhomogenous=False,
 ):
-    # TODO bring back?
     # flat mesh
-    # assert sit_in_plane(X)
+    if X.shape[1] == 3:
+        assert numpy.all(numpy.abs(X[:, 2]) < 1.0e-15)
+        X = X[:, :2]
 
     # create mesh data structure
     mesh = MeshTri(X, cells, flat_cell_correction=fcc_type)
@@ -136,7 +136,7 @@ def lloyd_submesh(
         )
 
         # write the points and cells back
-        X[submesh_verts] = X_out
+        X[submesh_verts, :2] = X_out
         cells[cell_in_submesh] = submesh_verts[cells_out]
 
     return X, cells

@@ -103,7 +103,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
         # method='newton-cg',
         tol=tol,
         callback=flip_delaunay,
-        options={"maxiter": max_num_steps}
+        options={"maxiter": max_num_steps},
     )
     assert out.success, out.message
 

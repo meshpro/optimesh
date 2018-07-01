@@ -6,7 +6,7 @@ import numpy
 
 from .__about__ import __version__
 from .laplace import laplace
-from .lloyd import lloyd, lloyd_submesh
+from .lloyd import lloyd
 from .odt import odt
 from . import chen_holst
 
