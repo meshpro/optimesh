@@ -11,7 +11,7 @@ from voropy.mesh_tri import MeshTri
 from .helpers import gather_stats, print_stats, energy
 
 
-def odt(X, cells, verbosity=1, tol=1.0e-5):
+def odt(X, cells, tol, max_num_steps, verbosity=1):
     """Optimal Delaunay Triangulation smoothing.
 
     This method minimizes the energy
@@ -103,6 +103,7 @@ def odt(X, cells, verbosity=1, tol=1.0e-5):
         # method='newton-cg',
         tol=tol,
         callback=flip_delaunay,
+        options={"maxiter": max_num_steps}
     )
     assert out.success, out.message
 

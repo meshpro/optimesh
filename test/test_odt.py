@@ -14,7 +14,7 @@ def test_simple1():
     X = numpy.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.4, 0.5]])
     cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
 
-    X, cells = optimesh.odt(X, cells, tol=1.0e-5)
+    X, cells = optimesh.odt(X, cells, 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -39,7 +39,7 @@ def test_simple2():
     )
     cells = numpy.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
 
-    X, cells = optimesh.odt(X, cells)
+    X, cells = optimesh.odt(X, cells, 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -84,7 +84,7 @@ def test_simple3():
         ]
     )
 
-    X, cells = optimesh.odt(X, cells)
+    X, cells = optimesh.odt(X, cells, 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -111,7 +111,7 @@ def test_pacman():
     assert numpy.all(numpy.abs(mesh.points[:, 2]) < 1.0e-15)
     X = mesh.points[:, :2]
 
-    X, cells = optimesh.odt(X, mesh.cells["triangle"], verbosity=1, tol=1.0e-5)
+    X, cells = optimesh.odt(X, mesh.cells["triangle"], 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -162,9 +162,10 @@ def circle():
     X, cells = optimesh.odt(
         X,
         c,
+        # 3.0e-8,
+        2.0e-8,
+        100,
         verbosity=1,
-        # tol=3.0e-8
-        tol=2.0e-8,
     )
     return
 

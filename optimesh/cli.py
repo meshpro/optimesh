@@ -91,8 +91,9 @@ def main(argv=None):
         X, cells = odt(
             mesh.points,
             mesh.cells["triangle"],
+            args.tolerance,
+            args.max_num_steps,
             verbosity=args.verbosity,
-            tol=args.tolerance,
         )
     elif args.method == "lloyd":
         # X, cells = lloyd(
