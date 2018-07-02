@@ -9,18 +9,7 @@ import asciiplotlib as apl
 
 
 def gather_stats(mesh):
-    # The cosines of the angles are the negative dot products of
-    # the normalized edges adjacent to the angle.
-    norms = numpy.sqrt(mesh.ei_dot_ei)
-    normalized_ei_dot_ej = numpy.array(
-        [
-            mesh.ei_dot_ej[0] / norms[1] / norms[2],
-            mesh.ei_dot_ej[1] / norms[2] / norms[0],
-            mesh.ei_dot_ej[2] / norms[0] / norms[1],
-        ]
-    )
-    angles = numpy.arccos(-normalized_ei_dot_ej) / (2 * numpy.pi) * 360.0
-
+    angles = mesh.get_angles() / numpy.pi * 180
     hist, bin_edges = numpy.histogram(
         angles, bins=numpy.linspace(0.0, 180.0, num=73, endpoint=True)
     )
