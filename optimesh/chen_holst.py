@@ -13,7 +13,7 @@ import numpy
 import fastfunc
 from voropy.mesh_tri import MeshTri
 
-from .helpers import gather_stats, print_stats, energy
+from .helpers import print_stats, energy
 
 
 def odt(X, cells, tol, max_num_steps, verbosity=1):
@@ -69,9 +69,8 @@ def _run(get_reference_points_, X, cells, tol, max_num_steps, verbosity=1):
 
     if verbosity > 0:
         print("Before:")
-        hist, bin_edges, angles = gather_stats(mesh)
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
+        print_stats(mesh, extra_cols=extra_cols)
 
     mesh.mark_boundary()
 
@@ -115,8 +114,7 @@ def _run(get_reference_points_, X, cells, tol, max_num_steps, verbosity=1):
 
         if verbosity > 1:
             print("\nstep {}:".format(k + 1))
-            hist, bin_edges, angles = gather_stats(mesh)
-            print_stats(hist, bin_edges, angles)
+            print_stats(mesh)
 
         # Abort the loop if the update is small
         diff = mesh.node_coords - original_coords
@@ -128,8 +126,7 @@ def _run(get_reference_points_, X, cells, tol, max_num_steps, verbosity=1):
 
     if verbosity > 0:
         print("\nFinal ({} steps):".format(k))
-        hist, bin_edges, angles = gather_stats(mesh)
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
+        print_stats(mesh, extra_cols=extra_cols)
 
     return mesh.node_coords, mesh.cells["nodes"]

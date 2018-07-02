@@ -8,7 +8,6 @@ from voropy.mesh_tri import MeshTri
 from .helpers import (
     extract_submesh_entities,
     get_boundary_edge_ratio,
-    gather_stats,
     print_stats,
     write,
     energy,
@@ -58,7 +57,7 @@ def lloyd(
     if verbosity > 0:
         print("\nBefore:")
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(*gather_stats(mesh), extra_cols=extra_cols)
+        print_stats(mesh, extra_cols=extra_cols)
 
     next_flip_at = 0
     flip_skip = 1
@@ -97,14 +96,14 @@ def lloyd(
         if verbosity > 1:
             print("\nStep {}:".format(k + 1))
             print_stats(
-                *gather_stats(mesh),
+                mesh,
                 extra_cols=["  maximum move: {:5e}".format(max_move)]
             )
 
     if verbosity == 1:
         print("\nFinal ({} steps):".format(k))
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(*gather_stats(mesh), extra_cols=extra_cols)
+        print_stats(mesh, extra_cols=extra_cols)
 
     # Flip one last time.
     mesh.flip_until_delaunay()

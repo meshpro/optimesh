@@ -8,28 +8,34 @@ from voropy.mesh_tri import MeshTri
 import asciiplotlib as apl
 
 
-def gather_stats(mesh):
-    angles = mesh.get_angles() / numpy.pi * 180
-    hist, bin_edges = numpy.histogram(
-        angles, bins=numpy.linspace(0.0, 180.0, num=73, endpoint=True)
-    )
-    return hist, bin_edges, angles
-
-
-def print_stats(hist, bin_edges, angles, extra_cols=None):
+def print_stats(mesh, extra_cols=None):
     extra_cols = [] if extra_cols is None else extra_cols
 
-    n = len(extra_cols)
+    angles = mesh.get_angles() / numpy.pi * 180
+    angles_hist, angles_bin_edges = numpy.histogram(
+        angles, bins=numpy.linspace(0.0, 180.0, num=73, endpoint=True)
+    )
 
-    grid = apl.subplot_grid((1, 2 + n), column_widths=None, border_style=None)
-    grid[0, 0].hist(hist, bin_edges, grid=[24], bar_width=1, strip=True)
+    q = mesh.get_quality()
+    q_hist, q_bin_edges = numpy.histogram(
+        q, bins=numpy.linspace(0.0, 1.0, num=41, endpoint=True)
+    )
+
+    grid = apl.subplot_grid(
+        (1, 4 + len(extra_cols)), column_widths=None, border_style=None
+    )
+    grid[0, 0].hist(angles_hist, angles_bin_edges, grid=[24], bar_width=1, strip=True)
     grid[0, 1].aprint("min angle:     {:7.3f}".format(numpy.min(angles)))
     grid[0, 1].aprint("av angle:      {:7.3f}".format(60))
     grid[0, 1].aprint("max angle:     {:7.3f}".format(numpy.max(angles)))
     grid[0, 1].aprint("std dev angle: {:7.3f}".format(numpy.std(angles)))
+    grid[0, 2].hist(q_hist, q_bin_edges, bar_width=1, strip=True)
+    grid[0, 3].aprint("min quality:     {:7.3f}".format(numpy.min(q)))
+    grid[0, 3].aprint("av quality:      {:7.3f}".format(numpy.average(q)))
+    grid[0, 3].aprint("max quality:     {:7.3f}".format(numpy.max(q)))
 
     for k, col in enumerate(extra_cols):
-        grid[0, 2 + k].aprint(col)
+        grid[0, 4 + k].aprint(col)
 
     grid.show()
     return

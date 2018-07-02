@@ -8,7 +8,7 @@ import fastfunc
 # import voropy
 from voropy.mesh_tri import MeshTri
 
-from .helpers import gather_stats, print_stats, energy
+from .helpers import print_stats, energy
 
 
 def odt(X, cells, tol, max_num_steps, verbosity=1):
@@ -41,9 +41,8 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
 
     if verbosity > 0:
         print("Before:")
-        hist, bin_edges, angles = gather_stats(mesh)
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
+        print_stats(mesh, extra_cols=extra_cols)
 
     mesh.mark_boundary()
 
@@ -84,8 +83,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
 
         if verbosity > 1:
             print("\nStep {}:".format(flip_delaunay.step))
-            hist, bin_edges, angles = gather_stats(mesh)
-            print_stats(hist, bin_edges, angles, extra_cols=["energy: {}".format(f(x))])
+            print_stats(mesh, extra_cols=["energy: {}".format(f(x))])
 
         # mesh.show()
         # exit(1)
@@ -116,8 +114,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
 
     if verbosity > 0:
         print("\nFinal ({} steps):".format(out.nit))
-        hist, bin_edges, angles = gather_stats(mesh)
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
+        print_stats(mesh, extra_cols=extra_cols)
 
     return mesh.node_coords, mesh.cells["nodes"]
