@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 import argparse
+import sys
+
 import meshio
 import numpy
 
@@ -63,8 +65,9 @@ def _get_parser():
     parser.add_argument(
         "--version",
         "-v",
+        help="display version information",
         action="version",
-        version="%(prog)s " + ("(version {})".format(__version__)),
+        version="%(prog)s {}, Python {}".format(__version__, sys.version),
     )
     return parser
 

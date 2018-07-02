@@ -27,8 +27,6 @@ def laplace(X, cells, tol, max_num_steps, verbosity=0, output_filetype=None):
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(hist, bin_edges, angles, extra_cols)
 
-    success = False
-
     for k in range(max_num_steps):
         if output_filetype:
             write(mesh, "laplace", output_filetype, k)
@@ -64,22 +62,18 @@ def laplace(X, cells, tol, max_num_steps, verbosity=0, output_filetype=None):
             )
 
         if max_move < tol:
-            num_steps = k
-            success = True
             break
 
-    if not success:
-        num_steps = max_num_steps
-
     if verbosity == 1:
-        print("\nFinal ({} steps):".format(num_steps + 1))
+        print("\nFinal ({} steps):".format(k + 1))
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(*gather_stats(mesh), extra_cols=extra_cols)
+        print()
 
     # Flip one last time.
     mesh.flip_until_delaunay()
 
     if output_filetype:
-        write(mesh, "laplace", output_filetype, num_steps)
+        write(mesh, "laplace", output_filetype, k + 1)
 
     return mesh.node_coords, mesh.cells["nodes"]
