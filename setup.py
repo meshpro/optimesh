@@ -28,7 +28,7 @@ setup(
     url=about["__website__"],
     license=about["__license__"],
     platforms="any",
-    install_requires=["asciiplotlib", "numpy", "quadpy", "voropy"],
+    install_requires=["asciiplotlib", "numpy", "quadpy", "meshplex"],
     extras_require={"all": ["matplotlib"], "png": ["matplotlib"]},
     classifiers=[
         about["__status__"],

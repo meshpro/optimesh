@@ -2,8 +2,8 @@
 #
 import numpy
 import fastfunc
+from meshplex import MeshTri
 import quadpy
-from voropy.mesh_tri import MeshTri
 
 import asciiplotlib as apl
 
@@ -26,13 +26,13 @@ def print_stats(mesh, extra_cols=None):
     )
     grid[0, 0].hist(angles_hist, angles_bin_edges, grid=[24], bar_width=1, strip=True)
     grid[0, 1].aprint("min angle:     {:7.3f}".format(numpy.min(angles)))
-    grid[0, 1].aprint("av angle:      {:7.3f}".format(60))
+    grid[0, 1].aprint("avg angle:     {:7.3f}".format(60))
     grid[0, 1].aprint("max angle:     {:7.3f}".format(numpy.max(angles)))
     grid[0, 1].aprint("std dev angle: {:7.3f}".format(numpy.std(angles)))
     grid[0, 2].hist(q_hist, q_bin_edges, bar_width=1, strip=True)
-    grid[0, 3].aprint("min quality:     {:7.3f}".format(numpy.min(q)))
-    grid[0, 3].aprint("av quality:      {:7.3f}".format(numpy.average(q)))
-    grid[0, 3].aprint("max quality:     {:7.3f}".format(numpy.max(q)))
+    grid[0, 3].aprint("min quality: {:5.3f}".format(numpy.min(q)))
+    grid[0, 3].aprint("avg quality: {:5.3f}".format(numpy.average(q)))
+    grid[0, 3].aprint("max quality: {:5.3f}".format(numpy.max(q)))
 
     for k, col in enumerate(extra_cols):
         grid[0, 4 + k].aprint(col)

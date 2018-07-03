@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 import numpy
-from voropy.mesh_tri import MeshTri
+from meshplex import MeshTri
 
 from .helpers import (
     extract_submesh_entities,
@@ -36,11 +36,12 @@ def lloyd(
     boundary_verts = mesh.get_boundary_vertices()
 
     if skip_inhomogenous:
-        # Since we don't have access to the density field here, voropy's Lloyd smoothing
-        # will always make all cells roughly equally large.  This is inappropriate if
-        # the mesh is meant to be inhomogeneous, e.g., if there are boundary layers. As
-        # a heuristic for inhomogenous meshes, check the lengths of the longest and the
-        # shortest boundary edge. If they are roughtly equal, perform Lloyd smoothing.
+        # Since we don't have access to the density field here, meshplex's Lloyd
+        # smoothing will always make all cells roughly equally large.  This is
+        # inappropriate if the mesh is meant to be inhomogeneous, e.g., if there are
+        # boundary layers. As a heuristic for inhomogenous meshes, check the lengths of
+        # the longest and the shortest boundary edge. If they are roughtly equal,
+        # perform Lloyd smoothing.
         ratio = get_boundary_edge_ratio(X, cells)
         if ratio > 1.5:
             print(

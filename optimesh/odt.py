@@ -5,8 +5,7 @@ from __future__ import print_function
 import numpy
 import fastfunc
 
-# import voropy
-from voropy.mesh_tri import MeshTri
+from meshplex import MeshTri
 
 from .helpers import print_stats, energy
 

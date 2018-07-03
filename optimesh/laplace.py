@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 import numpy
-from voropy.mesh_tri import MeshTri
+from meshplex import MeshTri
 
 from .helpers import write, print_stats, energy
 

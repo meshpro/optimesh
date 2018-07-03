@@ -11,7 +11,7 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 """
 import numpy
 import fastfunc
-from voropy.mesh_tri import MeshTri
+from meshplex import MeshTri
 
 from .helpers import print_stats, energy
 
