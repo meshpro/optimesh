@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 import argparse
+import math
 import sys
 
 import meshio
@@ -37,8 +38,8 @@ def _get_parser():
         "-n",
         metavar="MAX_NUM_STEPS",
         type=int,
-        default=1000,
-        help="maximum number of steps (default 1000)",
+        default=math.inf,
+        help="maximum number of steps (default: infinity)",
     )
 
     parser.add_argument(
@@ -47,7 +48,7 @@ def _get_parser():
         metavar="TOL",
         default=0.0,
         type=float,
-        help="convergence criterion (method dependent, default 0.0)",
+        help="convergence criterion (method dependent, default: 0.0)",
     )
 
     parser.add_argument(
