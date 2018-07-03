@@ -105,6 +105,7 @@ def lloyd(
         print("\nFinal ({} steps):".format(k))
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(mesh, extra_cols=extra_cols)
+        print()
 
     # Flip one last time.
     mesh.flip_until_delaunay()

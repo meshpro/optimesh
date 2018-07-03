@@ -37,17 +37,17 @@ def _get_parser():
         "-n",
         metavar="MAX_NUM_STEPS",
         type=int,
-        required=True,
-        help="maximum number of steps",
+        default=1000,
+        help="maximum number of steps (default 1000)",
     )
 
     parser.add_argument(
         "--tolerance",
         "-t",
         metavar="TOL",
+        default=0.0,
         type=float,
-        required=True,
-        help="convergence criterion (method dependent)",
+        help="convergence criterion (method dependent, default 0.0)",
     )
 
     parser.add_argument(
@@ -75,6 +75,9 @@ def _get_parser():
 def main(argv=None):
     parser = _get_parser()
     args = parser.parse_args(argv)
+
+    if not (args.max_num_steps or args.tolerance):
+        parser.error('At least one of --max-num_steps or --tolerance required.')
 
     mesh = meshio.read(args.input_file)
 

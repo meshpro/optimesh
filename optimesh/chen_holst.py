@@ -128,5 +128,6 @@ def _run(get_reference_points_, X, cells, tol, max_num_steps, verbosity=1):
         print("\nFinal ({} steps):".format(k))
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(mesh, extra_cols=extra_cols)
+        print()
 
     return mesh.node_coords, mesh.cells["nodes"]
