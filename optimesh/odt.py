@@ -102,7 +102,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
         callback=flip_delaunay,
         options={"maxiter": max_num_steps},
     )
-    assert out.success, out.message
+    # Don't assert out.success; max_num_steps may be reached, that's fine.
 
     # One last edge flip
     interior_coords = out.x.reshape(-1, 2)
