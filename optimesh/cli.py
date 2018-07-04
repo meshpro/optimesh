@@ -95,6 +95,7 @@ def main(argv=None):
             mesh.cells["triangle"],
             args.tolerance,
             args.max_num_steps,
+            step_filename_format=args.step_filename_format,
             verbosity=args.verbosity,
         )
     elif args.method == "odt":
@@ -103,6 +104,7 @@ def main(argv=None):
             mesh.cells["triangle"],
             args.tolerance,
             args.max_num_steps,
+            step_filename_format=args.step_filename_format,
             verbosity=args.verbosity,
         )
     elif args.method == "lloyd":
@@ -113,6 +115,7 @@ def main(argv=None):
             args.max_num_steps,
             verbosity=args.verbosity,
             fcc_type="boundary",
+            step_filename_format=args.step_filename_format,
             skip_inhomogenous=True,
         )
     elif args.method == "chen_odt":

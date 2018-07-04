@@ -22,7 +22,7 @@ def lloyd(
     fcc_type="full",
     flip_frequency=0,
     verbosity=1,
-    output_filetype=None,
+    step_filename_format=None,
     skip_inhomogenous=False,
 ):
     # flat mesh
@@ -55,6 +55,11 @@ def lloyd(
 
     max_move = tol + 1
 
+    if step_filename_format:
+        mesh.save(
+            step_filename_format.format(0), show_centroids=False, show_coedges=False
+        )
+
     if verbosity > 0:
         print("\nBefore:")
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
@@ -65,8 +70,6 @@ def lloyd(
     for k in range(max_num_steps):
         if max_move < tol:
             break
-        if output_filetype:
-            write(mesh, "lloyd", output_filetype, k)
 
         if k == next_flip_at:
             is_flipped_del = mesh.flip_until_delaunay()
@@ -94,12 +97,15 @@ def lloyd(
         mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=fcc_type)
         # mesh.update_node_coordinates(new_points)
 
+        if step_filename_format:
+            mesh.save(
+                step_filename_format.format(k + 1),
+                show_centroids=False,
+                show_coedges=False,
+            )
         if verbosity > 1:
             print("\nStep {}:".format(k + 1))
-            print_stats(
-                mesh,
-                extra_cols=["  maximum move: {:5e}".format(max_move)]
-            )
+            print_stats(mesh, extra_cols=["  maximum move: {:5e}".format(max_move)])
 
     if verbosity == 1:
         print("\nFinal ({} steps):".format(k))
@@ -110,9 +116,6 @@ def lloyd(
     # Flip one last time.
     mesh.flip_until_delaunay()
     # mesh, is_flipped_six = flip_for_six(mesh)
-
-    if output_filetype:
-        write(mesh, "lloyd", output_filetype, max_num_steps)
 
     return mesh.node_coords, mesh.cells["nodes"]
 

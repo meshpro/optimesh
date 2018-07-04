@@ -5,10 +5,10 @@ from __future__ import print_function
 import numpy
 from meshplex import MeshTri
 
-from .helpers import write, print_stats, energy
+from .helpers import print_stats, energy
 
 
-def laplace(X, cells, tol, max_num_steps, verbosity=0, output_filetype=None):
+def laplace(X, cells, tol, max_num_steps, verbosity=0, step_filename_format=None):
     """Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
     interior vertex to the arithmetic average of its neighboring points.
     """
@@ -21,15 +21,17 @@ def laplace(X, cells, tol, max_num_steps, verbosity=0, output_filetype=None):
 
     boundary_verts = mesh.get_boundary_vertices()
 
+    if step_filename_format:
+        mesh.save(
+            step_filename_format.format(0), show_centroids=False, show_coedges=False
+        )
+
     if verbosity > 0:
         print("Before:")
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(mesh, extra_cols)
 
     for k in range(max_num_steps):
-        if output_filetype:
-            write(mesh, "laplace", output_filetype, k)
-
         mesh.flip_until_delaunay()
 
         # move interior points into average of their neighbors
@@ -53,12 +55,16 @@ def laplace(X, cells, tol, max_num_steps, verbosity=0, output_filetype=None):
 
         mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=None)
 
+        if step_filename_format:
+            mesh.save(
+                step_filename_format.format(k + 1),
+                show_centroids=False,
+                show_coedges=False,
+            )
+
         if verbosity > 1:
             print("\nStep {}:".format(k + 1))
-            print_stats(
-                mesh,
-                extra_cols=["  maximum move: {:.5e}".format(max_move)]
-            )
+            print_stats(mesh, extra_cols=["  maximum move: {:.5e}".format(max_move)])
 
         if max_move < tol:
             break
@@ -71,8 +77,5 @@ def laplace(X, cells, tol, max_num_steps, verbosity=0, output_filetype=None):
 
     # Flip one last time.
     mesh.flip_until_delaunay()
-
-    if output_filetype:
-        write(mesh, "laplace", output_filetype, k + 1)
 
     return mesh.node_coords, mesh.cells["nodes"]

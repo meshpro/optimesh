@@ -10,7 +10,7 @@ from meshplex import MeshTri
 from .helpers import print_stats, energy
 
 
-def odt(X, cells, tol, max_num_steps, verbosity=1):
+def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
     """Optimal Delaunay Triangulation smoothing.
 
     This method minimizes the energy
@@ -37,6 +37,11 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
     assert X.shape[1] == 2
 
     mesh = MeshTri(X, cells, flat_cell_correction=None)
+
+    if step_filename_format:
+        mesh.save(
+            step_filename_format.format(0), show_centroids=False, show_coedges=False
+        )
 
     if verbosity > 0:
         print("Before:")
@@ -80,6 +85,12 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
         mesh.update_node_coordinates(coords)
         mesh.flip_until_delaunay()
 
+        if step_filename_format:
+            mesh.save(
+                step_filename_format.format(flip_delaunay.step),
+                show_centroids=False,
+                show_coedges=False,
+            )
         if verbosity > 1:
             print("\nStep {}:".format(flip_delaunay.step))
             print_stats(mesh, extra_cols=["energy: {}".format(f(x))])
@@ -115,5 +126,6 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
         print("\nFinal ({} steps):".format(out.nit))
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(mesh, extra_cols=extra_cols)
+        print()
 
     return mesh.node_coords, mesh.cells["nodes"]
