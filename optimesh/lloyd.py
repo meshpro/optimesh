@@ -5,13 +5,7 @@ from __future__ import print_function
 import numpy
 from meshplex import MeshTri
 
-from .helpers import (
-    extract_submesh_entities,
-    get_boundary_edge_ratio,
-    print_stats,
-    write,
-    energy,
-)
+from .helpers import extract_submesh_entities, print_stats, energy
 
 
 def lloyd(
@@ -20,10 +14,8 @@ def lloyd(
     tol,
     max_num_steps,
     fcc_type="full",
-    flip_frequency=0,
     verbosity=1,
     step_filename_format=None,
-    skip_inhomogenous=False,
 ):
     # flat mesh
     if X.shape[1] == 3:
@@ -32,28 +24,9 @@ def lloyd(
 
     # create mesh data structure
     mesh = MeshTri(X, cells, flat_cell_correction=fcc_type)
+    mesh.flip_until_delaunay()
 
     boundary_verts = mesh.get_boundary_vertices()
-
-    if skip_inhomogenous:
-        # Since we don't have access to the density field here, meshplex's Lloyd
-        # smoothing will always make all cells roughly equally large.  This is
-        # inappropriate if the mesh is meant to be inhomogeneous, e.g., if there are
-        # boundary layers. As a heuristic for inhomogenous meshes, check the lengths of
-        # the longest and the shortest boundary edge. If they are roughtly equal,
-        # perform Lloyd smoothing.
-        ratio = get_boundary_edge_ratio(X, cells)
-        if ratio > 1.5:
-            print(
-                (
-                    4 * " "
-                    + "Subdomain boundary inhomogeneous "
-                    + "(edge length ratio {:1.3f}). Skipping."
-                ).format(ratio)
-            )
-            return X, cells
-
-    max_move = tol + 1
 
     if step_filename_format:
         mesh.save(
@@ -62,60 +35,59 @@ def lloyd(
 
     if verbosity > 0:
         print("\nBefore:")
-        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        extra_cols = ["energy: {:.5e}".format(energy(mesh, uniform_density=True))]
         print_stats(mesh, extra_cols=extra_cols)
 
-    next_flip_at = 0
-    flip_skip = 1
-    for k in range(max_num_steps):
-        if max_move < tol:
-            break
-
-        if k == next_flip_at:
-            is_flipped_del = mesh.flip_until_delaunay()
-            # mesh, is_flipped_six = flip_for_six(mesh)
-            # is_flipped = numpy.logical_or(is_flipped_del, is_flipped_six)
-            is_flipped = is_flipped_del
-            if flip_frequency > 0:
-                # fixed flip frequency
-                flip_skip = flip_frequency
-            else:
-                # If the mesh needed flipping, flip again next time. Otherwise
-                # double the interval.
-                if is_flipped:
-                    flip_skip = 1
-                else:
-                    flip_skip *= 2
-            next_flip_at = k + flip_skip
+    k = 0
+    while True:
+        k += 1
 
         # move interior points into centroids
         new_points = mesh.get_control_volume_centroids()
         new_points[boundary_verts] = mesh.node_coords[boundary_verts]
-        diff = new_points - mesh.node_coords
-        max_move = numpy.sqrt(numpy.max(numpy.sum(diff * diff, axis=1)))
 
-        mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=fcc_type)
-        # mesh.update_node_coordinates(new_points)
+        original_orient = mesh.get_signed_tri_areas() > 0.0
+        original_coords = mesh.node_coords.copy()
+
+        # Step unless the orientation of any cell changes.
+        alpha = 1.0
+        while True:
+            xnew = (1 - alpha) * original_coords + alpha * new_points
+            # Preserve boundary nodes
+            xnew[mesh.is_boundary_node] = original_coords[mesh.is_boundary_node]
+            # A new mesh is created in every step. Ugh. We do that since meshplex
+            # doesn't have update_node_coordinates with flat_cell_correction.
+            mesh = MeshTri(xnew, mesh.cells["nodes"], flat_cell_correction=fcc_type)
+            # mesh.update_node_coordinates(xnew)
+            new_orient = mesh.get_signed_tri_areas() > 0.0
+            if numpy.all(original_orient == new_orient):
+                break
+            alpha /= 2
+
+        mesh.flip_until_delaunay()
 
         if step_filename_format:
             mesh.save(
-                step_filename_format.format(k + 1),
-                show_centroids=False,
-                show_coedges=False,
+                step_filename_format.format(k), show_centroids=False, show_coedges=False
             )
-        if verbosity > 1:
-            print("\nStep {}:".format(k + 1))
-            print_stats(mesh, extra_cols=["  maximum move: {:5e}".format(max_move)])
 
-    if verbosity == 1:
+        # Abort the loop if the update is small
+        diff = new_points - mesh.node_coords
+        if numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2):
+            break
+
+        if k >= max_num_steps:
+            break
+
+        if verbosity > 1:
+            print("\nstep {}:".format(k))
+            print_stats(mesh)
+
+    if verbosity > 0:
         print("\nFinal ({} steps):".format(k))
-        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        extra_cols = ["energy: {:.5e}".format(energy(mesh, uniform_density=True))]
         print_stats(mesh, extra_cols=extra_cols)
         print()
-
-    # Flip one last time.
-    mesh.flip_until_delaunay()
-    # mesh, is_flipped_six = flip_for_six(mesh)
 
     return mesh.node_coords, mesh.cells["nodes"]
 

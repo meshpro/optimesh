@@ -57,7 +57,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
         coords = X.copy()
         coords[is_interior_node] = interior_coords
         mesh.update_node_coordinates(coords)
-        return energy(mesh)
+        return energy(mesh, uniform_density=True)
 
     # TODO put f and jac together
     def jac(x):

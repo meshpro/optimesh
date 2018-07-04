@@ -134,10 +134,6 @@ def _run(
                 step_filename_format.format(k), show_centroids=False, show_coedges=False
             )
 
-        if verbosity > 1:
-            print("\nstep {}:".format(k + 1))
-            print_stats(mesh)
-
         # Abort the loop if the update is small
         diff = mesh.node_coords - original_coords
         if numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2):
@@ -145,6 +141,10 @@ def _run(
 
         if k >= max_num_steps:
             break
+
+        if verbosity > 1:
+            print("\nstep {}:".format(k))
+            print_stats(mesh)
 
     if verbosity > 0:
         print("\nFinal ({} steps):".format(k))

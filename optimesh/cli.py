@@ -126,7 +126,6 @@ def main(argv=None):
             verbosity=args.verbosity,
             fcc_type="boundary",
             step_filename_format=args.step_filename_format,
-            skip_inhomogenous=True,
         )
     elif args.method == "ch-odt":
         X, cells = chen_holst.odt(
