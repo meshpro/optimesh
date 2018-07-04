@@ -56,13 +56,14 @@ def _get_parser():
     )
 
     parser.add_argument(
-        "--uniform-density", "-u",
+        "--uniform-density",
+        "-u",
         action="store_true",
         default=False,
         help=(
             "assume uniform mesh density "
             "(where applicable, default: False, estimate from cell size)"
-        )
+        ),
     )
 
     parser.add_argument(

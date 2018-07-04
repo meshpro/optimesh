@@ -29,7 +29,7 @@ def odt(*args, **kwargs):
         cc = mesh.get_cell_circumcenters()
         bc = mesh.get_cell_barycenters()
         # Find all cells with a boundary edge
-        boundary_cell_ids = mesh._edges_cells[1][:, 0]
+        boundary_cell_ids = mesh.get_edges_cells()[1][:, 0]
         cc[boundary_cell_ids] = bc[boundary_cell_ids]
         return cc
 

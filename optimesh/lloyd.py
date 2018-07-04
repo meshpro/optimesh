@@ -92,9 +92,7 @@ def lloyd(
     return mesh.node_coords, mesh.cells["nodes"]
 
 
-def lloyd_submesh(
-    X, cells, tol, max_num_steps, submeshes, skip_inhomogenous_submeshes=True, **kwargs
-):
+def lloyd_submesh(X, cells, tol, max_num_steps, submeshes, **kwargs):
     # perform lloyd on each submesh separately
     for cell_in_submesh in submeshes.values():
         submesh_X, submesh_cells, submesh_verts = extract_submesh_entities(
@@ -102,14 +100,7 @@ def lloyd_submesh(
         )
 
         # perform lloyd smoothing
-        X_out, cells_out = lloyd(
-            submesh_X,
-            submesh_cells,
-            tol,
-            max_num_steps,
-            skip_inhomogenous=skip_inhomogenous_submeshes,
-            **kwargs
-        )
+        X_out, cells_out = lloyd(submesh_X, submesh_cells, tol, max_num_steps, **kwargs)
 
         # write the points and cells back
         X[submesh_verts, :2] = X_out
