@@ -29,7 +29,7 @@ def _get_parser():
         "--method",
         "-m",
         required=True,
-        choices=["laplace", "lloyd", "odt", "chen_odt", "chen_cpt"],
+        choices=["laplace", "lloyd", "odt", "ch-odt", "ch-cpt"],
         help="smoothing method",
     )
 
@@ -118,7 +118,7 @@ def main(argv=None):
             step_filename_format=args.step_filename_format,
             skip_inhomogenous=True,
         )
-    elif args.method == "chen_odt":
+    elif args.method == "ch-odt":
         X, cells = chen_holst.odt(
             mesh.points,
             mesh.cells["triangle"],
@@ -128,7 +128,7 @@ def main(argv=None):
             verbosity=args.verbosity,
         )
     else:
-        assert args.method == "chen_cpt"
+        assert args.method == "ch-cpt"
         X, cells = chen_holst.cpt(
             mesh.points,
             mesh.cells["triangle"],
