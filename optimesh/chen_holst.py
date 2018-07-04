@@ -24,6 +24,7 @@ def odt(*args, **kwargs):
     of their adjacent cells. If a triangle cell switches orientation in the
     process, don't move quite so far.
     """
+
     def get_reference_points(mesh):
         cc = mesh.get_cell_circumcenters()
         bc = mesh.get_cell_barycenters()
@@ -56,6 +57,7 @@ def _run(
     max_num_steps,
     verbosity=1,
     step_filename_format=None,
+    uniform_density=False,
 ):
     if X.shape[1] == 3:
         # create flat mesh
@@ -72,7 +74,9 @@ def _run(
 
     if verbosity > 0:
         print("Before:")
-        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        extra_cols = [
+            "energy: {:.5e}".format(energy(mesh, uniform_density=uniform_density))
+        ]
         print_stats(mesh, extra_cols=extra_cols)
 
     mesh.mark_boundary()
@@ -82,17 +86,31 @@ def _run(
         k += 1
 
         rp = get_reference_points_(mesh)
-        scaled_rp = (rp.T * mesh.cell_volumes).T
+        if uniform_density:
+            scaled_rp = (rp.T * mesh.cell_volumes).T
 
-        weighted_rp_average = numpy.zeros(mesh.node_coords.shape)
-        for i in mesh.cells["nodes"].T:
-            fastfunc.add.at(weighted_rp_average, i, scaled_rp)
+            weighted_rp_average = numpy.zeros(mesh.node_coords.shape)
+            for i in mesh.cells["nodes"].T:
+                fastfunc.add.at(weighted_rp_average, i, scaled_rp)
 
-        omega = numpy.zeros(len(mesh.node_coords))
-        for i in mesh.cells["nodes"].T:
-            fastfunc.add.at(omega, i, mesh.cell_volumes)
+            omega = numpy.zeros(len(mesh.node_coords))
+            for i in mesh.cells["nodes"].T:
+                fastfunc.add.at(omega, i, mesh.cell_volumes)
 
-        weighted_rp_average = (weighted_rp_average.T / omega).T
+            new_points = (weighted_rp_average.T / omega).T
+        else:
+            # Estimate the density as 1/|tau|. This leads to some simplifcations: The
+            # new point is simply the average of of the reference points
+            # (barycenters/cirumcenters) in the star.
+            rp_average = numpy.zeros(mesh.node_coords.shape)
+            for i in mesh.cells["nodes"].T:
+                fastfunc.add.at(rp_average, i, rp)
+
+            omega = numpy.zeros(len(mesh.node_coords))
+            for i in mesh.cells["nodes"].T:
+                fastfunc.add.at(omega, i, numpy.ones(i.shape, dtype=float))
+
+            new_points = (rp_average.T / omega).T
 
         original_orient = mesh.get_signed_tri_areas() > 0.0
         original_coords = mesh.node_coords.copy()
@@ -100,7 +118,7 @@ def _run(
         # Step unless the orientation of any cell changes.
         alpha = 1.0
         while True:
-            xnew = (1 - alpha) * original_coords + alpha * weighted_rp_average
+            xnew = (1 - alpha) * original_coords + alpha * new_points
             # Preserve boundary nodes
             xnew[mesh.is_boundary_node] = original_coords[mesh.is_boundary_node]
             mesh.update_node_coordinates(xnew)
@@ -130,7 +148,9 @@ def _run(
 
     if verbosity > 0:
         print("\nFinal ({} steps):".format(k))
-        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        extra_cols = [
+            "energy: {:.5e}".format(energy(mesh, uniform_density=uniform_density))
+        ]
         print_stats(mesh, extra_cols=extra_cols)
         print()
 

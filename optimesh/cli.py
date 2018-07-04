@@ -56,6 +56,16 @@ def _get_parser():
     )
 
     parser.add_argument(
+        "--uniform-density", "-u",
+        action="store_true",
+        default=False,
+        help=(
+            "assume uniform mesh density "
+            "(where applicable, default: False, estimate from cell size)"
+        )
+    )
+
+    parser.add_argument(
         "--step-filename-format",
         "-s",
         metavar="FMT",
@@ -125,6 +135,7 @@ def main(argv=None):
             args.tolerance,
             args.max_num_steps,
             step_filename_format=args.step_filename_format,
+            uniform_density=args.uniform_density,
             verbosity=args.verbosity,
         )
     else:
@@ -135,6 +146,7 @@ def main(argv=None):
             args.tolerance,
             args.max_num_steps,
             step_filename_format=args.step_filename_format,
+            uniform_density=args.uniform_density,
             verbosity=args.verbosity,
         )
 
