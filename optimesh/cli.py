@@ -55,13 +55,16 @@ def _get_parser():
         "--verbosity", choices=[0, 1, 2], help="verbosity level (default: 1)", default=1
     )
 
-    # parser.add_argument(
-    #     "--output-step-filetype",
-    #     "-s",
-    #     dest="output_steps_filetype",
-    #     default=None,
-    #     help="write mesh after each Lloyd step",
-    # )
+    parser.add_argument(
+        "--step-filename-format",
+        "-s",
+        metavar="FMT",
+        default=None,
+        help=(
+            "filename format for mesh at every step "
+            "(e.g., `step{:3d}.vtk`, default: None)"
+        ),
+    )
 
     parser.add_argument(
         "--version",
@@ -78,7 +81,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if not (args.max_num_steps or args.tolerance):
-        parser.error('At least one of --max-num_steps or --tolerance required.')
+        parser.error("At least one of --max-num_steps or --tolerance required.")
 
     mesh = meshio.read(args.input_file)
 
@@ -118,6 +121,7 @@ def main(argv=None):
             mesh.cells["triangle"],
             args.tolerance,
             args.max_num_steps,
+            step_filename_format=args.step_filename_format,
             verbosity=args.verbosity,
         )
     else:
@@ -127,6 +131,7 @@ def main(argv=None):
             mesh.cells["triangle"],
             args.tolerance,
             args.max_num_steps,
+            step_filename_format=args.step_filename_format,
             verbosity=args.verbosity,
         )
 

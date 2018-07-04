@@ -9,6 +9,8 @@ Triangulations,
 Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 <https://doi.org/10.1016/j.cma.2010.11.007>.
 """
+import math
+
 import numpy
 import fastfunc
 from meshplex import MeshTri
@@ -16,7 +18,7 @@ from meshplex import MeshTri
 from .helpers import print_stats, energy
 
 
-def odt(X, cells, tol, max_num_steps, verbosity=1):
+def odt(*args, **kwargs):
     """Optimal Delaunay Triangulation.
 
     Idea:
@@ -24,17 +26,10 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
     of their adjacent cells. If a triangle cell switches orientation in the
     process, don't move quite so far.
     """
-    return _run(
-        lambda mesh: mesh.get_cell_circumcenters(),
-        X,
-        cells,
-        tol,
-        max_num_steps,
-        verbosity=verbosity,
-    )
+    return _run(lambda mesh: mesh.get_cell_circumcenters(), *args, **kwargs)
 
 
-def cpt(X, cells, tol, max_num_steps, verbosity=1):
+def cpt(*args, **kwargs):
     """Centroidal Patch Triangulation. Mimics the definition of Centroidal
     Voronoi Tessellations for which the generator and centroid of each Voronoi
     region coincide.
@@ -44,17 +39,18 @@ def cpt(X, cells, tol, max_num_steps, verbosity=1):
     (barycenters) of their adjacent cells. If a triangle cell switches
     orientation in the process, don't move quite so far.
     """
-    return _run(
-        lambda mesh: mesh.get_centroids(),
-        X,
-        cells,
-        tol,
-        max_num_steps,
-        verbosity=verbosity,
-    )
+    return _run(lambda mesh: mesh.get_centroids(), *args, **kwargs)
 
 
-def _run(get_reference_points_, X, cells, tol, max_num_steps, verbosity=1):
+def _run(
+    get_reference_points_,
+    X,
+    cells,
+    tol,
+    max_num_steps,
+    verbosity=1,
+    step_filename_format=None,
+):
     if X.shape[1] == 3:
         # create flat mesh
         assert numpy.all(abs(X[:, 2]) < 1.0e-15)
@@ -63,9 +59,10 @@ def _run(get_reference_points_, X, cells, tol, max_num_steps, verbosity=1):
     mesh = MeshTri(X, cells, flat_cell_correction=None)
     mesh.flip_until_delaunay()
 
-    # mesh.save_png(
-    #     'step{:03d}'.format(0), show_centroids=False, show_coedges=False
-    #     )
+    if step_filename_format:
+        mesh.save(
+            step_filename_format.format(0), show_centroids=False, show_coedges=False
+        )
 
     if verbosity > 0:
         print("Before:")
@@ -108,9 +105,10 @@ def _run(get_reference_points_, X, cells, tol, max_num_steps, verbosity=1):
 
         mesh.flip_until_delaunay()
 
-        # mesh.save_png(
-        #     'step{:03d}'.format(k), show_centroids=False, show_coedges=False
-        #     )
+        if step_filename_format:
+            mesh.save(
+                step_filename_format.format(k), show_centroids=False, show_coedges=False
+            )
 
         if verbosity > 1:
             print("\nstep {}:".format(k + 1))
