@@ -9,8 +9,6 @@ Triangulations,
 Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 <https://doi.org/10.1016/j.cma.2010.11.007>.
 """
-import math
-
 import numpy
 import fastfunc
 from meshplex import MeshTri
@@ -26,7 +24,15 @@ def odt(*args, **kwargs):
     of their adjacent cells. If a triangle cell switches orientation in the
     process, don't move quite so far.
     """
-    return _run(lambda mesh: mesh.get_cell_circumcenters(), *args, **kwargs)
+    def get_reference_points(mesh):
+        cc = mesh.get_cell_circumcenters()
+        bc = mesh.get_cell_barycenters()
+        # Find all cells with a boundary edge
+        boundary_cell_ids = mesh._edges_cells[1][:, 0]
+        cc[boundary_cell_ids] = bc[boundary_cell_ids]
+        return cc
+
+    return _run(get_reference_points, *args, **kwargs)
 
 
 def cpt(*args, **kwargs):
