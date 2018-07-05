@@ -8,15 +8,22 @@
 [![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg)](https://pypi.org/project/optimesh)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?logo=github&label=Stars)](https://github.com/nschloe/optimesh)
 
-Several mesh smoothing/optimization methods with one simple interface. For now only
-works for flat triangular meshes. Supports all mesh formats that
-[meshio](https://github.com/nschloe/meshio) read and write.
+Several mesh smoothing/optimization methods with one simple interface.
 
+ * fast
+ * preserves submeshes
+ * only works for triangular meshes (for now)
+ * supports all mesh formats that [meshio](https://github.com/nschloe/meshio) can handle
+
+Install with
+```
+pip install optimesh
+```
 Example call:
 ```
 optimesh in.e out.vtk --method lloyd -n 50
 ```
-Output:
+Output (usually looks better on the command line than in the browser):
 ```
 Before:
 
@@ -67,8 +74,8 @@ optimesh circle.vtk out.vtk --method laplace
 ![odt](https://nschloe.github.io/optimesh/odt.png)
 
 Optimal Delaunay Triangulation (ODT) treated as a minimzation problem.
-Unconditonally assumes uniform mesh density (for now) so it does _not_ preserve the mesh
-density.
+Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
+
 ```
 optimesh circle.vtk out.vtk --method odt
 ```
@@ -78,12 +85,11 @@ optimesh circle.vtk out.vtk --method odt
 
 Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
 algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) adapted for triangular
-meshes. The central assumption here is that the topological neighhbors of any point are
-also the geometrically closest points. That is fulfilled "most of the time", but the
-algorithm can break down if it is not.
+meshes. If the topological neighhbors of any node are also the geometrically closest
+nodes, this is exactly Lloyd's algorithm. That is fulfilled in many practical cases, but
+the algorithm can break down if it is not.
 
-Unconditonally assumes uniform mesh density (for now) so it does _not_ preserve the mesh
-density.
+Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
 ```
 optimesh circle.vtk out.vtk --method lloyd
 ```
