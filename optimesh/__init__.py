@@ -12,7 +12,7 @@ from .__about__ import (
 )
 
 from .laplace import laplace
-from .lloyd import lloyd, lloyd_submesh
+from .lloyd import lloyd
 from .odt import odt
 from . import chen_holst
 from . import cli
@@ -28,7 +28,6 @@ __all__ = [
     "cli",
     "laplace",
     "lloyd",
-    "lloyd_submesh",
     "odt",
 ]
 

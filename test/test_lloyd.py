@@ -20,11 +20,7 @@ def test_simple_lloyd(max_num_steps=5):
     )
     cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
 
-    submesh_bools = {0: numpy.ones(len(cells), dtype=bool)}
-
-    X, cells = optimesh.lloyd_submesh(
-        X, cells, 1.0e-2, 100, submesh_bools, fcc_type="boundary", verbosity=2
-    )
+    X, cells = optimesh.lloyd(X, cells, 1.0e-2, 100, fcc_type="boundary", verbosity=2)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -49,14 +45,11 @@ def test_pacman_lloyd(max_num_steps=1000):
     )
     mesh = meshio.read(filename)
 
-    submesh_bools = {0: numpy.ones(len(mesh.cells["triangle"]), dtype=bool)}
-
-    X, cells = optimesh.lloyd_submesh(
+    X, cells = optimesh.lloyd(
         mesh.points,
         mesh.cells["triangle"],
         1.0e-2,
         100,
-        submesh_bools,
         fcc_type="boundary",
         verbosity=1,
     )
