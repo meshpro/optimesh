@@ -114,7 +114,7 @@ def main(argv=None):
         subdomain_idx = numpy.unique(field)
         cell_sets = [idx == field for idx in subdomain_idx]
     else:
-        cell_sets = numpy.ones(mesh.cells["triangle"].shape[0], dtype=bool)
+        cell_sets = [numpy.ones(mesh.cells["triangle"].shape[0], dtype=bool)]
 
     cells = mesh.cells["triangle"]
 
