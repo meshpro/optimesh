@@ -4,7 +4,7 @@
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg)](https://codecov.io/gh/nschloe/optimesh)
 [![Codacy grade](https://img.shields.io/codacy/grade/97175bbf62854fcfbfc1f5812ce840f7.svg)](https://app.codacy.com/app/nschloe/optimesh/dashboard)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-[![smooth](https://img.shields.io/badge/smooth-yes-8209ba.svg)](https://github.com/nschloe/smoothfit)
+[![smooth](https://img.shields.io/badge/smooth-operator-8209ba.svg)](https://youtu.be/4TYv2PhG89A)
 [![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg)](https://pypi.org/project/optimesh)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?logo=github&label=Stars)](https://github.com/nschloe/optimesh)
 
@@ -46,17 +46,15 @@ Mesh optimization after [Chen and Holst](#relevant-publications). Both methods h
 `-u`/`--uniform-density` command line option. If not given, the mesh density is
 preserved.
 
-* ODT
+* ODT-like smoothing
 
-  ODT-like smoothing.
   ![ch-odt](https://nschloe.github.io/optimesh/ch-odt.png)
   ```
   optimesh circle.vtk out.vtk --method chen-odt --uniform-density"
   ```
 
-* CPT (Centroidal Patch Triangulation)
+* CPT (Centroidal Patch Triangulation, CVT-like smoothing)
 
-  CVT-like smoothing.
   ![ch-cpt](https://nschloe.github.io/optimesh/ch-cpt.png)
   ```
   optimesh circle.vtk out.vtk --method chen-cpt --uniform-density"
