@@ -73,7 +73,7 @@ optimesh circle.vtk out.vtk --method laplace
 #### ODT smoothing
 ![odt](https://nschloe.github.io/optimesh/odt.png)
 
-Optimal Delaunay Triangulation (ODT) treated as a minimzation problem.
+Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
 Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
 
 ```
@@ -85,7 +85,7 @@ optimesh circle.vtk out.vtk --method odt
 
 Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
 algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) adapted for triangular
-meshes. If the topological neighhbors of any node are also the geometrically closest
+meshes. If the topological neighbors of any node are also the geometrically closest
 nodes, this is exactly Lloyd's algorithm. That is fulfilled in many practical cases, but
 the algorithm can break down if it is not.
 
