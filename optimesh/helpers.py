@@ -63,28 +63,6 @@ def sit_in_plane(X, tol=1.0e-15):
     return (abs(numpy.dot(X - X[0], orth)) < tol).all()
 
 
-def get_boundary_edge_ratio(X, cells):
-    """Gets the ratio of the longest vs. the shortest boundary edge.
-    """
-    submesh = MeshTri(X, cells, flat_cell_correction="full")
-    submesh.create_edges()
-    x = submesh.node_coords[submesh.idx_hierarchy[..., submesh.is_boundary_edge]]
-    e = x[0] - x[1]
-    edge_lengths2 = numpy.einsum("ij, ij->i", e, e)
-    return numpy.sqrt(max(edge_lengths2) / min(edge_lengths2))
-
-
-def extract_submesh_entities(X, cells, cell_in_submesh):
-    # Get cells
-    submesh_cells = cells[cell_in_submesh]
-    # Get the vertices
-    submesh_verts, uidx = numpy.unique(submesh_cells, return_inverse=True)
-    submesh_X = X[submesh_verts]
-    #
-    submesh_cells = uidx.reshape(submesh_cells.shape)
-    return submesh_X, submesh_cells, submesh_verts
-
-
 def energy(mesh, uniform_density=False):
     """The mesh energy is defined as
 

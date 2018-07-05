@@ -5,7 +5,7 @@ from __future__ import print_function
 import numpy
 from meshplex import MeshTri
 
-from .helpers import extract_submesh_entities, print_stats, energy
+from .helpers import print_stats, energy
 
 
 def lloyd(
