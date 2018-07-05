@@ -22,7 +22,7 @@ def test_simple1():
     )
     cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
 
-    X, cells = optimesh.chen_holst.odt(X, cells, tol=1.0e-5, max_num_steps=100)
+    X, cells = optimesh.chen_holst.odt(X, cells, 1.0e-5, 100, uniform_density=True)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -54,7 +54,7 @@ def test_simple2():
     )
     cells = numpy.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
 
-    X, cells = optimesh.chen_holst.odt(X, cells, 1.0e-3, 100)
+    X, cells = optimesh.chen_holst.odt(X, cells, 1.0e-3, 100, uniform_density=True)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -63,9 +63,9 @@ def test_simple2():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 7.374074074074074
+    ref = 7.390123456790124
     assert abs(norm1 - ref) < tol * ref
-    ref = 2.8007812940925643
+    ref = 2.804687217072868
     assert abs(norm2 - ref) < tol * ref
     ref = 1.7
     assert abs(normi - ref) < tol * ref
@@ -99,7 +99,7 @@ def test_simple3():
         ]
     )
 
-    X, cells = optimesh.chen_holst.odt(X, cells, 1.0e-3, 100)
+    X, cells = optimesh.chen_holst.odt(X, cells, 1.0e-3, 100, uniform_density=True)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -108,9 +108,9 @@ def test_simple3():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 12.000268061419682
+    ref = 12.000533426212133
     assert abs(norm1 - ref) < tol * ref
-    ref = 3.9829396222966804
+    ref = 3.9766966218492676
     assert abs(norm2 - ref) < tol * ref
     ref = 2.0
     assert abs(normi - ref) < tol * ref
@@ -152,7 +152,9 @@ def test_pacman():
     )
     mesh = meshio.read(filename)
 
-    X, cells = optimesh.chen_holst.odt(mesh.points, mesh.cells["triangle"], 1.0e-3, 500)
+    X, _ = optimesh.chen_holst.odt(
+        mesh.points, mesh.cells["triangle"], 1.0e-3, 500, uniform_density=True
+    )
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -161,9 +163,9 @@ def test_pacman():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-10
-    ref = 1918.756560192194
+    ref = 1913.6793612758217
     assert abs(norm1 - ref) < tol * ref
-    ref = 75.21580844291586
+    ref = 75.04142473590268
     assert abs(norm2 - ref) < tol * ref
     ref = 5.0
     assert abs(normi - ref) < tol * ref

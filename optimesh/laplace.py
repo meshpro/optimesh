@@ -3,83 +3,28 @@
 from __future__ import print_function
 
 import numpy
-from voropy.mesh_tri import MeshTri
+import fastfunc
 
-from .helpers import gather_stats, write, print_stats, energy
+from .helpers import runner
 
 
-def laplace(X, cells, tol, max_num_steps, verbosity=0, output_filetype=None):
+def laplace(*args, **kwargs):
     """Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
     interior vertex to the arithmetic average of its neighboring points.
     """
-    # TODO bring back?
-    # flat mesh
-    # assert sit_in_plane(X)
 
-    # create mesh data structure
-    mesh = MeshTri(X, cells, flat_cell_correction=None)
-
-    boundary_verts = mesh.get_boundary_vertices()
-
-    if verbosity > 0:
-        print("Before:")
-        hist, bin_edges, angles = gather_stats(mesh)
-        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(hist, bin_edges, angles, extra_cols)
-
-    success = False
-
-    for k in range(max_num_steps):
-        if output_filetype:
-            write(mesh, "laplace", output_filetype, k)
-
-        mesh.flip_until_delaunay()
-
+    def get_new_points(mesh):
         # move interior points into average of their neighbors
-        # <https://stackoverflow.com/a/43096495/353337>
-        # num_neighbors = numpy.bincount(mesh.edges['nodes'].flat)
-        #
-        num_neighbors = numpy.zeros(mesh.node_coords.shape[0], dtype=int)
+        num_neighbors = numpy.zeros(len(mesh.node_coords), dtype=int)
+        idx = mesh.edges["nodes"]
+        fastfunc.add.at(num_neighbors, idx, numpy.ones(idx.shape, dtype=int))
+
         new_points = numpy.zeros(mesh.node_coords.shape)
-        for edge in mesh.edges["nodes"]:
-            num_neighbors[edge[0]] += 1
-            num_neighbors[edge[1]] += 1
-            new_points[edge[0]] += mesh.node_coords[edge[1]]
-            new_points[edge[1]] += mesh.node_coords[edge[0]]
-        new_points = (new_points.T / num_neighbors).T
+        fastfunc.add.at(new_points, idx[:, 0], mesh.node_coords[idx[:, 1]])
+        fastfunc.add.at(new_points, idx[:, 1], mesh.node_coords[idx[:, 0]])
 
-        # Keep the boundary vertices in place
-        new_points[boundary_verts] = mesh.node_coords[boundary_verts]
+        idx = mesh.is_interior_node
+        new_points = (new_points[idx].T / num_neighbors[idx]).T
+        return new_points
 
-        diff = new_points - mesh.node_coords
-        max_move = numpy.sqrt(numpy.max(numpy.einsum("ij,ij->i", diff, diff)))
-
-        mesh = MeshTri(new_points, mesh.cells["nodes"], flat_cell_correction=None)
-
-        if verbosity > 1:
-            print("\nStep {}:".format(k + 1))
-            print_stats(
-                *gather_stats(mesh),
-                extra_cols=["  maximum move: {:.5e}".format(max_move)]
-            )
-
-        if max_move < tol:
-            num_steps = k
-            success = True
-            break
-
-    if not success:
-        num_steps = max_num_steps
-
-    if verbosity == 1:
-        print("\nFinal ({} steps):".format(num_steps + 1))
-        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(*gather_stats(mesh), extra_cols=extra_cols)
-
-    # Flip one last time.
-    mesh.flip_until_delaunay()
-
-    if output_filetype:
-        write(mesh, "laplace", output_filetype, num_steps)
-
-    return mesh.node_coords, mesh.cells["nodes"]
+    return runner(get_new_points, *args, **kwargs)

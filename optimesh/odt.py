@@ -5,13 +5,12 @@ from __future__ import print_function
 import numpy
 import fastfunc
 
-# import voropy
-from voropy.mesh_tri import MeshTri
+from meshplex import MeshTri
 
-from .helpers import gather_stats, print_stats, energy
+from .helpers import print_stats, energy
 
 
-def odt(X, cells, tol, max_num_steps, verbosity=1):
+def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
     """Optimal Delaunay Triangulation smoothing.
 
     This method minimizes the energy
@@ -39,53 +38,57 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
 
     mesh = MeshTri(X, cells, flat_cell_correction=None)
 
+    if step_filename_format:
+        mesh.save(
+            step_filename_format.format(0),
+            show_centroids=False,
+            show_coedges=False,
+            show_axes=False,
+            nondelaunay_edge_color="k",
+        )
+
     if verbosity > 0:
         print("Before:")
-        hist, bin_edges, angles = gather_stats(mesh)
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
+        print_stats(mesh, extra_cols=extra_cols)
 
     mesh.mark_boundary()
 
-    is_interior_node = numpy.logical_not(mesh.is_boundary_node)
-
     def f(x):
-        interior_coords = x.reshape(-1, 2)
-        coords = X.copy()
-        coords[is_interior_node] = interior_coords
-        mesh.update_node_coordinates(coords)
-        return energy(mesh)
+        mesh.update_interior_node_coordinates(x.reshape(-1, 2))
+        return energy(mesh, uniform_density=True)
 
     # TODO put f and jac together
     def jac(x):
-        interior_coords = x.reshape(-1, 2)
-        coords = X.copy()
-        coords[is_interior_node] = interior_coords
+        mesh.update_interior_node_coordinates(x.reshape(-1, 2))
 
-        mesh.update_node_coordinates(coords)
-
-        grad = numpy.zeros(coords.shape)
+        grad = numpy.zeros(mesh.node_coords.shape)
         cc = mesh.get_cell_circumcenters()
-        for i in range(3):
-            mcn = mesh.cells["nodes"][:, i]
-            fastfunc.add.at(grad, mcn, ((coords[mcn] - cc).T * mesh.cell_volumes).T)
+        for mcn in mesh.cells["nodes"].T:
+            fastfunc.add.at(
+                grad, mcn, ((mesh.node_coords[mcn] - cc).T * mesh.cell_volumes).T
+            )
         gdim = 2
         grad *= 2 / (gdim + 1)
-        return grad[is_interior_node, :2].flatten()
+        return grad[mesh.is_interior_node, :2].flatten()
 
     def flip_delaunay(x):
         flip_delaunay.step += 1
         # Flip the edges
-        interior_coords = x.reshape(-1, 2)
-        coords = X.copy()
-        coords[is_interior_node] = interior_coords
-        mesh.update_node_coordinates(coords)
+        mesh.update_interior_node_coordinates(x.reshape(-1, 2))
         mesh.flip_until_delaunay()
 
+        if step_filename_format:
+            mesh.save(
+                step_filename_format.format(flip_delaunay.step),
+                show_centroids=False,
+                show_coedges=False,
+                show_axes=False,
+                nondelaunay_edge_color="k",
+            )
         if verbosity > 1:
             print("\nStep {}:".format(flip_delaunay.step))
-            hist, bin_edges, angles = gather_stats(mesh)
-            print_stats(hist, bin_edges, angles, extra_cols=["energy: {}".format(f(x))])
+            print_stats(mesh, extra_cols=["energy: {}".format(f(x))])
 
         # mesh.show()
         # exit(1)
@@ -93,7 +96,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
 
     flip_delaunay.step = 0
 
-    x0 = X[is_interior_node, :2].flatten()
+    x0 = X[mesh.is_interior_node, :2].flatten()
 
     out = scipy.optimize.minimize(
         f,
@@ -105,19 +108,16 @@ def odt(X, cells, tol, max_num_steps, verbosity=1):
         callback=flip_delaunay,
         options={"maxiter": max_num_steps},
     )
-    assert out.success, out.message
+    # Don't assert out.success; max_num_steps may be reached, that's fine.
 
     # One last edge flip
-    interior_coords = out.x.reshape(-1, 2)
-    coords = X.copy()
-    coords[is_interior_node] = interior_coords
-    mesh.update_node_coordinates(coords)
+    mesh.update_interior_node_coordinates(out.x.reshape(-1, 2))
     mesh.flip_until_delaunay()
 
     if verbosity > 0:
         print("\nFinal ({} steps):".format(out.nit))
-        hist, bin_edges, angles = gather_stats(mesh)
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(hist, bin_edges, angles, extra_cols=extra_cols)
+        print_stats(mesh, extra_cols=extra_cols)
+        print()
 
     return mesh.node_coords, mesh.cells["nodes"]
