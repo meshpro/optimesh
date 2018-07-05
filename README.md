@@ -8,6 +8,35 @@
 [![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg)](https://pypi.org/project/optimesh)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?logo=github&label=Stars)](https://github.com/nschloe/optimesh)
 
+```
+optimesh -h
+```
+
+#### Laplacian smoothing
+![laplace](https://nschloe.github.io/optimesh/laplace.png)
+
+Ordinary [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
+Fast, preserves the mesh density.
+```
+optimesh circle.vtk out.vtk --method laplace
+```
+
+#### ODT
+Optimal Delaunay Triangulation (ODT) treated as a minimzation problem
+```
+optimesh circle.vtk out.vtk --method odt
+```
+
+#### Chen-Holst
+Mesh optimization after [Chen and Holst](#relevant-publications).
+ODT
+```
+optimesh circle.vtk out.vtk --method chen-odt --uniform-density"
+```
+CPT
+```
+optimesh circle.vtk out.vtk --method chen-cpt --uniform-density"
+```
 
 ### Installation
 
@@ -22,7 +51,7 @@ of `pip` to install in `$HOME`.
 ### Relevant publications
 
  * [Long Chen, Michael Holst, _Efficient mesh optimization schemes based on Optimal Delaunay Triangulations_,
-    Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984.](https://doi.org/10.1016/j.cma.2010.11.007)
+   Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984.](https://doi.org/10.1016/j.cma.2010.11.007)
 
 
 ### Testing
