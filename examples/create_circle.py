@@ -12,7 +12,7 @@ boundary_pts = numpy.array(
 )
 
 # generate random points in circle; <http://mathworld.wolfram.com/DiskPointPicking.html>
-numpy.random.seed(123)
+numpy.random.seed(0)
 m = 200
 r = numpy.random.rand(m)
 alpha = 2 * numpy.pi * numpy.random.rand(m)

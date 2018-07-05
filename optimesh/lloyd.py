@@ -13,7 +13,7 @@ def lloyd(
     cells,
     tol,
     max_num_steps,
-    fcc_type="full",
+    fcc_type="boundary",
     verbosity=1,
     step_filename_format=None,
 ):
@@ -22,11 +22,11 @@ def lloyd(
         assert numpy.all(numpy.abs(X[:, 2]) < 1.0e-15)
         X = X[:, :2]
 
+    original_X = X.copy()
+
     # create mesh data structure
     mesh = MeshTri(X, cells, flat_cell_correction=fcc_type)
     mesh.flip_until_delaunay()
-
-    boundary_verts = mesh.get_boundary_vertices()
 
     if step_filename_format:
         mesh.save(
@@ -47,21 +47,21 @@ def lloyd(
         k += 1
 
         # move interior points into centroids
-        new_points = mesh.get_control_volume_centroids()
-        new_points[boundary_verts] = mesh.node_coords[boundary_verts]
+        new_points = mesh.get_control_volume_centroids()[mesh.is_interior_node]
 
         original_orient = mesh.get_signed_tri_areas() > 0.0
-        original_coords = mesh.node_coords.copy()
+        original_coords = mesh.node_coords[mesh.is_interior_node]
 
         # Step unless the orientation of any cell changes.
         alpha = 1.0
         while True:
             xnew = (1 - alpha) * original_coords + alpha * new_points
             # Preserve boundary nodes
-            xnew[mesh.is_boundary_node] = original_coords[mesh.is_boundary_node]
+            original_X[mesh.is_interior_node] = xnew
             # A new mesh is created in every step. Ugh. We do that since meshplex
             # doesn't have update_node_coordinates with flat_cell_correction.
-            mesh = MeshTri(xnew, mesh.cells["nodes"], flat_cell_correction=fcc_type)
+            mesh = MeshTri(original_X, mesh.cells["nodes"], flat_cell_correction=fcc_type)
+            mesh.mark_boundary()
             # mesh.update_node_coordinates(xnew)
             new_orient = mesh.get_signed_tri_areas() > 0.0
             if numpy.all(original_orient == new_orient):
@@ -80,7 +80,7 @@ def lloyd(
             )
 
         # Abort the loop if the update is small
-        diff = new_points - mesh.node_coords
+        diff = mesh.node_coords[mesh.is_interior_node] - original_coords
         if numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2):
             break
 

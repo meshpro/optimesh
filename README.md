@@ -50,14 +50,14 @@ preserved.
 
   ![ch-odt](https://nschloe.github.io/optimesh/ch-odt.png)
   ```
-  optimesh circle.vtk out.vtk --method chen-odt --uniform-density"
+  optimesh circle.vtk out.vtk --method chen-odt --uniform-density
   ```
 
 * CPT (Centroidal Patch Triangulation, CVT-like smoothing)
 
   ![ch-cpt](https://nschloe.github.io/optimesh/ch-cpt.png)
   ```
-  optimesh circle.vtk out.vtk --method chen-cpt --uniform-density"
+  optimesh circle.vtk out.vtk --method chen-cpt --uniform-density
   ```
 
 ### Installation

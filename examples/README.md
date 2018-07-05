@@ -1,6 +1,6 @@
-Instructions for generating the example gifs:
+###Instructions for generating the example APNGs
 
-* Create original Delaunay triangulation with create_circle.py
+* Create original Delaunay triangulation with `create_circle.py`
 
 * Run the smoothers:
   ```
