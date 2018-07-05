@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import numpy
+import fastfunc
 
 from .helpers import runner
 
@@ -17,14 +18,14 @@ def laplace(*args, **kwargs):
         # <https://stackoverflow.com/a/43096495/353337>
         # num_neighbors = numpy.bincount(mesh.edges['nodes'].flat)
         #
-        num_neighbors = numpy.zeros(mesh.node_coords.shape[0], dtype=int)
         new_points = numpy.zeros(mesh.node_coords.shape)
-        # TODO don't loop over all edges; use fastfunc
-        for edge in mesh.edges["nodes"]:
-            num_neighbors[edge[0]] += 1
-            num_neighbors[edge[1]] += 1
-            new_points[edge[0]] += mesh.node_coords[edge[1]]
-            new_points[edge[1]] += mesh.node_coords[edge[0]]
+        idx = mesh.edges["nodes"].T
+        fastfunc.add.at(new_points, idx[0], mesh.node_coords[idx[1]])
+        fastfunc.add.at(new_points, idx[1], mesh.node_coords[idx[0]])
+
+        num_neighbors = numpy.zeros(len(mesh.node_coords), dtype=int)
+        idx = mesh.edges["nodes"]
+        fastfunc.add.at(num_neighbors, idx, numpy.ones(idx.shape, dtype=int))
 
         idx = mesh.is_interior_node
         new_points = (new_points[idx].T / num_neighbors[idx]).T
