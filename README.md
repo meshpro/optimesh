@@ -114,6 +114,15 @@ preserved.
   optimesh circle.vtk out.vtk --method chen-cpt --uniform-density
   ```
 
+### Access from Python
+
+All optimesh functions can also be accessed from Python directly, for example:
+```python
+import optimesh
+
+X, cells = optimesh.odt(X, cells, 1.0e-2, 100, verbosity=1)
+```
+
 ### Installation
 
 optimesh is [available from the Python Package

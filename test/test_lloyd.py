@@ -45,7 +45,7 @@ def test_pacman_lloyd(max_num_steps=1000):
     )
     mesh = meshio.read(filename)
 
-    X, cells = optimesh.lloyd(
+    X, _ = optimesh.lloyd(
         mesh.points,
         mesh.cells["triangle"],
         1.0e-2,
