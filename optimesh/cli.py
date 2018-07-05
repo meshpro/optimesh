@@ -109,22 +109,19 @@ def main(argv=None):
         assert numpy.all(numpy.abs(mesh.points[:, 2]) < 1.0e-13)
         mesh.points = mesh.points[:, :2]
 
-    # if args.subdomain_field_name:
-    #     field = mesh.cell_data["triangle"][args.subdomain_field_name]
-    #     subdomain_idx = numpy.unique(field)
-    #     cell_sets = [mesh.cells["triangle"][idx == field] for idx in subdomain_idx]
-    #     exit(1)
-    # else:
-    #     cell_sets = [mesh.cells["triangle"]]
+    if args.subdomain_field_name:
+        field = mesh.cell_data["triangle"][args.subdomain_field_name]
+        subdomain_idx = numpy.unique(field)
+        cell_sets = [idx == field for idx in subdomain_idx]
+    else:
+        cell_sets = numpy.ones(mesh.cells["triangle"].shape[0], dtype=bool)
 
-    X = mesh.points
     cells = mesh.cells["triangle"]
-    cell_sets = [numpy.arange(cells.shape[0])]
 
     for cell_idx in cell_sets:
         if args.method == "laplace":
             X, cls = laplace(
-                X,
+                mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
@@ -133,7 +130,7 @@ def main(argv=None):
             )
         elif args.method == "odt":
             X, cls = odt(
-                X,
+                mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
@@ -142,7 +139,7 @@ def main(argv=None):
             )
         elif args.method == "lloyd":
             X, cls = lloyd(
-                X,
+                mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
@@ -152,7 +149,7 @@ def main(argv=None):
             )
         elif args.method == "ch-odt":
             X, cls = chen_holst.odt(
-                X,
+                mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
@@ -163,7 +160,7 @@ def main(argv=None):
         else:
             assert args.method == "ch-cpt"
             X, cls = chen_holst.cpt(
-                X,
+                mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
