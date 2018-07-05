@@ -21,24 +21,42 @@ Fast, preserves the mesh density.
 optimesh circle.vtk out.vtk --method laplace
 ```
 
-#### ODT
+#### ODT smoothing
 ![odt](https://nschloe.github.io/optimesh/odt.png)
 
-Optimal Delaunay Triangulation (ODT) treated as a minimzation problem
+Optimal Delaunay Triangulation (ODT) treated as a minimzation problem.
+Unconditonally assumes uniform mesh density (for now).
 ```
 optimesh circle.vtk out.vtk --method odt
 ```
 
-#### Chen-Holst
+#### CVT/Lloyd smoothing
+![lloyd](https://nschloe.github.io/optimesh/lloyd.png)
 
-Mesh optimization after [Chen and Holst](#relevant-publications).
+Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
+algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm).
+Unconditonally assumes uniform mesh density (for now).
+```
+optimesh circle.vtk out.vtk --method lloyd
+```
+
+#### Chen-Holst smoothing
+
+Mesh optimization after [Chen and Holst](#relevant-publications). Both methods honor the
+`-u`/`--uniform-density` command line option. If not given, the mesh density is
+preserved.
 
 * ODT
+
+  ODT-like smoothing.
   ![ch-odt](https://nschloe.github.io/optimesh/ch-odt.png)
   ```
   optimesh circle.vtk out.vtk --method chen-odt --uniform-density"
   ```
-* CPT
+
+* CPT (Centroidal Patch Triangulation)
+
+  CVT-like smoothing.
   ![ch-cpt](https://nschloe.github.io/optimesh/ch-cpt.png)
   ```
   optimesh circle.vtk out.vtk --method chen-cpt --uniform-density"
