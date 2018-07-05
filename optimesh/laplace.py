@@ -15,17 +15,13 @@ def laplace(*args, **kwargs):
 
     def get_new_points(mesh):
         # move interior points into average of their neighbors
-        # <https://stackoverflow.com/a/43096495/353337>
-        # num_neighbors = numpy.bincount(mesh.edges['nodes'].flat)
-        #
-        new_points = numpy.zeros(mesh.node_coords.shape)
-        idx = mesh.edges["nodes"].T
-        fastfunc.add.at(new_points, idx[0], mesh.node_coords[idx[1]])
-        fastfunc.add.at(new_points, idx[1], mesh.node_coords[idx[0]])
-
         num_neighbors = numpy.zeros(len(mesh.node_coords), dtype=int)
         idx = mesh.edges["nodes"]
         fastfunc.add.at(num_neighbors, idx, numpy.ones(idx.shape, dtype=int))
+
+        new_points = numpy.zeros(mesh.node_coords.shape)
+        fastfunc.add.at(new_points, idx[:, 0], mesh.node_coords[idx[:, 1]])
+        fastfunc.add.at(new_points, idx[:, 1], mesh.node_coords[idx[:, 0]])
 
         idx = mesh.is_interior_node
         new_points = (new_points[idx].T / num_neighbors[idx]).T
