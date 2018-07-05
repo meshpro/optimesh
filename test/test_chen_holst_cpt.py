@@ -153,7 +153,7 @@ def test_pacman():
     )
     mesh = meshio.read(filename)
 
-    X, cells = optimesh.chen_holst.cpt(
+    X, _ = optimesh.chen_holst.cpt(
         mesh.points, mesh.cells["triangle"], 1.0e-3, 100, uniform_density=True
     )
 
