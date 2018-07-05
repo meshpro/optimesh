@@ -40,7 +40,11 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
 
     if step_filename_format:
         mesh.save(
-            step_filename_format.format(0), show_centroids=False, show_coedges=False
+            step_filename_format.format(0),
+            show_centroids=False,
+            show_coedges=False,
+            show_axes=False,
+            nondelaunay_edge_color="k",
         )
 
     if verbosity > 0:
@@ -79,6 +83,8 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
                 step_filename_format.format(flip_delaunay.step),
                 show_centroids=False,
                 show_coedges=False,
+                show_axes=False,
+                nondelaunay_edge_color="k",
             )
         if verbosity > 1:
             print("\nStep {}:".format(flip_delaunay.step))

@@ -30,7 +30,11 @@ def lloyd(
 
     if step_filename_format:
         mesh.save(
-            step_filename_format.format(0), show_centroids=False, show_coedges=False
+            step_filename_format.format(0),
+            show_centroids=False,
+            show_coedges=False,
+            show_axes=False,
+            nondelaunay_edge_color="k",
         )
 
     if verbosity > 0:
@@ -68,7 +72,11 @@ def lloyd(
 
         if step_filename_format:
             mesh.save(
-                step_filename_format.format(k), show_centroids=False, show_coedges=False
+                step_filename_format.format(k),
+                show_centroids=False,
+                show_coedges=False,
+                show_axes=False,
+                nondelaunay_edge_color="k",
             )
 
         # Abort the loop if the update is small

@@ -7,9 +7,9 @@ Instructions for generating the example gifs:
   optimesh circle.vtk out.vtk -m {method} -n 50 -f "step{:03d}.png" [-u]
   ```
 
-* Trim all PNG files:
+* Trim and resize all PNG files:
   ```
-  for file in step*.png; do convert -trim $file $file; done
+  for file in step*.png; do convert -trim -resize 200x200 $file $file; done
   ```
 
 * Optimize all PNG files for size:
