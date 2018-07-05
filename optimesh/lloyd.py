@@ -60,7 +60,9 @@ def lloyd(
             original_X[mesh.is_interior_node] = xnew
             # A new mesh is created in every step. Ugh. We do that since meshplex
             # doesn't have update_node_coordinates with flat_cell_correction.
-            mesh = MeshTri(original_X, mesh.cells["nodes"], flat_cell_correction=fcc_type)
+            mesh = MeshTri(
+                original_X, mesh.cells["nodes"], flat_cell_correction=fcc_type
+            )
             mesh.mark_boundary()
             # mesh.update_node_coordinates(xnew)
             new_orient = mesh.get_signed_tri_areas() > 0.0

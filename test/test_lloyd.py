@@ -33,9 +33,9 @@ def test_simple_lloyd(max_num_steps=5):
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 4.9416430501237505
+    ref = 4.985355657854027
     assert abs(norm1 - ref) < tol * ref
-    ref = 2.10832838612077
+    ref = 2.1179164560036154
     assert abs(norm2 - ref) < tol * ref
     ref = 1.0
     assert abs(normi - ref) < tol * ref
@@ -68,9 +68,9 @@ def test_pacman_lloyd(max_num_steps=1000):
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-12
-    ref = 1944.4952375126898
+    ref = 1939.1198108068188
     assert abs(norm1 - ref) < tol * ref
-    ref = 76.09789324486418
+    ref = 75.94965207932323
     assert abs(norm2 - ref) < tol * ref
     ref = 5.0
     assert abs(normi - ref) < tol * ref
