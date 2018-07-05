@@ -27,7 +27,8 @@ def get_new_points_volume_averaged(mesh, get_reference_points):
     for i in mesh.cells["nodes"].T:
         fastfunc.add.at(omega, i, mesh.cell_volumes)
 
-    new_points = (weighted_rp_average.T / omega).T
+    idx = mesh.is_interior_node
+    new_points = (weighted_rp_average[idx].T / omega[idx]).T
     return new_points
 
 
@@ -45,7 +46,8 @@ def get_new_points_count_averaged(mesh, get_reference_points):
     for i in mesh.cells["nodes"].T:
         fastfunc.add.at(omega, i, numpy.ones(i.shape, dtype=float))
 
-    new_points = (rp_average.T / omega).T
+    idx = mesh.is_interior_node
+    new_points = (rp_average[idx].T / omega[idx]).T
     return new_points
 
 
@@ -57,6 +59,7 @@ def odt(*args, uniform_density=False, **kwargs):
     of their adjacent cells. If a triangle cell switches orientation in the
     process, don't move quite so far.
     """
+
     def get_reference_points(mesh):
         cc = mesh.get_cell_circumcenters()
         bc = mesh.get_cell_barycenters()
@@ -69,7 +72,8 @@ def odt(*args, uniform_density=False, **kwargs):
         (lambda mesh: get_new_points_volume_averaged(mesh, get_reference_points))
         if uniform_density
         else (lambda mesh: get_new_points_count_averaged(mesh, get_reference_points)),
-        *args, **kwargs
+        *args,
+        **kwargs
     )
 
 
@@ -83,6 +87,7 @@ def cpt(*args, uniform_density=False, **kwargs):
     (barycenters) of their adjacent cells. If a triangle cell switches
     orientation in the process, don't move quite so far.
     """
+
     def get_reference_points(mesh):
         return mesh.get_cell_barycenters()
 
@@ -90,5 +95,6 @@ def cpt(*args, uniform_density=False, **kwargs):
         (lambda mesh: get_new_points_volume_averaged(mesh, get_reference_points))
         if uniform_density
         else (lambda mesh: get_new_points_count_averaged(mesh, get_reference_points)),
-        *args, **kwargs
+        *args,
+        **kwargs
     )

@@ -131,7 +131,7 @@ def energy(mesh, uniform_density=False):
 
 
 def runner(
-    get_new_points,
+    get_new_interior_points,
     X,
     cells,
     tol,
@@ -166,18 +166,16 @@ def runner(
     while True:
         k += 1
 
-        new_points = get_new_points(mesh)
+        new_interior_points = get_new_interior_points(mesh)
 
         original_orient = mesh.get_signed_tri_areas() > 0.0
-        original_coords = mesh.node_coords.copy()
+        original_coords = mesh.node_coords[mesh.is_interior_node]
 
         # Step unless the orientation of any cell changes.
         alpha = 1.0
         while True:
-            xnew = (1 - alpha) * original_coords + alpha * new_points
-            # Preserve boundary nodes
-            xnew[mesh.is_boundary_node] = original_coords[mesh.is_boundary_node]
-            mesh.update_node_coordinates(xnew)
+            xnew = (1 - alpha) * original_coords + alpha * new_interior_points
+            mesh.update_interior_node_coordinates(xnew)
             new_orient = mesh.get_signed_tri_areas() > 0.0
             if numpy.all(original_orient == new_orient):
                 break
@@ -191,7 +189,7 @@ def runner(
             )
 
         # Abort the loop if the update is small
-        diff = mesh.node_coords - original_coords
+        diff = mesh.node_coords[mesh.is_interior_node] - original_coords
         if numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2):
             break
 

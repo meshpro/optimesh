@@ -50,39 +50,31 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
 
     mesh.mark_boundary()
 
-    is_interior_node = numpy.logical_not(mesh.is_boundary_node)
-
     def f(x):
         interior_coords = x.reshape(-1, 2)
-        coords = X.copy()
-        coords[is_interior_node] = interior_coords
-        mesh.update_node_coordinates(coords)
+        mesh.update_interior_node_coordinates(interior_coords)
         return energy(mesh, uniform_density=True)
 
     # TODO put f and jac together
     def jac(x):
         interior_coords = x.reshape(-1, 2)
-        coords = X.copy()
-        coords[is_interior_node] = interior_coords
+        mesh.update_interior_node_coordinates(interior_coords)
 
-        mesh.update_node_coordinates(coords)
-
-        grad = numpy.zeros(coords.shape)
+        grad = numpy.zeros(mesh.node_coords.shape)
         cc = mesh.get_cell_circumcenters()
-        for i in range(3):
+        # TODO loop over cells directly
+        for i in range(mesh.cells["nodes"].shape[1]):
             mcn = mesh.cells["nodes"][:, i]
-            fastfunc.add.at(grad, mcn, ((coords[mcn] - cc).T * mesh.cell_volumes).T)
+            fastfunc.add.at(grad, mcn, ((mesh.node_coords[mcn] - cc).T * mesh.cell_volumes).T)
         gdim = 2
         grad *= 2 / (gdim + 1)
-        return grad[is_interior_node, :2].flatten()
+        return grad[mesh.is_interior_node, :2].flatten()
 
     def flip_delaunay(x):
         flip_delaunay.step += 1
         # Flip the edges
         interior_coords = x.reshape(-1, 2)
-        coords = X.copy()
-        coords[is_interior_node] = interior_coords
-        mesh.update_node_coordinates(coords)
+        mesh.update_interior_node_coordinates(interior_coords)
         mesh.flip_until_delaunay()
 
         if step_filename_format:
@@ -101,7 +93,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
 
     flip_delaunay.step = 0
 
-    x0 = X[is_interior_node, :2].flatten()
+    x0 = X[mesh.is_interior_node, :2].flatten()
 
     out = scipy.optimize.minimize(
         f,
@@ -117,9 +109,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
 
     # One last edge flip
     interior_coords = out.x.reshape(-1, 2)
-    coords = X.copy()
-    coords[is_interior_node] = interior_coords
-    mesh.update_node_coordinates(coords)
+    mesh.update_interior_node_coordinates(interior_coords)
     mesh.flip_until_delaunay()
 
     if verbosity > 0:

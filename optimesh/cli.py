@@ -68,13 +68,21 @@ def _get_parser():
 
     parser.add_argument(
         "--step-filename-format",
-        "-s",
+        "-f",
         metavar="FMT",
         default=None,
         help=(
             "filename format for mesh at every step "
             "(e.g., `step{:3d}.vtk`, default: None)"
         ),
+    )
+
+    parser.add_argument(
+        "--subdomain-field-name",
+        "-s",
+        metavar="SUBDOMAIN",
+        default=None,
+        help="name of the subdomain field in in the input file (default: None)",
     )
 
     parser.add_argument(
@@ -96,62 +104,84 @@ def main(argv=None):
 
     mesh = meshio.read(args.input_file)
 
+    # TODO remove?
     if mesh.points.shape[1] == 3:
         assert numpy.all(numpy.abs(mesh.points[:, 2]) < 1.0e-13)
         mesh.points = mesh.points[:, :2]
 
-    if args.method == "laplace":
-        X, cells = laplace(
-            mesh.points,
-            mesh.cells["triangle"],
-            args.tolerance,
-            args.max_num_steps,
-            step_filename_format=args.step_filename_format,
-            verbosity=args.verbosity,
-        )
-    elif args.method == "odt":
-        X, cells = odt(
-            mesh.points,
-            mesh.cells["triangle"],
-            args.tolerance,
-            args.max_num_steps,
-            step_filename_format=args.step_filename_format,
-            verbosity=args.verbosity,
-        )
-    elif args.method == "lloyd":
-        X, cells = lloyd(
-            mesh.points,
-            mesh.cells["triangle"],
-            args.tolerance,
-            args.max_num_steps,
-            verbosity=args.verbosity,
-            fcc_type="boundary",
-            step_filename_format=args.step_filename_format,
-        )
-    elif args.method == "ch-odt":
-        X, cells = chen_holst.odt(
-            mesh.points,
-            mesh.cells["triangle"],
-            args.tolerance,
-            args.max_num_steps,
-            step_filename_format=args.step_filename_format,
-            uniform_density=args.uniform_density,
-            verbosity=args.verbosity,
-        )
-    else:
-        assert args.method == "ch-cpt"
-        X, cells = chen_holst.cpt(
-            mesh.points,
-            mesh.cells["triangle"],
-            args.tolerance,
-            args.max_num_steps,
-            step_filename_format=args.step_filename_format,
-            uniform_density=args.uniform_density,
-            verbosity=args.verbosity,
-        )
+    # if args.subdomain_field_name:
+    #     field = mesh.cell_data["triangle"][args.subdomain_field_name]
+    #     subdomain_idx = numpy.unique(field)
+    #     cell_sets = [mesh.cells["triangle"][idx == field] for idx in subdomain_idx]
+    #     exit(1)
+    # else:
+    #     cell_sets = [mesh.cells["triangle"]]
+
+    X = mesh.points
+    cells = mesh.cells["triangle"]
+    cell_sets = [numpy.arange(cells.shape[0])]
+
+    for cell_idx in cell_sets:
+        if args.method == "laplace":
+            X, cls = laplace(
+                X,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                verbosity=args.verbosity,
+            )
+        elif args.method == "odt":
+            X, cls = odt(
+                X,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                verbosity=args.verbosity,
+            )
+        elif args.method == "lloyd":
+            X, cls = lloyd(
+                X,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                verbosity=args.verbosity,
+                fcc_type="boundary",
+                step_filename_format=args.step_filename_format,
+            )
+        elif args.method == "ch-odt":
+            X, cls = chen_holst.odt(
+                X,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                uniform_density=args.uniform_density,
+                verbosity=args.verbosity,
+            )
+        else:
+            assert args.method == "ch-cpt"
+            X, cls = chen_holst.cpt(
+                X,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                uniform_density=args.uniform_density,
+                verbosity=args.verbosity,
+            )
+
+        cells[cell_idx] = cls
 
     if X.shape[1] != 3:
         X = numpy.column_stack([X[:, 0], X[:, 1], numpy.zeros(X.shape[0])])
 
-    meshio.write_points_cells(args.output_file, X, {"triangle": cells})
+    meshio.write_points_cells(
+        args.output_file,
+        X,
+        {"triangle": cells},
+        # point_data=mesh.point_data,
+        # cell_data=mesh.cell_data,
+    )
     return
