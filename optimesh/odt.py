@@ -51,21 +51,19 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
     mesh.mark_boundary()
 
     def f(x):
-        interior_coords = x.reshape(-1, 2)
-        mesh.update_interior_node_coordinates(interior_coords)
+        mesh.update_interior_node_coordinates(x.reshape(-1, 2))
         return energy(mesh, uniform_density=True)
 
     # TODO put f and jac together
     def jac(x):
-        interior_coords = x.reshape(-1, 2)
-        mesh.update_interior_node_coordinates(interior_coords)
+        mesh.update_interior_node_coordinates(x.reshape(-1, 2))
 
         grad = numpy.zeros(mesh.node_coords.shape)
         cc = mesh.get_cell_circumcenters()
-        # TODO loop over cells directly
-        for i in range(mesh.cells["nodes"].shape[1]):
-            mcn = mesh.cells["nodes"][:, i]
-            fastfunc.add.at(grad, mcn, ((mesh.node_coords[mcn] - cc).T * mesh.cell_volumes).T)
+        for mcn in mesh.cells["nodes"].T:
+            fastfunc.add.at(
+                grad, mcn, ((mesh.node_coords[mcn] - cc).T * mesh.cell_volumes).T
+            )
         gdim = 2
         grad *= 2 / (gdim + 1)
         return grad[mesh.is_interior_node, :2].flatten()
@@ -73,8 +71,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
     def flip_delaunay(x):
         flip_delaunay.step += 1
         # Flip the edges
-        interior_coords = x.reshape(-1, 2)
-        mesh.update_interior_node_coordinates(interior_coords)
+        mesh.update_interior_node_coordinates(x.reshape(-1, 2))
         mesh.flip_until_delaunay()
 
         if step_filename_format:
@@ -108,8 +105,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
     # Don't assert out.success; max_num_steps may be reached, that's fine.
 
     # One last edge flip
-    interior_coords = out.x.reshape(-1, 2)
-    mesh.update_interior_node_coordinates(interior_coords)
+    mesh.update_interior_node_coordinates(out.x.reshape(-1, 2))
     mesh.flip_until_delaunay()
 
     if verbosity > 0:
