@@ -8,6 +8,48 @@
 [![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg)](https://pypi.org/project/optimesh)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?logo=github&label=Stars)](https://github.com/nschloe/optimesh)
 
+Several mesh smoothing/optimization methods with one simple interface. For now only
+works for flat triangular meshes. Supports all mesh formats that
+[meshio](https://github.com/nschloe/meshio) read and write.
+
+Example call:
+```
+optimesh in.e out.vtk --method lloyd -n 50
+```
+Output:
+```
+Before:
+
+           █                          min angle:      29.811                 █▃    min quality: 0.485    energy: 1.43225e-02
+          ▆█ ▇ ▃                      avg angle:      60.000                 ██    avg quality: 0.919
+          ██ █▃█                      max angle:     118.316                 ██    max quality: 0.999
+         ▁██▆█▉█▆▅                    std dev angle:  14.039                 ██
+       ▁▁█████▉███ ▃                                                       ▂ ██
+       ███████▉███▇█                                                       █▇██
+       ███████▉█████▆ ▇                                                   ▆████
+      ▅███████▉████████▃▃                                                ██████
+     ▆████████▉██████████▅▂                                           ▂ ▆██████
+  ▁▃▅█████████▉████████████▆▅▃▅▅▁▁                              ▁▁▃▆▃▂█████████
+
+Final (50 steps):
+
+           █                   min angle:      25.830             █    min quality: 0.693    energy: 1.35054e-02
+          ▅▉▇                  avg angle:      60.000             █    avg quality: 0.962
+          █▉█▅                 max angle:      97.417             █    max quality: 1.000
+         ██▉██                 std dev angle:   9.493             █
+        ▅██▉██                                                    █
+        ███▉██                                                    █
+       ████▉██▇▄                                                 ▇█
+      ▂████▉████▇▁                                               ██
+    ▂▃█████▉██████▁ ▂                                          ▁▂██
+  ▁▂███████▉███████▇█▅▁▃▃▂▁                              ▁▂▁▂▃▇████
+
+```
+The left hand-side graph shows the distribution of angles (the grid line is at the
+optimal 60 degrees). The right hand-side graph shows the distribution of simplex
+quality, where quality is twice the ratio of circumcircle and incircle radius.
+
+All command-line options are viewed with
 ```
 optimesh -h
 ```
@@ -25,17 +67,23 @@ optimesh circle.vtk out.vtk --method laplace
 ![odt](https://nschloe.github.io/optimesh/odt.png)
 
 Optimal Delaunay Triangulation (ODT) treated as a minimzation problem.
-Unconditonally assumes uniform mesh density (for now).
+Unconditonally assumes uniform mesh density (for now) so it does _not_ preserve the mesh
+density.
 ```
 optimesh circle.vtk out.vtk --method odt
 ```
 
-#### CVT/Lloyd smoothing
+#### CVT/pseudo-Lloyd smoothing
 ![lloyd](https://nschloe.github.io/optimesh/lloyd.png)
 
 Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
-algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm).
-Unconditonally assumes uniform mesh density (for now).
+algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) adapted for triangular
+meshes. The central assumption here is that the topological neighhbors of any point are
+also the geometrically closest points. That is fulfilled "most of the time", but the
+algorithm can break down if it is not.
+
+Unconditonally assumes uniform mesh density (for now) so it does _not_ preserve the mesh
+density.
 ```
 optimesh circle.vtk out.vtk --method lloyd
 ```
