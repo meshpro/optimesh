@@ -19,5 +19,10 @@
 
 * Create an APNG:
   ```
-  apngasm out.apng step*.png
+  apngasm out.png step*.png
+  ```
+
+* Create a GIF:
+  ```
+  convert -delay 10 -loop 0 step*.png out.gif
   ```

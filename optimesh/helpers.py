@@ -41,20 +41,6 @@ def print_stats(mesh, extra_cols=None):
     return
 
 
-def write(mesh, file_prefix, filetype, k):
-    if filetype == "png":
-        from matplotlib import pyplot as plt
-
-        fig = mesh.plot(show_coedges=False, show_centroids=False, show_axes=False)
-        fig.suptitle("step {}".format(k), fontsize=20)
-        plt.savefig("{}{:04d}.png".format(file_prefix, k))
-        plt.close(fig)
-        return
-
-    mesh.write("{}{:04d}.{}".format(file_prefix, k, filetype))
-    return
-
-
 def sit_in_plane(X, tol=1.0e-15):
     """Checks if all points X sit in a plane.
     """

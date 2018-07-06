@@ -8,12 +8,13 @@
 [![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg)](https://pypi.org/project/optimesh)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?logo=github&label=Stars)](https://github.com/nschloe/optimesh)
 
-Several mesh smoothing/optimization methods with one simple interface.
+Several mesh smoothing/optimization methods with one simple interface. optimesh
 
- * fast
- * preserves submeshes
- * only works for triangular meshes (for now)
- * supports all mesh formats that [meshio](https://github.com/nschloe/meshio) can handle
+ * is fast,
+ * preserves submeshes,
+ * only works for triangular meshes (for now), and
+ * supports all mesh formats that [meshio](https://github.com/nschloe/meshio) can
+   handle.
 
 Install with
 ```
@@ -23,35 +24,9 @@ Example call:
 ```
 optimesh in.e out.vtk --method lloyd -n 50
 ```
-Output (usually looks better on the command line than in the browser):
-```
-Before:
+Output:
+![terminal-screenshot](https://nschloe.github.io/optimesh/term-screenshot.png)
 
-           █                          min angle:      29.811                 █▃    min quality: 0.485    energy: 1.43225e-02
-          ▆█ ▇ ▃                      avg angle:      60.000                 ██    avg quality: 0.919
-          ██ █▃█                      max angle:     118.316                 ██    max quality: 0.999
-         ▁██▆█▉█▆▅                    std dev angle:  14.039                 ██
-       ▁▁█████▉███ ▃                                                       ▂ ██
-       ███████▉███▇█                                                       █▇██
-       ███████▉█████▆ ▇                                                   ▆████
-      ▅███████▉████████▃▃                                                ██████
-     ▆████████▉██████████▅▂                                           ▂ ▆██████
-  ▁▃▅█████████▉████████████▆▅▃▅▅▁▁                              ▁▁▃▆▃▂█████████
-
-Final (50 steps):
-
-           █                   min angle:      25.830             █    min quality: 0.693    energy: 1.35054e-02
-          ▅▉▇                  avg angle:      60.000             █    avg quality: 0.962
-          █▉█▅                 max angle:      97.417             █    max quality: 1.000
-         ██▉██                 std dev angle:   9.493             █
-        ▅██▉██                                                    █
-        ███▉██                                                    █
-       ████▉██▇▄                                                 ▇█
-      ▂████▉████▇▁                                               ██
-    ▂▃█████▉██████▁ ▂                                          ▁▂██
-  ▁▂███████▉███████▇█▅▁▃▃▂▁                              ▁▂▁▂▃▇████
-
-```
 The left hand-side graph shows the distribution of angles (the grid line is at the
 optimal 60 degrees). The right hand-side graph shows the distribution of simplex
 quality, where quality is twice the ratio of circumcircle and incircle radius.
