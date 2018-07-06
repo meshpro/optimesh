@@ -15,9 +15,8 @@ import fastfunc
 from .helpers import runner
 
 
-def get_new_points_volume_averaged(mesh, get_reference_points):
-    rp = get_reference_points(mesh)
-    scaled_rp = (rp.T * mesh.cell_volumes).T
+def get_new_points_volume_averaged(mesh, reference_points):
+    scaled_rp = (reference_points.T * mesh.cell_volumes).T
 
     weighted_rp_average = numpy.zeros(mesh.node_coords.shape)
     for i in mesh.cells["nodes"].T:
@@ -32,15 +31,13 @@ def get_new_points_volume_averaged(mesh, get_reference_points):
     return new_points
 
 
-def get_new_points_count_averaged(mesh, get_reference_points):
+def get_new_points_count_averaged(mesh, reference_points):
     # Estimate the density as 1/|tau|. This leads to some simplifcations: The
     # new point is simply the average of of the reference points
     # (barycenters/cirumcenters) in the star.
-    rp = get_reference_points(mesh)
-
     rp_average = numpy.zeros(mesh.node_coords.shape)
     for i in mesh.cells["nodes"].T:
-        fastfunc.add.at(rp_average, i, rp)
+        fastfunc.add.at(rp_average, i, reference_points)
 
     omega = numpy.zeros(len(mesh.node_coords))
     for i in mesh.cells["nodes"].T:
@@ -59,22 +56,23 @@ def odt(*args, uniform_density=False, **kwargs):
     of their adjacent cells. If a triangle cell switches orientation in the
     process, don't move quite so far.
     """
+    compute_average = (
+        get_new_points_volume_averaged
+        if uniform_density
+        else get_new_points_count_averaged
+    )
 
-    def get_reference_points(mesh):
+    def get_new_points(mesh):
+        # Get circumcenters everywhere except at cells adjacent to the boundary;
+        # barycenters there.
         cc = mesh.get_cell_circumcenters()
         bc = mesh.get_cell_barycenters()
         # Find all cells with a boundary edge
         boundary_cell_ids = mesh.get_edges_cells()[1][:, 0]
         cc[boundary_cell_ids] = bc[boundary_cell_ids]
-        return cc
+        return compute_average(mesh, cc)
 
-    return runner(
-        (lambda mesh: get_new_points_volume_averaged(mesh, get_reference_points))
-        if uniform_density
-        else (lambda mesh: get_new_points_count_averaged(mesh, get_reference_points)),
-        *args,
-        **kwargs
-    )
+    return runner(get_new_points, *args, **kwargs)
 
 
 def cpt(*args, uniform_density=False, **kwargs):
@@ -87,14 +85,13 @@ def cpt(*args, uniform_density=False, **kwargs):
     (barycenters) of their adjacent cells. If a triangle cell switches
     orientation in the process, don't move quite so far.
     """
-
-    def get_reference_points(mesh):
-        return mesh.get_cell_barycenters()
-
-    return runner(
-        (lambda mesh: get_new_points_volume_averaged(mesh, get_reference_points))
+    compute_average = (
+        get_new_points_volume_averaged
         if uniform_density
-        else (lambda mesh: get_new_points_count_averaged(mesh, get_reference_points)),
-        *args,
-        **kwargs
+        else get_new_points_count_averaged
     )
+
+    def get_new_points(mesh):
+        return compute_average(mesh, mesh.get_cell_barycenters())
+
+    return runner(get_new_points, *args, **kwargs)
