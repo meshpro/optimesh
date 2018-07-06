@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 import numpy
-
-# import fastfunc
+import pyamg
 
 import scipy.sparse
 import scipy.sparse.linalg
@@ -22,7 +21,7 @@ def cpt(*args, **kwargs):
     dim = 2
     alpha = 2 / (dim + 1) ** 2
 
-    def get_new_points(mesh):
+    def get_new_points(mesh, tol=1.0e-10):
         # Create matrix in IJV format
         # 2 / (dim+1)**2
         edges = mesh.edges["nodes"].T
@@ -51,8 +50,14 @@ def cpt(*args, **kwargs):
         rhs = numpy.zeros((n, 2))
         rhs[mesh.is_boundary_node] = mesh.node_coords[mesh.is_boundary_node]
 
-        # TODO replace by pyamg
-        out = scipy.sparse.linalg.spsolve(matrix, rhs)
+        # out = scipy.sparse.linalg.spsolve(matrix, rhs)
+        ml = pyamg.ruge_stuben_solver(matrix)
+        # Keep an eye on multiple rhs-solves in pyamg,
+        # <https://github.com/pyamg/pyamg/issues/215>.
+        out = numpy.column_stack([
+            ml.solve(rhs[:, 0], tol=tol),
+            ml.solve(rhs[:, 1], tol=tol),
+        ])
         return out[mesh.is_interior_node]
 
     return runner(get_new_points, *args, **kwargs)

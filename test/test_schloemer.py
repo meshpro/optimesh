@@ -175,8 +175,5 @@ def test_pacman():
 
 
 if __name__ == "__main__":
-    # test_simple1()
-    # test_simple2()
-    # test_simple3()
-    # test_circle()
-    test_pacman()
+    test_circle()
+    # test_pacman()

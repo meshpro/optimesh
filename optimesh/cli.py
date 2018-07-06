@@ -12,6 +12,7 @@ from .laplace import laplace
 from .lloyd import lloyd
 from .odt import odt
 from . import chen_holst
+from . import schloemer
 
 
 def _get_parser():
@@ -29,7 +30,7 @@ def _get_parser():
         "--method",
         "-m",
         required=True,
-        choices=["laplace", "lloyd", "odt", "ch-odt", "ch-cpt"],
+        choices=["laplace", "lloyd", "odt", "ch-odt", "ch-cpt", "s-cpt"],
         help="smoothing method",
     )
 
@@ -157,9 +158,19 @@ def main(argv=None):
                 uniform_density=args.uniform_density,
                 verbosity=args.verbosity,
             )
-        else:
-            assert args.method == "ch-cpt"
+        elif args.method == "ch-cpt":
             X, cls = chen_holst.cpt(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                uniform_density=args.uniform_density,
+                verbosity=args.verbosity,
+            )
+        else:
+            assert args.method == "s-cpt"
+            X, cls = schloemer.cpt(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
