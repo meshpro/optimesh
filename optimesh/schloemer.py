@@ -10,12 +10,20 @@ from .helpers import runner
 
 
 def cpt(*args, **kwargs):
-    """This method assumes rho = 1/|tau| as mesh density, which allows certain
-    simplifications. For example, the CPT-energy (see Chen-Holst) is really a _linear_
-    function of the node coordinates. Hence, one only needs to solve one linear system
-    (which is SPD as well) to find an energy-minimizer.
+    """The `i`th entry in the CPT-energy gradient is
 
-    After this, one does edge-flipping, but that is usually only very few steps.
+    \\partial E_i = 2/(d+1) sum_{tau_j in omega_i} (x_i - b_j) \\int_{tau_j} rho
+
+    where d is the dimension of the simplex, `omega_i` is the star of node `i`, `tau_j`
+    a triangle in the star, and `b_j` the barycenter of the respective triangle.
+
+    This method aims to preserve the mesh density and hence assumes `rho = 1/|tau|`.
+    Incidentally, this makes the integral in the above formula vanish such that the
+    energy gradient is a _linear_ function of the mesh coordinates. The linear operator
+    is in fact given by the mesh graph Laplacian. Hence, one only needs to solve `d`
+    systems with the graph Laplacian (one for each component).
+
+    After this, one does edge-flipping and repeats the solve.
     """
 
     dim = 2
