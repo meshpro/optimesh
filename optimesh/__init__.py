@@ -11,11 +11,12 @@ from .__about__ import (
     __license__,
 )
 
+from . import chen_holst
+from . import cli
 from .laplace import laplace
 from .lloyd import lloyd
 from .odt import odt
-from . import chen_holst
-from . import cli
+from . import schloemer
 
 __all__ = [
     "__version__",
@@ -29,6 +30,7 @@ __all__ = [
     "laplace",
     "lloyd",
     "odt",
+    "schloemer",
 ]
 
 # try:
