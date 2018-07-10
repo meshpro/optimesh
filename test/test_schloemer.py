@@ -164,7 +164,7 @@ def test_pacman():
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
     tol = 1.0e-10
-    ref = 1861.1845672582608
+    ref = 1861.1845669965835
     assert abs(norm1 - ref) < tol * ref
     ref = 73.12639677867615
     assert abs(norm2 - ref) < tol * ref
