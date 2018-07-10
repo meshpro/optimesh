@@ -8,7 +8,7 @@ import meshio
 import numpy
 
 from .__about__ import __version__
-from .laplace import laplace
+from . import laplace
 from .lloyd import lloyd
 from .odt import odt
 from . import chen_holst
@@ -30,7 +30,7 @@ def _get_parser():
         "--method",
         "-m",
         required=True,
-        choices=["laplace", "lloyd", "odt", "ch-odt", "ch-cpt", "s-cpt"],
+        choices=["laplace-fp", "laplace-ls", "lloyd", "odt", "ch-odt", "ch-cpt", "s-cpt"],
         help="smoothing method",
     )
 
@@ -124,8 +124,17 @@ def main(argv=None):
     cells = mesh.cells["triangle"]
 
     for cell_idx in cell_sets:
-        if args.method == "laplace":
-            X, cls = laplace(
+        if args.method == "laplace-fp":
+            X, cls = laplace.fixed_point(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                verbosity=args.verbosity,
+            )
+        elif args.method == "laplace-ls":
+            X, cls = laplace.linear_solve(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,

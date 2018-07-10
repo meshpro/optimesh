@@ -13,7 +13,7 @@ from .__about__ import (
 
 from . import chen_holst
 from . import cli
-from .laplace import laplace
+from . import laplace
 from .lloyd import lloyd
 from .odt import odt
 from . import schloemer
