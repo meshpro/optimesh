@@ -38,35 +38,47 @@ optimesh -h
 
 #### Laplacian smoothing
 
-Fast, preserves the mesh density.
+![laplace-ls](https://nschloe.github.io/optimesh/laplace-ls.png) |
+![laplace-fp](https://nschloe.github.io/optimesh/laplace-fp.png) |
+:---------------------:|:---------------------:|
+nonlinear optimization | fixed-point iteration |
 
-##### Linear solve
+Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
+Implemented for historical reasons.
 
 [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing) can be
 formulated as a simple linear solve; convergence is much faster than the classical
 fixed-point iteration.
 ```
-optimesh circle.vtk out.vtk --method laplace
-```
-
-##### Fixed-point iteration
-
-![laplace](https://nschloe.github.io/optimesh/laplace-fp.png)
-
-Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
-Slower than the linear solve above. Implemented for historical reasons.
-```
-optimesh circle.vtk out.vtk --method laplace-fp
+optimesh circle.vtk out.vtk --method laplace-ls
 ```
 
 #### ODT smoothing
-![odt](https://nschloe.github.io/optimesh/odt.png)
+
+![odt-no](https://nschloe.github.io/optimesh/odt-no.png) |
+![odt-fp](https://nschloe.github.io/optimesh/odt-fp.png) |
+:---------------------:|:---------------------:|
+nonlinear optimization | fixed-point iteration |
 
 Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
 Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
 
 ```
-optimesh circle.vtk out.vtk --method odt
+optimesh circle.vtk out.vtk --method odt-no
+```
+
+#### CPT smoothing
+
+![cpt-no](https://nschloe.github.io/optimesh/cpt-no.png)
+![ch-cpt](https://nschloe.github.io/optimesh/cpt-fp.png)
+:---------------------:|:---------------------:|
+nonlinear optimization | fixed-point iteration |
+
+Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
+Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
+
+```
+optimesh circle.vtk out.vtk --method cpt-ls
 ```
 
 #### CVT/pseudo-Lloyd smoothing
@@ -82,26 +94,6 @@ Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh de
 ```
 optimesh circle.vtk out.vtk --method lloyd
 ```
-
-#### Chen-Holst smoothing
-
-Mesh optimization after [Chen and Holst](#relevant-publications). Both methods honor the
-`-u`/`--uniform-density` command line option. If not given, the mesh density is
-preserved.
-
-* ODT-like smoothing
-
-  ![ch-odt](https://nschloe.github.io/optimesh/ch-odt.png)
-  ```
-  optimesh circle.vtk out.vtk --method chen-odt --uniform-density
-  ```
-
-* CPT (Centroidal Patch Triangulation, CVT-like smoothing)
-
-  ![ch-cpt](https://nschloe.github.io/optimesh/ch-cpt.png)
-  ```
-  optimesh circle.vtk out.vtk --method chen-cpt --uniform-density
-  ```
 
 ### Access from Python
 
