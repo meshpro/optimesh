@@ -30,7 +30,7 @@ def _get_parser():
         "--method",
         "-m",
         required=True,
-        choices=["laplace-fp", "laplace-ls", "lloyd", "odt", "ch-odt", "ch-cpt", "s-cpt"],
+        choices=["laplace", "laplace-fp", "lloyd", "odt", "ch-odt", "ch-cpt", "s-cpt"],
         help="smoothing method",
     )
 
@@ -133,7 +133,7 @@ def main(argv=None):
                 step_filename_format=args.step_filename_format,
                 verbosity=args.verbosity,
             )
-        elif args.method == "laplace-ls":
+        elif args.method == "laplace":
             X, cls = laplace.linear_solve(
                 mesh.points,
                 cells[cell_idx],

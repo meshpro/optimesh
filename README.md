@@ -37,12 +37,26 @@ optimesh -h
 ```
 
 #### Laplacian smoothing
-![laplace](https://nschloe.github.io/optimesh/laplace.png)
 
-Ordinary [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
 Fast, preserves the mesh density.
+
+##### Linear solve
+
+[Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing) can be
+formulated as a simple linear solve; convergence is much faster than the classical
+fixed-point iteration.
 ```
 optimesh circle.vtk out.vtk --method laplace
+```
+
+##### Fixed-point iteration
+
+![laplace](https://nschloe.github.io/optimesh/laplace-fp.png)
+
+Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
+Slower than the linear solve above. Implemented for historical reasons.
+```
+optimesh circle.vtk out.vtk --method laplace-fp
 ```
 
 #### ODT smoothing
