@@ -53,7 +53,11 @@ def _get_parser():
     )
 
     parser.add_argument(
-        "--verbosity", choices=[0, 1, 2], help="verbosity level (default: 1)", default=1
+        "--verbosity",
+        type=int,
+        choices=[0, 1, 2],
+        help="verbosity level (default: 1)",
+        default=1,
     )
 
     parser.add_argument(
@@ -170,15 +174,24 @@ def main(argv=None):
             )
         else:
             assert args.method == "s-cpt"
-            X, cls = schloemer.cpt(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                uniform_density=args.uniform_density,
-                verbosity=args.verbosity,
-            )
+            if args.uniform_density:
+                X, cls = schloemer.cpt_uniform(
+                    mesh.points,
+                    cells[cell_idx],
+                    args.tolerance,
+                    args.max_num_steps,
+                    step_filename_format=args.step_filename_format,
+                    verbosity=args.verbosity,
+                )
+            else:
+                X, cls = schloemer.cpt(
+                    mesh.points,
+                    cells[cell_idx],
+                    args.tolerance,
+                    args.max_num_steps,
+                    step_filename_format=args.step_filename_format,
+                    verbosity=args.verbosity,
+                )
 
         cells[cell_idx] = cls
 
