@@ -38,10 +38,10 @@ optimesh -h
 
 #### Laplacian smoothing
 
-![laplace-ls](https://nschloe.github.io/optimesh/laplace-ls.png) |
 ![laplace-fp](https://nschloe.github.io/optimesh/laplace-fp.png) |
-:---------------------:|:---------------------:|
-nonlinear optimization | fixed-point iteration |
+![laplace-ls](https://nschloe.github.io/optimesh/laplace-ls.png) |
+:---------------------:|:----------------------------------:|
+fixed-point iteration :|: linear solve (density-preserving) |
 
 Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
 Implemented for historical reasons.
@@ -55,10 +55,10 @@ optimesh circle.vtk out.vtk --method laplace-ls
 
 #### ODT smoothing
 
-![odt-no](https://nschloe.github.io/optimesh/odt-no.png) |
 ![odt-fp](https://nschloe.github.io/optimesh/odt-fp.png) |
-:---------------------:|:---------------------:|
-nonlinear optimization | fixed-point iteration |
+![odt-no](https://nschloe.github.io/optimesh/odt-no.png) |
+:---------------------:|:----------------------------------:|:----------------------:|
+fixed-point iteration :|: linear solve (density-preserving) | nonlinear optimization |
 
 Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
 Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
@@ -69,10 +69,11 @@ optimesh circle.vtk out.vtk --method odt-no
 
 #### CPT smoothing
 
+![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png)
+![cpt-ls](https://nschloe.github.io/optimesh/cpt-ls.png)
 ![cpt-no](https://nschloe.github.io/optimesh/cpt-no.png)
-![ch-cpt](https://nschloe.github.io/optimesh/cpt-fp.png)
-:---------------------:|:---------------------:|
-nonlinear optimization | fixed-point iteration |
+:---------------------:|:----------------------------------:|:----------------------:|
+fixed-point iteration :|: linear solve (density-preserving) | nonlinear optimization |
 
 Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
 Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
