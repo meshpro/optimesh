@@ -36,6 +36,7 @@ def linear_solve(*args, **kwargs):
     """Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
     interior vertex to the arithmetic average of its neighboring points.
     """
+
     def get_new_points(mesh, tol=1.0e-10):
         cells = mesh.cells["nodes"].T
 
@@ -76,10 +77,9 @@ def linear_solve(*args, **kwargs):
         ml = pyamg.ruge_stuben_solver(matrix)
         # Keep an eye on multiple rhs-solves in pyamg,
         # <https://github.com/pyamg/pyamg/issues/215>.
-        out = numpy.column_stack([
-            ml.solve(rhs[:, 0], tol=tol),
-            ml.solve(rhs[:, 1], tol=tol),
-        ])
+        out = numpy.column_stack(
+            [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
+        )
         return out[mesh.is_interior_node]
 
     return runner(get_new_points, *args, **kwargs)

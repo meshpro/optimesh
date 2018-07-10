@@ -7,7 +7,10 @@ import optimesh
 from helpers import download_mesh
 
 
-@pytest.mark.parametrize("method", ["laplace", "lloyd", "odt", "ch-odt", "ch-cpt"])
+@pytest.mark.parametrize(
+    "method",
+    ["laplace-fp", "laplace-ls", "lloyd", "odt-fp", "odt-no", "cpt-fp", "cpt-ls"],
+)
 def test_cli(method):
     input_file = download_mesh(
         # "circle.vtk", "614fcabc0388e1b43723ac64f8555ef52ee4ddda1466368c450741eb"

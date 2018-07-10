@@ -181,3 +181,36 @@ def runner(
         print()
 
     return mesh.node_coords, mesh.cells["nodes"]
+
+
+def get_new_points_volume_averaged(mesh, reference_points):
+    scaled_rp = (reference_points.T * mesh.cell_volumes).T
+
+    weighted_rp_average = numpy.zeros(mesh.node_coords.shape)
+    for i in mesh.cells["nodes"].T:
+        fastfunc.add.at(weighted_rp_average, i, scaled_rp)
+
+    omega = numpy.zeros(len(mesh.node_coords))
+    for i in mesh.cells["nodes"].T:
+        fastfunc.add.at(omega, i, mesh.cell_volumes)
+
+    idx = mesh.is_interior_node
+    new_points = (weighted_rp_average[idx].T / omega[idx]).T
+    return new_points
+
+
+def get_new_points_count_averaged(mesh, reference_points):
+    # Estimate the density as 1/|tau|. This leads to some simplifcations: The
+    # new point is simply the average of of the reference points
+    # (barycenters/cirumcenters) in the star.
+    rp_average = numpy.zeros(mesh.node_coords.shape)
+    for i in mesh.cells["nodes"].T:
+        fastfunc.add.at(rp_average, i, reference_points)
+
+    omega = numpy.zeros(len(mesh.node_coords))
+    for i in mesh.cells["nodes"].T:
+        fastfunc.add.at(omega, i, numpy.ones(i.shape, dtype=float))
+
+    idx = mesh.is_interior_node
+    new_points = (rp_average[idx].T / omega[idx]).T
+    return new_points

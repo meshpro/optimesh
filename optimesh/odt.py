@@ -7,10 +7,51 @@ import fastfunc
 
 from meshplex import MeshTri
 
-from .helpers import print_stats, energy
+from .helpers import (
+    runner,
+    get_new_points_volume_averaged,
+    get_new_points_count_averaged,
+    energy,
+    print_stats,
+)
 
 
-def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
+def fixed_point(*args, uniform_density=False, **kwargs):
+    """Optimal Delaunay Triangulation.
+
+    Long Chen, Michael Holst,
+    Efficient mesh optimization schemes based on Optimal Delaunay
+    Triangulations,
+    Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
+    <https://doi.org/10.1016/j.cma.2010.11.007>.
+
+    Idea:
+    Move interior mesh points into the weighted averages of the circumcenters
+    of their adjacent cells. If a triangle cell switches orientation in the
+    process, don't move quite so far.
+    """
+    compute_average = (
+        get_new_points_volume_averaged
+        if uniform_density
+        else get_new_points_count_averaged
+    )
+
+    def get_new_points(mesh):
+        # Get circumcenters everywhere except at cells adjacent to the boundary;
+        # barycenters there.
+        cc = mesh.get_cell_circumcenters()
+        bc = mesh.get_cell_barycenters()
+        # Find all cells with a boundary edge
+        boundary_cell_ids = mesh.get_edges_cells()[1][:, 0]
+        cc[boundary_cell_ids] = bc[boundary_cell_ids]
+        return compute_average(mesh, cc)
+
+    return runner(get_new_points, *args, **kwargs)
+
+
+def nonlinear_optimization(
+    X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None
+):
     """Optimal Delaunay Triangulation smoothing.
 
     This method minimizes the energy

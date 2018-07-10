@@ -8,11 +8,10 @@ import meshio
 import numpy
 
 from .__about__ import __version__
-from . import laplace
 from .lloyd import lloyd
-from .odt import odt
-from . import chen_holst
-from . import schloemer
+from . import laplace
+from . import odt
+from . import cpt
 
 
 def _get_parser():
@@ -30,7 +29,16 @@ def _get_parser():
         "--method",
         "-m",
         required=True,
-        choices=["laplace", "laplace-fp", "lloyd", "odt", "ch-odt", "ch-cpt", "s-cpt"],
+        choices=[
+            "lloyd",
+            "laplace-ls",
+            "laplace-fp",
+            "odt-fp",
+            "odt-no",
+            "cpt-fp",
+            "cpt-ls",
+            "cpt-no",
+        ],
         help="smoothing method",
     )
 
@@ -133,17 +141,8 @@ def main(argv=None):
                 step_filename_format=args.step_filename_format,
                 verbosity=args.verbosity,
             )
-        elif args.method == "laplace":
+        elif args.method == "laplace-ls":
             X, cls = laplace.linear_solve(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
-        elif args.method == "odt":
-            X, cls = odt(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
@@ -161,8 +160,8 @@ def main(argv=None):
                 fcc_type="boundary",
                 step_filename_format=args.step_filename_format,
             )
-        elif args.method == "ch-odt":
-            X, cls = chen_holst.odt(
+        elif args.method == "odt-fp":
+            X, cls = odt.fixed_point(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
@@ -171,36 +170,44 @@ def main(argv=None):
                 uniform_density=args.uniform_density,
                 verbosity=args.verbosity,
             )
-        elif args.method == "ch-cpt":
-            X, cls = chen_holst.cpt(
+        elif args.method == "odt-no":
+            X, cls = odt.nonlinear_optimization(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                verbosity=args.verbosity,
+            )
+        elif args.method == "cpt-fp":
+            X, cls = cpt.fixed_point(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
                 step_filename_format=args.step_filename_format,
                 uniform_density=args.uniform_density,
+                verbosity=args.verbosity,
+            )
+        elif args.method == "cpt-ls":
+            X, cls = cpt.linear_solve(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
                 verbosity=args.verbosity,
             )
         else:
-            assert args.method == "s-cpt"
-            if args.uniform_density:
-                X, cls = schloemer.cpt_uniform(
-                    mesh.points,
-                    cells[cell_idx],
-                    args.tolerance,
-                    args.max_num_steps,
-                    step_filename_format=args.step_filename_format,
-                    verbosity=args.verbosity,
-                )
-            else:
-                X, cls = schloemer.cpt(
-                    mesh.points,
-                    cells[cell_idx],
-                    args.tolerance,
-                    args.max_num_steps,
-                    step_filename_format=args.step_filename_format,
-                    verbosity=args.verbosity,
-                )
+            assert args.method == "cpt-no"
+            X, cls = cpt.nonlinear_optimization(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                verbosity=args.verbosity,
+            )
 
         cells[cell_idx] = cls
 
