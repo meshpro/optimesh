@@ -36,7 +36,7 @@ def _get_parser():
             "odt-fp",
             "odt-no",
             "cpt-fp",
-            "cpt-ls",
+            "cpt-dp",
             "cpt-qn",
         ],
         help="smoothing method",
@@ -180,17 +180,16 @@ def main(argv=None):
                 verbosity=args.verbosity,
             )
         elif args.method == "cpt-fp":
-            X, cls = cpt.fixed_point(
+            X, cls = cpt.fixed_point_uniform(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
                 step_filename_format=args.step_filename_format,
-                uniform_density=args.uniform_density,
                 verbosity=args.verbosity,
             )
-        elif args.method == "cpt-ls":
-            X, cls = cpt.linear_solve(
+        elif args.method == "cpt-dp":
+            X, cls = cpt.density_preserving(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
@@ -199,7 +198,7 @@ def main(argv=None):
                 verbosity=args.verbosity,
             )
         else:
-            assert args.method == "cpt-qn"
+            assert args.method == "cpt-qn", "Illegal method {}".format(args.method)
             X, cls = cpt.quasi_newton(
                 mesh.points,
                 cells[cell_idx],

@@ -7,67 +7,60 @@ import numpy
 import meshio
 import optimesh
 
-from helpers import download_mesh
+from meshes import simple1, simple2, simple3, pacman
 
 
 def test_simple1_energy():
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.4, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
-
-    tol = 1.0e-12
-
-    energy = optimesh.cpt.energy(X, cells, uniform_density=False)
+    X, cells = simple1()
+    energy = optimesh.cpt.energy_uniform(X, cells)
     ref = 17.0 / 60.0
-    assert abs(energy - ref) < tol * ref
-
-    energy = optimesh.cpt.energy(X, cells, uniform_density=True)
-    ref = 101.0 / 90.0
-    assert abs(energy - ref) < tol * ref
+    assert abs(energy - ref) < 1.0e-12 * ref
     return
 
 
 def test_pacman_energy():
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
-
-    X = mesh.points
-    cells = mesh.cells["triangle"]
-
-    tol = 1.0e-12
-
-    energy = optimesh.cpt.energy(X, cells, uniform_density=False)
+    X, cells = pacman()
+    energy = optimesh.cpt.energy_uniform(X, cells)
     ref = 7.320400634147646
-    assert abs(energy - ref) < tol * ref
-
-    energy = optimesh.cpt.energy(X, cells, uniform_density=True)
-    ref = 78.8877511729188
-    assert abs(energy - ref) < tol * ref
+    assert abs(energy - ref) < 1.0e-12 * ref
     return
 
 
-def test_simple1_fixed_point():
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.4, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
+# def test_simple1_jac():
+#     X, cells = _get_simple1()
+#
+#     jac = optimesh.cpt.jac_uniform(X, cells)
+#
+#     print(jac)
+#     exit(1)
+#     return
 
-    X, cells = optimesh.cpt.fixed_point(X, cells, 1.0e-12, 100, uniform_density=True)
+
+# def test_pacman_jac():
+#     filename = download_mesh(
+#         "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
+#     )
+#     mesh = meshio.read(filename)
+#
+#     X = mesh.points
+#     cells = mesh.cells["triangle"]
+#
+#     tol = 1.0e-12
+#
+#     energy = optimesh.cpt.energy(X, cells, uniform_density=False)
+#     ref = 7.320400634147646
+#     assert abs(energy - ref) < tol * ref
+#
+#     energy = optimesh.cpt.energy(X, cells, uniform_density=True)
+#     ref = 78.8877511729188
+#     assert abs(energy - ref) < tol * ref
+#     return
+
+
+def test_simple1_fixed_point():
+    X, cells = simple1()
+
+    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 1.0e-12, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -87,19 +80,9 @@ def test_simple1_fixed_point():
 
 
 def test_simple2_fixed_point():
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.7, 0.5, 0.0],
-            [1.7, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
+    X, cells = simple2()
 
-    X, cells = optimesh.cpt.fixed_point(X, cells, 1.0e-3, 100, uniform_density=True)
+    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -119,32 +102,9 @@ def test_simple2_fixed_point():
 
 
 def test_simple3_fixed_point():
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [2.0, 0.0, 0.0],
-            [2.0, 1.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.7, 0.5, 0.0],
-            [1.7, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array(
-        [
-            [0, 1, 6],
-            [1, 7, 6],
-            [1, 2, 7],
-            [2, 3, 7],
-            [3, 4, 7],
-            [4, 6, 7],
-            [4, 5, 6],
-            [5, 0, 6],
-        ]
-    )
+    X, cells = simple3()
 
-    X, cells = optimesh.cpt.fixed_point(X, cells, 1.0e-3, 100, uniform_density=True)
+    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -188,19 +148,14 @@ def test_circle_fixed_point():
     mesh = meshio.read(filename)
     c = mesh.cells["triangle"].astype(numpy.int)
 
-    X, cells = optimesh.cpt.fixed_point(mesh.points, c, 1.0e-3, 100)
+    X, cells = optimesh.cpt.fixed_point_uniform(mesh.points, c, 1.0e-3, 100)
     return
 
 
 def test_pacman_fixed_point():
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
+    X, cells = pacman()
 
-    X, _ = optimesh.cpt.fixed_point(
-        mesh.points, mesh.cells["triangle"], 1.0e-3, 100, uniform_density=True
-    )
+    X, _ = optimesh.cpt.fixed_point_uniform(X, cells, 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -220,18 +175,9 @@ def test_pacman_fixed_point():
 
 
 def test_simple1_linear_solve():
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.4, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
+    X, cells = simple1()
 
-    X, cells = optimesh.cpt.linear_solve(X, cells, 1.0e-12, 100, uniform_density=True)
+    X, cells = optimesh.cpt.density_preserving(X, cells, 1.0e-12, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -251,19 +197,9 @@ def test_simple1_linear_solve():
 
 
 def test_simple2_linear_solve():
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.7, 0.5, 0.0],
-            [1.7, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
+    X, cells = simple2()
 
-    X, cells = optimesh.cpt.linear_solve(X, cells, 1.0e-3, 100, uniform_density=True)
+    X, cells = optimesh.cpt.density_preserving(X, cells, 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -283,32 +219,9 @@ def test_simple2_linear_solve():
 
 
 def test_simple3_linear_solve():
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [2.0, 0.0, 0.0],
-            [2.0, 1.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.7, 0.5, 0.0],
-            [1.7, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array(
-        [
-            [0, 1, 6],
-            [1, 7, 6],
-            [1, 2, 7],
-            [2, 3, 7],
-            [3, 4, 7],
-            [4, 6, 7],
-            [4, 5, 6],
-            [5, 0, 6],
-        ]
-    )
+    X, cells = simple3()
 
-    X, cells = optimesh.cpt.linear_solve(X, cells, 1.0e-3, 100, uniform_density=True)
+    X, cells = optimesh.cpt.density_preserving(X, cells, 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -352,19 +265,14 @@ def test_circle_linear_solve():
     mesh = meshio.read(filename)
     c = mesh.cells["triangle"].astype(numpy.int)
 
-    X, cells = optimesh.cpt.linear_solve(mesh.points, c, 1.0e-3, 100)
+    X, cells = optimesh.cpt.density_preserving(mesh.points, c, 1.0e-3, 100)
     return
 
 
 def test_pacman_linear_solve():
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
+    X, cells = pacman()
 
-    X, _ = optimesh.cpt.linear_solve(
-        mesh.points, mesh.cells["triangle"], 1.0e-3, 100, uniform_density=True
-    )
+    X, _ = optimesh.cpt.density_preserving(X, cells, 1.0e-3, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()

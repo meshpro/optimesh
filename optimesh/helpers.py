@@ -11,12 +11,12 @@ import asciiplotlib as apl
 def print_stats(mesh, extra_cols=None):
     extra_cols = [] if extra_cols is None else extra_cols
 
-    angles = mesh.get_angles() / numpy.pi * 180
+    angles = mesh.angles / numpy.pi * 180
     angles_hist, angles_bin_edges = numpy.histogram(
         angles, bins=numpy.linspace(0.0, 180.0, num=73, endpoint=True)
     )
 
-    q = mesh.get_quality()
+    q = mesh.triangle_quality
     q_hist, q_bin_edges = numpy.histogram(
         q, bins=numpy.linspace(0.0, 1.0, num=41, endpoint=True)
     )
@@ -136,7 +136,7 @@ def runner(
 
         new_interior_points = get_new_interior_points(mesh)
 
-        original_orient = mesh.get_signed_tri_areas() > 0.0
+        original_orient = mesh.signed_tri_areas > 0.0
         original_coords = mesh.node_coords[mesh.is_interior_node]
 
         # Step unless the orientation of any cell changes.
@@ -144,7 +144,7 @@ def runner(
         while True:
             xnew = (1 - alpha) * original_coords + alpha * new_interior_points
             mesh.update_interior_node_coordinates(xnew)
-            new_orient = mesh.get_signed_tri_areas() > 0.0
+            new_orient = mesh.signed_tri_areas > 0.0
             if numpy.all(original_orient == new_orient):
                 break
             alpha /= 2

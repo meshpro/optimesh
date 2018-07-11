@@ -2,25 +2,16 @@
 #
 import os
 
+import meshio
 import numpy
 
-import meshio
 import optimesh
 
-from helpers import download_mesh
+from meshes import simple1, simple2, simple3, pacman
 
 
 def test_simple1_fixed_point():
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.4, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
+    X, cells = simple1()
 
     X, cells = optimesh.odt.fixed_point(X, cells, 1.0e-5, 100, uniform_density=True)
 
@@ -37,22 +28,11 @@ def test_simple1_fixed_point():
     assert abs(norm2 - ref) < tol * ref
     ref = 1.0
     assert abs(normi - ref) < tol * ref
-
     return
 
 
 def test_simple2_fixed_point():
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.7, 0.5, 0.0],
-            [1.7, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
+    X, cells = simple2()
 
     X, cells = optimesh.odt.fixed_point(X, cells, 1.0e-3, 100, uniform_density=True)
 
@@ -69,35 +49,11 @@ def test_simple2_fixed_point():
     assert abs(norm2 - ref) < tol * ref
     ref = 1.7
     assert abs(normi - ref) < tol * ref
-
     return
 
 
 def test_simple3_fixed_point():
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [2.0, 0.0, 0.0],
-            [2.0, 1.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.7, 0.5, 0.0],
-            [1.7, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array(
-        [
-            [0, 1, 6],
-            [1, 7, 6],
-            [1, 2, 7],
-            [2, 3, 7],
-            [3, 4, 7],
-            [4, 6, 7],
-            [4, 5, 6],
-            [5, 0, 6],
-        ]
-    )
+    X, cells = simple3()
 
     X, cells = optimesh.odt.fixed_point(X, cells, 1.0e-3, 100, uniform_density=True)
 
@@ -114,7 +70,6 @@ def test_simple3_fixed_point():
     assert abs(norm2 - ref) < tol * ref
     ref = 2.0
     assert abs(normi - ref) < tol * ref
-
     return
 
 
@@ -147,14 +102,9 @@ def test_circle_fixed_point():
 
 
 def test_pacman_fixed_point():
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
+    X, cells = pacman()
 
-    X, _ = optimesh.odt.fixed_point(
-        mesh.points, mesh.cells["triangle"], 1.0e-3, 500, uniform_density=True
-    )
+    X, _ = optimesh.odt.fixed_point(X, cells, 1.0e-3, 500, uniform_density=True)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -169,11 +119,11 @@ def test_pacman_fixed_point():
     assert abs(norm2 - ref) < tol * ref
     ref = 5.0
     assert abs(normi - ref) < tol * ref
-
     return
 
 
 def test_simple1_nonlinear_optimization():
+    # TODO use 3D coordinates, simple1
     X = numpy.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.4, 0.5]])
     cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
 
@@ -192,11 +142,11 @@ def test_simple1_nonlinear_optimization():
     assert abs(norm2 - ref) < tol * ref
     ref = 1.0
     assert abs(normi - ref) < tol * ref
-
     return
 
 
 def test_simple2_nonlinear_optimization():
+    # TODO use three coordinates, simple2()
     X = numpy.array(
         [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.7, 0.5], [1.7, 0.5]]
     )
@@ -217,11 +167,11 @@ def test_simple2_nonlinear_optimization():
     assert abs(norm2 - ref) < tol * ref
     ref = 1.7
     assert abs(normi - ref) < tol * ref
-
     return
 
 
 def test_simple3():
+    # TODO use simple3()
     X = numpy.array(
         [
             [0.0, 0.0],
@@ -262,19 +212,15 @@ def test_simple3():
     assert abs(norm2 - ref) < tol * ref
     ref = 2.0
     assert abs(normi - ref) < tol * ref
-
     return
 
 
 def test_pacman_nonlinear_optimization():
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
-    assert numpy.all(numpy.abs(mesh.points[:, 2]) < 1.0e-15)
-    X = mesh.points[:, :2]
+    X, cells = pacman()
+    assert numpy.all(numpy.abs(X[:, 2]) < 1.0e-15)
+    X = X[:, :2]
 
-    X, cells = optimesh.odt.nonlinear_optimization(X, mesh.cells["triangle"], 1.0e-5, 100)
+    X, cells = optimesh.odt.nonlinear_optimization(X, cells, 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -289,7 +235,6 @@ def test_pacman_nonlinear_optimization():
     assert abs(norm2 - ref) < tol * ref
     ref = 5.0
     assert abs(normi - ref) < tol * ref
-
     return
 
 

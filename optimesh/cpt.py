@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 #
 """
-From
+Centroidal Patch Triangulation. Mimics the definition of Centroidal
+Voronoi Tessellations for which the generator and centroid of each Voronoi
+region coincide. From
 
 Long Chen, Michael Holst,
 Efficient mesh optimization schemes based on Optimal Delaunay
@@ -9,6 +11,7 @@ Triangulations,
 Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 <https://doi.org/10.1016/j.cma.2010.11.007>.
 """
+import fastfunc
 from meshplex import MeshTri
 import numpy
 import optipy
@@ -16,78 +19,10 @@ import pyamg
 import quadpy
 import scipy.sparse
 
-from .helpers import (
-    runner,
-    get_new_points_volume_averaged,
-    get_new_points_count_averaged,
-)
+from .helpers import runner, get_new_points_volume_averaged
 
 
-def energy(X, cells, uniform_density=False):
-    """The CPT mesh energy is defined as
-
-    E~ = 1/(d+1) * sum int_{omega_i} ||x - x_i||^2 rho(x) dx,
-
-    see Chen-Holst.
-    """
-    dim = 2
-    mesh = MeshTri(X, cells, flat_cell_correction=None)
-
-    star_integrals = numpy.zeros(mesh.node_coords.shape[0])
-    # Python loop over the cells... slow!
-    for cell, cell_volume in zip(mesh.cells["nodes"], mesh.cell_volumes):
-        for i in range(3):
-            idx = cell[i]
-            xi = mesh.node_coords[idx]
-            val = quadpy.triangle.integrate(
-                lambda x: (x[0] - xi[0]) ** 2 + (x[1] - xi[1]) ** 2,
-                mesh.node_coords[cell],
-                # Take any scheme with order 2
-                quadpy.triangle.Dunavant(2),
-            )
-            if not uniform_density:
-                # rho = 1,
-                star_integrals[idx] += val
-            else:
-                # rho = 1 / tau_j,
-                star_integrals[idx] += val / cell_volume
-
-    return numpy.sum(star_integrals) / (dim + 1)
-
-
-def jac(x):
-    """The approximated Jacobian
-
-    \partial_i E = 2/(d+1) (x_i int_{omega_i} rho(x) dx - int_{omega_i} x rho(x) dx)
-    """
-    dim = 2
-    mesh = 1
-    return
-
-
-def fixed_point(*args, uniform_density=False, **kwargs):
-    """Centroidal Patch Triangulation. Mimics the definition of Centroidal
-    Voronoi Tessellations for which the generator and centroid of each Voronoi
-    region coincide.
-
-    Idea:
-    Move interior mesh points into the weighted averages of the centroids
-    (barycenters) of their adjacent cells. If a triangle cell switches
-    orientation in the process, don't move quite so far.
-    """
-    compute_average = (
-        get_new_points_volume_averaged
-        if uniform_density
-        else get_new_points_count_averaged
-    )
-
-    def get_new_points(mesh):
-        return compute_average(mesh, mesh.get_cell_barycenters())
-
-    return runner(get_new_points, *args, **kwargs)
-
-
-def linear_solve(*args, **kwargs):
+def density_preserving(*args, **kwargs):
     """The `i`th entry in the CPT-energy gradient is
 
         \\partial E_i = 2/(d+1) sum_{tau_j in omega_i} (x_i - b_j) \\int_{tau_j} rho
@@ -156,7 +91,74 @@ def linear_solve(*args, **kwargs):
     return runner(get_new_points, *args, **kwargs)
 
 
-def quasi_newton(*args, **kwargs):
+def fixed_point_uniform(*args, **kwargs):
+    """Idea:
+    Move interior mesh points into the weighted averages of the centroids
+    (barycenters) of their adjacent cells. If a triangle cell switches
+    orientation in the process, don't move quite so far.
+    """
+
+    def get_new_points(mesh):
+        return get_new_points_volume_averaged(mesh, mesh.cell_barycenters)
+
+    return runner(get_new_points, *args, **kwargs)
+
+
+def energy_uniform(X, cells):
+    """The CPT mesh energy is defined as
+
+    E~ = 1/(d+1) * sum int_{omega_i} ||x - x_i||^2 rho(x) dx,
+
+    see Chen-Holst. This method assumes uniform density, rho(x) = 1.
+    """
+    dim = 2
+    mesh = MeshTri(X, cells, flat_cell_correction=None)
+
+    star_integrals = numpy.zeros(mesh.node_coords.shape[0])
+    # Python loop over the cells... slow!
+    for cell, cell_volume in zip(mesh.cells["nodes"], mesh.cell_volumes):
+        for i in range(3):
+            idx = cell[i]
+            xi = mesh.node_coords[idx]
+            val = quadpy.triangle.integrate(
+                lambda x: (x[0] - xi[0]) ** 2 + (x[1] - xi[1]) ** 2,
+                mesh.node_coords[cell],
+                # Take any scheme with order 2
+                quadpy.triangle.Dunavant(2),
+            )
+            # rho = 1,
+            star_integrals[idx] += val
+    return numpy.sum(star_integrals) / (dim + 1)
+
+
+def jac_uniform(X, cells):
+    """The approximated Jacobian is
+
+      partial_i E = 2/(d+1) (x_i int_{omega_i} rho(x) dx - int_{omega_i} x rho(x) dx)
+                  = 2/(d+1) sum_{tau_j in omega_i} (x_i - b_{j, rho}) int_{tau_j} rho,
+
+    see Chen-Holst. This method here assumes uniform density, rho(x) = 1, such that
+
+      partial_i E = 2/(d+1) sum_{tau_j in omega_i} (x_i - b_j) |tau_j|
+
+    with b_j being the ordinary barycenter.
+    """
+    dim = 2
+    mesh = MeshTri(X, cells, flat_cell_correction=None)
+
+    jac = numpy.zeros(X.shape)
+    for k in range(mesh.cells["nodes"].shape[1]):
+        i = mesh.cells["nodes"][:, k]
+        fastfunc.add.at(
+            jac,
+            i,
+            ((mesh.node_coords[i] - mesh.cell_barycenters).T * mesh.cell_volumes).T,
+        )
+
+    return 2 / (dim + 1) * jac
+
+
+def quasi_newton_uniform(*args, **kwargs):
     """Like linear_solve above, but assuming rho==1. Note that the energy gradient
 
         \\partial E_i = 2/(d+1) sum_{tau_j in omega_i} (x_i - b_j) \\int_{tau_j} rho
@@ -229,6 +231,7 @@ def quasi_newton(*args, **kwargs):
             x0=[-1.0, 3.5],
             jac=jac,
             get_search_direction=approx_hess_solve,
-            atol=tol
+            atol=tol,
         )
+
     return runner(get_new_points, *args, **kwargs)

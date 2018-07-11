@@ -39,10 +39,10 @@ def fixed_point(*args, uniform_density=False, **kwargs):
     def get_new_points(mesh):
         # Get circumcenters everywhere except at cells adjacent to the boundary;
         # barycenters there.
-        cc = mesh.get_cell_circumcenters()
-        bc = mesh.get_cell_barycenters()
+        cc = mesh.cell_circumcenters
+        bc = mesh.cell_barycenters
         # Find all cells with a boundary edge
-        boundary_cell_ids = mesh.get_edges_cells()[1][:, 0]
+        boundary_cell_ids = mesh.edges_cells[1][:, 0]
         cc[boundary_cell_ids] = bc[boundary_cell_ids]
         return compute_average(mesh, cc)
 
@@ -104,7 +104,7 @@ def nonlinear_optimization(
         mesh.update_interior_node_coordinates(x.reshape(-1, 2))
 
         grad = numpy.zeros(mesh.node_coords.shape)
-        cc = mesh.get_cell_circumcenters()
+        cc = mesh.cell_circumcenters
         for mcn in mesh.cells["nodes"].T:
             fastfunc.add.at(
                 grad, mcn, ((mesh.node_coords[mcn] - cc).T * mesh.cell_volumes).T

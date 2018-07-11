@@ -2,23 +2,13 @@
 #
 import numpy
 
-import meshio
 import optimesh
 
-from helpers import download_mesh
+from meshes import simple1, pacman
 
 
 def test_simple_fixed_point(num_steps=10):
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.4, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
+    X, cells = simple1()
 
     X, cells = optimesh.laplace.fixed_point(X, cells, 0.0, num_steps)
 
@@ -40,16 +30,7 @@ def test_simple_fixed_point(num_steps=10):
 
 
 def test_simple_linear_solve(num_steps=1):
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.4, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
+    X, cells = simple1()
 
     X, cells = optimesh.laplace.linear_solve(X, cells, 0.0, num_steps)
 
@@ -71,14 +52,9 @@ def test_simple_linear_solve(num_steps=1):
 
 
 def test_pacman_fixed_point(num_steps=10):
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
+    X, cells = pacman()
 
-    X, cells = optimesh.laplace.fixed_point(
-        mesh.points, mesh.cells["triangle"], 0.0, num_steps, verbosity=1
-    )
+    X, _ = optimesh.laplace.fixed_point(X, cells, 0.0, num_steps, verbosity=1)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -98,14 +74,9 @@ def test_pacman_fixed_point(num_steps=10):
 
 
 def test_pacman_linear_solve(num_steps=10):
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
+    X, cells = pacman()
 
-    X, cells = optimesh.laplace.fixed_point(
-        mesh.points, mesh.cells["triangle"], 0.0, num_steps, verbosity=1
-    )
+    X, _ = optimesh.laplace.fixed_point(X, cells, 0.0, num_steps, verbosity=1)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()

@@ -2,23 +2,13 @@
 #
 import numpy
 
-import meshio
 import optimesh
 
-from helpers import download_mesh
+from meshes import simple1, pacman
 
 
 def test_simple_lloyd(max_num_steps=5):
-    X = numpy.array(
-        [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.4, 0.5, 0.0],
-        ]
-    )
-    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
+    X, cells = simple1()
 
     X, cells = optimesh.lloyd(X, cells, 1.0e-2, 100, fcc_type="boundary", verbosity=2)
 
@@ -40,19 +30,9 @@ def test_simple_lloyd(max_num_steps=5):
 
 
 def test_pacman_lloyd(max_num_steps=1000):
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
+    X, cells = pacman()
 
-    X, _ = optimesh.lloyd(
-        mesh.points,
-        mesh.cells["triangle"],
-        1.0e-2,
-        100,
-        fcc_type="boundary",
-        verbosity=1,
-    )
+    X, _ = optimesh.lloyd(X, cells, 1.0e-2, 100, fcc_type="boundary", verbosity=1)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
