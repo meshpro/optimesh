@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import numpy
 import fastfunc
+import quadpy
 
 from meshplex import MeshTri
 
@@ -11,9 +12,53 @@ from .helpers import (
     runner,
     get_new_points_volume_averaged,
     get_new_points_count_averaged,
-    energy,
     print_stats,
 )
+
+
+def energy(mesh, uniform_density=False):
+    """The mesh energy is defined as
+
+    E = int_Omega |u_l(x) - u(x)| rho(x) dx
+
+    where u(x) = ||x||^2 and u_l is its piecewise linearization on the mesh.
+    """
+    # E = 1/(d+1) sum_i ||x_i||^2 |omega_i| - int_Omega_i ||x||^2
+    dim = mesh.cells["nodes"].shape[1] - 1
+
+    star_volume = numpy.zeros(mesh.node_coords.shape[0])
+    for i in range(3):
+        idx = mesh.cells["nodes"][:, i]
+        if uniform_density:
+            # rho = 1,
+            # int_{star} phi_i * rho = 1/(d+1) sum_{triangles in star} |triangle|
+            fastfunc.add.at(star_volume, idx, mesh.cell_volumes)
+        else:
+            # rho = 1 / tau_j,
+            # int_{star} phi_i * rho = 1/(d+1) |num triangles in star|
+            fastfunc.add.at(star_volume, idx, numpy.ones(idx.shape, dtype=float))
+    x2 = numpy.einsum("ij,ij->i", mesh.node_coords, mesh.node_coords)
+    out = 1 / (dim + 1) * numpy.dot(star_volume, x2)
+
+    # could be cached
+    assert dim == 2
+    x = mesh.node_coords[:, :2]
+    triangles = numpy.moveaxis(x[mesh.cells["nodes"]], 0, 1)
+    val = quadpy.triangle.integrate(
+        lambda x: x[0] ** 2 + x[1] ** 2,
+        triangles,
+        # Take any scheme with order 2
+        quadpy.triangle.Dunavant(2),
+    )
+    if uniform_density:
+        val = numpy.sum(val)
+    else:
+        rho = 1.0 / mesh.cell_volumes
+        val = numpy.dot(val, rho)
+
+    assert out >= val
+
+    return out - val
 
 
 def fixed_point(*args, uniform_density=False, **kwargs):

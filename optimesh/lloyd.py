@@ -5,7 +5,7 @@ from __future__ import print_function
 import numpy
 from meshplex import MeshTri
 
-from .helpers import print_stats, energy
+from .helpers import print_stats
 
 
 def lloyd(
@@ -39,8 +39,7 @@ def lloyd(
 
     if verbosity > 0:
         print("\nBefore:")
-        extra_cols = ["energy: {:.5e}".format(energy(mesh, uniform_density=True))]
-        print_stats(mesh, extra_cols=extra_cols)
+        print_stats(mesh)
 
     k = 0
     while True:
@@ -95,8 +94,7 @@ def lloyd(
 
     if verbosity > 0:
         print("\nFinal ({} steps):".format(k))
-        extra_cols = ["energy: {:.5e}".format(energy(mesh, uniform_density=True))]
-        print_stats(mesh, extra_cols=extra_cols)
+        print_stats(mesh)
         print()
 
     return mesh.node_coords, mesh.cells["nodes"]
