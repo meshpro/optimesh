@@ -8,10 +8,13 @@ import optimesh
 from meshes import simple1, pacman
 
 
-@pytest.mark.parametrize("mesh, ref1, ref2, refi", [
-    (simple1, 5.0, 2.1213203435596424, 1.0),
-    (pacman, 1917.9950540725958, 74.99386491032608, 5.0),
-])
+@pytest.mark.parametrize(
+    "mesh, ref1, ref2, refi",
+    [
+        (simple1, 5.0, 2.1213203435596424, 1.0),
+        (pacman, 1917.9950540725958, 74.99386491032608, 5.0),
+    ],
+)
 def test_fixed_point(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
@@ -30,10 +33,13 @@ def test_fixed_point(mesh, ref1, ref2, refi):
     return
 
 
-@pytest.mark.parametrize("mesh, ref1, ref2, refi", [
-    (simple1, 5.0, 2.1213203435596424, 1.0),
-    (pacman, 1861.1845672600928, 73.12639677872326, 5.0),
-])
+@pytest.mark.parametrize(
+    "mesh, ref1, ref2, refi",
+    [
+        (simple1, 5.0, 2.1213203435596424, 1.0),
+        (pacman, 1861.1845672600928, 73.12639677872326, 5.0),
+    ],
+)
 def test_linear_solve(mesh, ref1, ref2, refi):
     X, cells = mesh()
 

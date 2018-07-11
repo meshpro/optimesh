@@ -8,10 +8,9 @@ import optimesh
 from meshes import simple1, simple2, simple3, pacman
 
 
-@pytest.mark.parametrize("mesh, ref", [
-    (simple1, 17.0 / 60.0),
-    (pacman, 7.320400634147646),
-])
+@pytest.mark.parametrize(
+    "mesh, ref", [(simple1, 17.0 / 60.0), (pacman, 7.320400634147646)]
+)
 def test_energy(mesh, ref):
     X, cells = mesh()
     energy = optimesh.cpt.energy_uniform(X, cells)
@@ -50,12 +49,15 @@ def test_energy(mesh, ref):
 #     return
 
 
-@pytest.mark.parametrize("mesh, ref1, ref2, refi", [
-    (simple1, 5.0, 2.1213203435596424, 1.0),
-    (simple2, 7.390123456790124, 2.804687217072868, 1.7),
-    (simple3, 12.0, 3.9765648779799356, 2.0),
-    (pacman, 1903.6345096485093, 74.6604068632378, 5.0),
-])
+@pytest.mark.parametrize(
+    "mesh, ref1, ref2, refi",
+    [
+        (simple1, 5.0, 2.1213203435596424, 1.0),
+        (simple2, 7.390123456790124, 2.804687217072868, 1.7),
+        (simple3, 12.0, 3.9765648779799356, 2.0),
+        (pacman, 1903.6345096485093, 74.6604068632378, 5.0),
+    ],
+)
 def test_fixed_point(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
@@ -74,12 +76,15 @@ def test_fixed_point(mesh, ref1, ref2, refi):
     return
 
 
-@pytest.mark.parametrize("mesh, ref1, ref2, refi", [
-    (simple1, 5.0, 2.1213203435596424, 1.0),
-    (simple2, 7.44, 2.8173746644704534, 1.7),
-    (simple3, 12.0, 3.9651257511234395, 2.0),
-    (pacman, 1861.1845669965835, 73.12639677151657, 5.0),
-])
+@pytest.mark.parametrize(
+    "mesh, ref1, ref2, refi",
+    [
+        (simple1, 5.0, 2.1213203435596424, 1.0),
+        (simple2, 7.44, 2.8173746644704534, 1.7),
+        (simple3, 12.0, 3.9651257511234395, 2.0),
+        (pacman, 1861.1845669965835, 73.12639677151657, 5.0),
+    ],
+)
 def test_linear_solve(mesh, ref1, ref2, refi):
     X, cells = mesh()
 

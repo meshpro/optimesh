@@ -8,10 +8,13 @@ import optimesh
 from meshes import simple1, pacman
 
 
-@pytest.mark.parametrize("mesh, ref1, ref2, refi", [
-    (simple1, 4.985355657854027, 2.1179164560036154, 1.0),
-    (pacman, 1939.1198108068188, 75.94965207932323, 5.0),
-])
+@pytest.mark.parametrize(
+    "mesh, ref1, ref2, refi",
+    [
+        (simple1, 4.985355657854027, 2.1179164560036154, 1.0),
+        (pacman, 1939.1198108068188, 75.94965207932323, 5.0),
+    ],
+)
 def test_simple_lloyd(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
