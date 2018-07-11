@@ -37,7 +37,7 @@ def _get_parser():
             "odt-no",
             "cpt-fp",
             "cpt-ls",
-            "cpt-no",
+            "cpt-qn",
         ],
         help="smoothing method",
     )
@@ -199,8 +199,8 @@ def main(argv=None):
                 verbosity=args.verbosity,
             )
         else:
-            assert args.method == "cpt-no"
-            X, cls = cpt.nonlinear_optimization(
+            assert args.method == "cpt-qn"
+            X, cls = cpt.quasi_newton(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,

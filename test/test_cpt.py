@@ -10,6 +10,51 @@ import optimesh
 from helpers import download_mesh
 
 
+def test_simple1_energy():
+    X = numpy.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.4, 0.5, 0.0],
+        ]
+    )
+    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
+
+    tol = 1.0e-12
+
+    energy = optimesh.cpt.energy(X, cells, uniform_density=False)
+    ref = 17.0 / 60.0
+    assert abs(energy - ref) < tol * ref
+
+    energy = optimesh.cpt.energy(X, cells, uniform_density=True)
+    ref = 101.0 / 90.0
+    assert abs(energy - ref) < tol * ref
+    return
+
+
+def test_pacman_energy():
+    filename = download_mesh(
+        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
+    )
+    mesh = meshio.read(filename)
+
+    X = mesh.points
+    cells = mesh.cells["triangle"]
+
+    tol = 1.0e-12
+
+    energy = optimesh.cpt.energy(X, cells, uniform_density=False)
+    ref = 7.320400634147646
+    assert abs(energy - ref) < tol * ref
+
+    energy = optimesh.cpt.energy(X, cells, uniform_density=True)
+    ref = 78.8877511729188
+    assert abs(energy - ref) < tol * ref
+    return
+
+
 def test_simple1_fixed_point():
     X = numpy.array(
         [

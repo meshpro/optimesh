@@ -1,9 +1,8 @@
 *.bib
 *.pyc
-README.rst
 build/
 dist/
 example/
-betterbib.egg-info/
+*.egg-info/
 .cache/
 .pytest_cache/
