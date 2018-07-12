@@ -104,12 +104,13 @@ def fixed_point_uniform(*args, **kwargs):
     return runner(get_new_points, *args, **kwargs)
 
 
-def energy_uniform(X, cells):
+def _energy_uniform_per_node(X, cells):
     """The CPT mesh energy is defined as
 
-    E~ = 1/(d+1) * sum int_{omega_i} ||x - x_i||^2 rho(x) dx,
+        sum_i E_i,
+        E_i = 1/(d+1) * sum int_{omega_i} ||x - x_i||^2 rho(x) dx,
 
-    see Chen-Holst. This method assumes uniform density, rho(x) = 1.
+    see Chen-Holst. This method gives the E_i and  assumes uniform density, rho(x) = 1.
     """
     dim = 2
     mesh = MeshTri(X, cells, flat_cell_correction=None)
@@ -117,18 +118,46 @@ def energy_uniform(X, cells):
     star_integrals = numpy.zeros(mesh.node_coords.shape[0])
     # Python loop over the cells... slow!
     for cell, cell_volume in zip(mesh.cells["nodes"], mesh.cell_volumes):
-        for i in range(3):
-            idx = cell[i]
+        for idx in cell:
             xi = mesh.node_coords[idx]
+            tri = mesh.node_coords[cell]
             val = quadpy.triangle.integrate(
-                lambda x: (x[0] - xi[0]) ** 2 + (x[1] - xi[1]) ** 2,
-                mesh.node_coords[cell],
+                lambda x: numpy.einsum("ij,ij->i", x.T - xi, x.T - xi),
+                tri,
                 # Take any scheme with order 2
                 quadpy.triangle.Dunavant(2),
             )
+            # val = 0.0
+            # val += quadpy.triangle.integrate(
+            #     lambda x: numpy.einsum("ij,ij->i", x.T, x.T),
+            #     tri,
+            #     quadpy.triangle.Dunavant(2),
+            # )
+            # val += -2 * quadpy.triangle.integrate(
+            #     lambda x: numpy.dot(x.T, xi),
+            #     tri,
+            #     quadpy.triangle.Dunavant(1),
+            # )
+            # if idx == 4:
+            #     print("contrib")
+            #     print(xi, cell_volume, numpy.dot(xi, xi) * cell_volume)
+            # val += numpy.dot(xi, xi) * cell_volume
+            # print(val)
+            # print()
             # rho = 1,
             star_integrals[idx] += val
-    return numpy.sum(star_integrals) / (dim + 1)
+
+    # print("star_integrals[4]", star_integrals[4])
+    # print(star_integrals[4] * numpy.sum(mesh.cell_volumes))
+    # exit(1)
+    # return numpy.sum(star_integrals)
+    # print("si", star_integrals)
+    # return star_integrals[4]
+    return star_integrals / (dim + 1)
+
+
+def energy_uniform(X, cells):
+    return numpy.sum(_energy_uniform_per_node(X, cells))
 
 
 def jac_uniform(X, cells):

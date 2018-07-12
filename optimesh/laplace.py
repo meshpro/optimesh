@@ -33,10 +33,6 @@ def fixed_point(*args, **kwargs):
 
 
 def linear_solve(*args, **kwargs):
-    """Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
-    interior vertex to the arithmetic average of its neighboring points.
-    """
-
     def get_new_points(mesh, tol=1.0e-10):
         cells = mesh.cells["nodes"].T
 

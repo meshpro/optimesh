@@ -3,68 +3,57 @@
 import numpy
 import pytest
 
-import optimesh
+from optimesh import cpt
 
-from meshes import simple1, simple2, simple3, pacman
+from meshes import simple0, simple1, simple2, simple3, pacman
 
 
 @pytest.mark.parametrize(
-    "mesh, ref", [(simple1, 17.0 / 60.0), (pacman, 7.320400634147646)]
+    "mesh, ref",
+    [(simple0, 5.0 / 18.0), (simple1, 17.0 / 60.0), (pacman, 7.320400634147646)],
 )
 def test_energy(mesh, ref):
     X, cells = mesh()
-    energy = optimesh.cpt.energy_uniform(X, cells)
+    energy = cpt.energy_uniform(X, cells)
     assert abs(energy - ref) < 1.0e-12 * ref
     return
 
 
-# def test_simple1_jac():
-#     X, cells = _get_simple1()
-#
-#     jac = optimesh.cpt.jac_uniform(X, cells)
-#
-#     print(jac)
-#     exit(1)
-#     return
+def test_simple1_jac():
+    X, cells = simple1()
 
+    # First assert that the Jacobian at interior points coincides with the finite
+    # difference computed for the energy component from that point. Note that the
+    # contribution from all other points is disregarded here, just like in the
+    # definition of the Jacobian of Chen-Holst; it's only an approximation after all.
+    jac = cpt.jac_uniform(X, cells)
+    for j in [0, 1]:
+        eps = 1.0e-7
+        x0 = X.copy()
+        x1 = X.copy()
+        x0[4, j] -= eps
+        x1[4, j] += eps
+        f1 = cpt._energy_uniform_per_node(x1, cells)
+        f0 = cpt._energy_uniform_per_node(x0, cells)
+        dE = (f1 - f0) / (2 * eps)
+        assert abs(dE[4] - jac[4, j]) < 1.0e-10
 
-# def test_pacman_jac():
-#     filename = download_mesh(
-#         "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-#     )
-#     mesh = meshio.read(filename)
-#
-#     X = mesh.points
-#     cells = mesh.cells["triangle"]
-#
-#     tol = 1.0e-12
-#
-#     energy = optimesh.cpt.energy(X, cells, uniform_density=False)
-#     ref = 7.320400634147646
-#     assert abs(energy - ref) < tol * ref
-#
-#     energy = optimesh.cpt.energy(X, cells, uniform_density=True)
-#     ref = 78.8877511729188
-#     assert abs(energy - ref) < tol * ref
-#     return
+    return
 
 
 @pytest.mark.parametrize(
     "mesh, ref1, ref2, refi",
     [
-        (simple1, 5.0, 2.1213203435596424, 1.0),
-        (simple2, 7.390123456790124, 2.804687217072868, 1.7),
-        (simple3, 12.0, 3.9765648779799356, 2.0),
-        (pacman, 1903.6345096485093, 74.6604068632378, 5.0),
+        (simple1, 0.96, 0.3262279745178587, 29.0 / 225.0),
+        (pacman, 12.35078985438217, 0.5420691555930099, 0.10101179397867549),
     ],
 )
-def test_fixed_point(mesh, ref1, ref2, refi):
+def test_jac(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 1.0e-12, 100)
+    jac = cpt.jac_uniform(X, cells)
 
-    # Test if we're dealing with the mesh we expect.
-    nc = X.flatten()
+    nc = jac.flatten()
     norm1 = numpy.linalg.norm(nc, ord=1)
     norm2 = numpy.linalg.norm(nc, ord=2)
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
@@ -77,18 +66,23 @@ def test_fixed_point(mesh, ref1, ref2, refi):
 
 
 @pytest.mark.parametrize(
-    "mesh, ref1, ref2, refi",
+    "method, mesh, ref1, ref2, refi",
     [
-        (simple1, 5.0, 2.1213203435596424, 1.0),
-        (simple2, 7.44, 2.8173746644704534, 1.7),
-        (simple3, 12.0, 3.9651257511234395, 2.0),
-        (pacman, 1861.1845669965835, 73.12639677151657, 5.0),
+        (cpt.fixed_point_uniform, simple1, 5.0, 2.1213203435596424, 1.0),
+        (cpt.fixed_point_uniform, simple2, 7.390123456790124, 2.804687217072868, 1.7),
+        (cpt.fixed_point_uniform, simple3, 12.0, 3.9765648779799356, 2.0),
+        (cpt.fixed_point_uniform, pacman, 1903.6345096485093, 74.6604068632378, 5.0),
+        #
+        (cpt.density_preserving, simple1, 5.0, 2.1213203435596424, 1.0),
+        (cpt.density_preserving, simple2, 7.44, 2.8173746644704534, 1.7),
+        (cpt.density_preserving, simple3, 12.0, 3.9651257511234395, 2.0),
+        (cpt.density_preserving, pacman, 1861.1845669965835, 73.12639677151657, 5.0),
     ],
 )
-def test_linear_solve(mesh, ref1, ref2, refi):
+def test_methods(method, mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    X, cells = optimesh.cpt.density_preserving(X, cells, 1.0e-12, 100)
+    X, cells = method(X, cells, 1.0e-12, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -107,5 +101,5 @@ def test_linear_solve(mesh, ref1, ref2, refi):
 #     from meshes import circle
 #     test_fixed_point()
 #     X, cells = circle()
-#     X, cells = optimesh.cpt.density_preserving(X, cells, 1.0e-3, 100)
-#     X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 1.0e-3, 100)
+#     X, cells = cpt.density_preserving(X, cells, 1.0e-3, 100)
+#     X, cells = cpt.fixed_point_uniform(X, cells, 1.0e-3, 100)
