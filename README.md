@@ -40,8 +40,8 @@ optimesh -h
 
 ![laplace-fp](https://nschloe.github.io/optimesh/laplace-fp.png) |
 ![laplace-ls](https://nschloe.github.io/optimesh/laplace.png)    |
-:-------------------------------------:|:-----------------------------------------------------:|
-classical Laplace (density-preserving) | linear solve (density-preserving, `--method laplace`) |
+:----------------:|:---------------------------------:|
+classical Laplace | linear solve (`--method laplace`) |
 
 Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing)
 means moving all points into the average of their neighbors until an equilibrium has
