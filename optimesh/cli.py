@@ -35,7 +35,6 @@ def _get_parser():
             "odt-fp",
             "odt-no",
             "cpt-fp",
-            "cpt-dp",
             "cpt-qn",
         ],
         help="smoothing method",
@@ -172,15 +171,6 @@ def main(argv=None):
             )
         elif args.method == "cpt-fp":
             X, cls = cpt.fixed_point_uniform(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
-        elif args.method == "cpt-dp":
-            X, cls = cpt.density_preserving(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,

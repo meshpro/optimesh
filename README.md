@@ -70,11 +70,10 @@ density.
 
 #### CPT smoothing
 
-![cpt-dp](https://nschloe.github.io/optimesh/cpt-dp.png) |
 ![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
 ![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
------------------------------:|:--------------------------------:|:-----------------------:|
-density-preserving (`cpt-dp`) | fixed-point iteration (`cpt-fp`) | quasi-Newton (`cpt-qn`) |
+--------------------------------:|:-----------------------:|
+fixed-point iteration (`cpt-fp`) | quasi-Newton (`cpt-qn`) |
 
 
 #### ODT smoothing

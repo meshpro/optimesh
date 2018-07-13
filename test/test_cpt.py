@@ -68,11 +68,6 @@ def test_jac(mesh, ref1, ref2, refi):
 @pytest.mark.parametrize(
     "method, mesh, ref1, ref2, refi",
     [
-        (cpt.density_preserving, simple1, 5.0, 2.1213203435596424, 1.0),
-        (cpt.density_preserving, simple2, 7.44, 2.8173746644704534, 1.7),
-        (cpt.density_preserving, simple3, 12.0, 3.9651257511234395, 2.0),
-        (cpt.density_preserving, pacman, 1861.1845669965835, 73.12639677151657, 5.0),
-        #
         (cpt.fixed_point_uniform, simple1, 5.0, 2.1213203435596424, 1.0),
         (cpt.fixed_point_uniform, simple2, 7.390123456790124, 2.804687217072868, 1.7),
         (cpt.fixed_point_uniform, simple3, 12.0, 3.9765648779799356, 2.0),
@@ -106,5 +101,4 @@ def test_methods(method, mesh, ref1, ref2, refi):
 #     from meshes import circle
 #     test_fixed_point()
 #     X, cells = circle()
-#     X, cells = cpt.density_preserving(X, cells, 1.0e-3, 100)
 #     X, cells = cpt.fixed_point_uniform(X, cells, 1.0e-3, 100)
