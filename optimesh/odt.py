@@ -138,8 +138,6 @@ def nonlinear_optimization(
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(mesh, extra_cols=extra_cols)
 
-    mesh.mark_boundary()
-
     def f(x):
         mesh.update_interior_node_coordinates(x.reshape(-1, 2))
         return energy(mesh, uniform_density=True)

@@ -68,6 +68,7 @@ def _get_parser():
         default=1,
     )
 
+    # TODO remove once ODT is updated with a density-preserving linear solver
     parser.add_argument(
         "--uniform-density",
         "-u",
@@ -199,7 +200,7 @@ def main(argv=None):
             )
         else:
             assert args.method == "cpt-qn", "Illegal method {}".format(args.method)
-            X, cls = cpt.quasi_newton(
+            X, cls = cpt.quasi_newton_uniform(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,

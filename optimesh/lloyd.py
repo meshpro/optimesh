@@ -62,7 +62,6 @@ def lloyd(
             mesh = MeshTri(
                 original_X, mesh.cells["nodes"], flat_cell_correction=fcc_type
             )
-            mesh.mark_boundary()
             # mesh.update_node_coordinates(xnew)
             new_orient = mesh.signed_tri_areas > 0.0
             if numpy.all(original_orient == new_orient):

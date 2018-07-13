@@ -127,32 +127,8 @@ def _energy_uniform_per_node(X, cells):
                 # Take any scheme with order 2
                 quadpy.triangle.Dunavant(2),
             )
-            # val = 0.0
-            # val += quadpy.triangle.integrate(
-            #     lambda x: numpy.einsum("ij,ij->i", x.T, x.T),
-            #     tri,
-            #     quadpy.triangle.Dunavant(2),
-            # )
-            # val += -2 * quadpy.triangle.integrate(
-            #     lambda x: numpy.dot(x.T, xi),
-            #     tri,
-            #     quadpy.triangle.Dunavant(1),
-            # )
-            # if idx == 4:
-            #     print("contrib")
-            #     print(xi, cell_volume, numpy.dot(xi, xi) * cell_volume)
-            # val += numpy.dot(xi, xi) * cell_volume
-            # print(val)
-            # print()
-            # rho = 1,
             star_integrals[idx] += val
 
-    # print("star_integrals[4]", star_integrals[4])
-    # print(star_integrals[4] * numpy.sum(mesh.cell_volumes))
-    # exit(1)
-    # return numpy.sum(star_integrals)
-    # print("si", star_integrals)
-    # return star_integrals[4]
     return star_integrals / (dim + 1)
 
 
@@ -187,6 +163,98 @@ def jac_uniform(X, cells):
     return 2 / (dim + 1) * jac
 
 
+def _solve_hessian_approx_uniform(X, cells, rhs):
+    """This approximation reproduces the fixed point iteration.
+    """
+    dim = 2
+    mesh = MeshTri(X, cells)
+    diag = numpy.zeros(X.shape[0])
+    for i in range(3):
+        fastfunc.add.at(diag, cells[:, i], mesh.cell_volumes)
+    diag *= 2 / (dim + 1)
+    out = (rhs.T / diag).T
+    out[mesh.is_boundary_node] = 0.0
+    return out
+
+
+def solve_hessian_approx_uniform(X, cells, rhs):
+    """As discussed above, the approximated Jacobian is
+
+      partial_i E = 2/(d+1) sum_{tau_j in omega_i} (x_i - b_j) |tau_j|.
+
+    To get the Hessian, we have to form its derivative. As a simplifications,
+    let us assume again that |tau_j| is independent of the node positions. Then we get
+
+       partial_ii E = 2/(d+1) |omega_i| - 2/(d+1)**2 |omega_i|,
+       partial_ij E = -2/(d+1)**2 |tau_j|.
+
+    The terms with (d+1)**2 are from the barycenter in `partial_i E`. It turns out from
+    numerical experiments that the negative term in `partial_ii E` is detrimental to the
+    convergence. Hence, this approximated Hessian solver only considers the off-diagonal
+    contributions from the barycentric terms.
+    """
+    dim = 2
+    mesh = MeshTri(X, cells)
+
+    # Create matrix in IJV format
+    row_idx = []
+    col_idx = []
+    val = []
+
+    cells = mesh.cells["nodes"].T
+    n = X.shape[0]
+
+    # Main diagonal, 2/(d+1) |omega_i| x_i
+    a = mesh.cell_volumes * (2 / (dim + 1))
+    for i in [0, 1, 2]:
+        row_idx += [cells[i]]
+        col_idx += [cells[i]]
+        val += [a]
+
+    # terms corresponding to -2/(d+1) * b_j |tau_j|
+    a = mesh.cell_volumes * (2 / (dim + 1) ** 2)
+    for i in [[0, 1], [1, 2], [2, 0]]:
+        edges = cells[i]
+        # Hardly any movement at all; see docstring
+        # row_idx += [edges[0], edges[1], edges[0], edges[1]]
+        # col_idx += [edges[0], edges[1], edges[1], edges[0]]
+        # val += [-a, -a, -a, -a]
+        # Best so far
+        row_idx += [edges[0], edges[1]]
+        col_idx += [edges[1], edges[0]]
+        val += [-a, -a]
+
+    row_idx = numpy.concatenate(row_idx)
+    col_idx = numpy.concatenate(col_idx)
+    val = numpy.concatenate(val)
+
+    # Set Dirichlet conditions on the boundary
+    matrix = scipy.sparse.coo_matrix((val, (row_idx, col_idx)), shape=(n, n))
+    # Transform to CSR format for efficiency
+    matrix = matrix.tocsr()
+
+    # Apply Dirichlet conditions.
+    # Set all Dirichlet rows to 0.
+    for i in numpy.where(mesh.is_boundary_node)[0]:
+        matrix.data[matrix.indptr[i] : matrix.indptr[i + 1]] = 0.0
+    # Set the diagonal and RHS.
+    d = matrix.diagonal()
+    d[mesh.is_boundary_node] = 1.0
+    matrix.setdiag(d)
+
+    rhs[mesh.is_boundary_node] = 0.0
+
+    # out = scipy.sparse.linalg.spsolve(matrix, rhs)
+    ml = pyamg.ruge_stuben_solver(matrix)
+    # Keep an eye on multiple rhs-solves in pyamg,
+    # <https://github.com/pyamg/pyamg/issues/215>.
+    tol = 1.0e-10
+    out = numpy.column_stack(
+        [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
+    )
+    return out
+
+
 def quasi_newton_uniform(*args, **kwargs):
     """Like linear_solve above, but assuming rho==1. Note that the energy gradient
 
@@ -203,64 +271,13 @@ def quasi_newton_uniform(*args, **kwargs):
     on the point coordinates. With this, one still only needs to solve a linear system.
     """
 
-    dim = 2
-
-    # def approx_hess_solve(x, grad):
-    #     # TODO create mesh from x
-
-    #     # Create matrix in IJV format
-    #     cells = mesh.cells["nodes"].T
-    #     row_idx = []
-    #     col_idx = []
-    #     val = []
-    #     a = mesh.cell_volumes * (2 / (dim + 1) ** 2)
-    #     for i in [[0, 1], [1, 2], [2, 0]]:
-    #         edges = cells[i]
-    #         row_idx += [edges[0], edges[1], edges[0], edges[1]]
-    #         col_idx += [edges[0], edges[1], edges[1], edges[0]]
-    #         val += [+a, +a, -a, -a]
-
-    #     row_idx = numpy.concatenate(row_idx)
-    #     col_idx = numpy.concatenate(col_idx)
-    #     val = numpy.concatenate(val)
-
-    #     n = mesh.node_coords.shape[0]
-
-    #     # Set Dirichlet conditions on the boundary
-    #     matrix = scipy.sparse.coo_matrix((val, (row_idx, col_idx)), shape=(n, n))
-    #     # Transform to CSR format for efficiency
-    #     matrix = matrix.tocsr()
-
-    #     # Apply Dirichlet conditions.
-    #     verts = numpy.where(mesh.is_boundary_node)[0]
-    #     # Set all Dirichlet rows to 0.
-    #     for i in verts:
-    #         matrix.data[matrix.indptr[i] : matrix.indptr[i + 1]] = 0.0
-    #     # Set the diagonal and RHS.
-    #     d = matrix.diagonal()
-    #     d[mesh.is_boundary_node] = 1.0
-    #     matrix.setdiag(d)
-
-    #     rhs = numpy.zeros((n, 2))
-    #     rhs[mesh.is_boundary_node] = mesh.node_coords[mesh.is_boundary_node]
-
-    #     # out = scipy.sparse.linalg.spsolve(matrix, rhs)
-    #     ml = pyamg.ruge_stuben_solver(matrix)
-    #     # Keep an eye on multiple rhs-solves in pyamg,
-    #     # <https://github.com/pyamg/pyamg/issues/215>.
-    #     tol = 1.0e-10
-    #     out = numpy.column_stack(
-    #         [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
-    #     )
-    #     return out[mesh.is_interior_node]
-
-    def get_new_points(mesh, tol=1.0e-10):
-        return optipy.minimize(
-            fun=fun,
-            x0=[-1.0, 3.5],
-            jac=jac,
-            get_search_direction=approx_hess_solve,
-            atol=tol,
-        )
+    def get_new_points(mesh):
+        # do one Newton step
+        # TODO need copy?
+        x = mesh.node_coords.copy()
+        cells = mesh.cells["nodes"]
+        jac_x = jac_uniform(x, cells)
+        x -= solve_hessian_approx_uniform(x, cells, jac_x)
+        return x[mesh.is_interior_node]
 
     return runner(get_new_points, *args, **kwargs)

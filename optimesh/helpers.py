@@ -79,8 +79,6 @@ def runner(
         print("Before:")
         print_stats(mesh)
 
-    mesh.mark_boundary()
-
     k = 0
     while True:
         k += 1
