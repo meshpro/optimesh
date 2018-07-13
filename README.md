@@ -59,10 +59,11 @@ facet-flipping. This approach converges _much_ faster.
 `--method lloyd` |
 
 Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
-algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm).
-If the topological neighbors of any node are also the geometrically closest
-nodes, this is exactly Lloyd's algorithm. That is fulfilled in many practical cases, but
-the algorithm can break down if it is not.
+algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), i.e., points are
+iteratively moved into the centroid of their Voronoi cell.  If the topological neighbors
+of any node are also the geometrically closest nodes, this is exactly Lloyd's algorithm.
+That is fulfilled in many practical cases, but the algorithm can break down if it is
+not.
 
 
 #### CPT (centroidal patch tessalation)
@@ -72,6 +73,14 @@ the algorithm can break down if it is not.
 -----------------------------------------:|:--------------------------------:|
 fixed-point iteration (`--method cpt-fp`) | quasi-Newton (`--method cpt-qn`) |
 
+A smooting method suggested by [Chen and Holst](#relevant-publications), mimicking CVT
+but much more easily implemented. The density-preserving variant leads to the exact same
+equation system as Laplace smoothing, so optimesh only contains the the uniform-density
+variant.
+
+Implemented once classically as a fixed-point iteration, once as a quasi-Newton method.
+The latter typically leads to better results.
+
 
 #### ODT (optimal Delaunay tesselation)
 
@@ -80,7 +89,12 @@ fixed-point iteration (`--method cpt-fp`) | quasi-Newton (`--method cpt-qn`) |
 :----------------------------------------:|:------------------------------------------:|
 fixed-point iteration (`--method odt-fp`) | nonlinear optimization (`--method odt-no`) |
 
-Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
+Optimal Delaunay Triangulation (ODT) as suggested by [Chen and
+Holst](#relevant-publications). Typically superior to CPT, but also more expensive to
+compute.
+
+Implemented once classically as a fixed-point iteration, once as a nonlinear
+optimization method. The latter typically leads to better results.
 
 
 ### Access from Python
