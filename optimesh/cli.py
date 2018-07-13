@@ -8,10 +8,10 @@ import meshio
 import numpy
 
 from .__about__ import __version__
-from .laplace import laplace
 from .lloyd import lloyd
-from .odt import odt
-from . import chen_holst
+from . import laplace
+from . import odt
+from . import cpt
 
 
 def _get_parser():
@@ -29,7 +29,7 @@ def _get_parser():
         "--method",
         "-m",
         required=True,
-        choices=["laplace", "lloyd", "odt", "ch-odt", "ch-cpt"],
+        choices=["lloyd", "laplace", "odt-fp", "odt-no", "cpt-fp", "cpt-qn"],
         help="smoothing method",
     )
 
@@ -52,9 +52,14 @@ def _get_parser():
     )
 
     parser.add_argument(
-        "--verbosity", choices=[0, 1, 2], help="verbosity level (default: 1)", default=1
+        "--verbosity",
+        type=int,
+        choices=[0, 1, 2],
+        help="verbosity level (default: 1)",
+        default=1,
     )
 
+    # TODO remove once ODT is updated with a density-preserving linear solver
     parser.add_argument(
         "--uniform-density",
         "-u",
@@ -120,16 +125,7 @@ def main(argv=None):
 
     for cell_idx in cell_sets:
         if args.method == "laplace":
-            X, cls = laplace(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
-        elif args.method == "odt":
-            X, cls = odt(
+            X, cls = laplace.linear_solve(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
@@ -147,8 +143,8 @@ def main(argv=None):
                 fcc_type="boundary",
                 step_filename_format=args.step_filename_format,
             )
-        elif args.method == "ch-odt":
-            X, cls = chen_holst.odt(
+        elif args.method == "odt-fp":
+            X, cls = odt.fixed_point(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
@@ -157,15 +153,32 @@ def main(argv=None):
                 uniform_density=args.uniform_density,
                 verbosity=args.verbosity,
             )
-        else:
-            assert args.method == "ch-cpt"
-            X, cls = chen_holst.cpt(
+        elif args.method == "odt-no":
+            X, cls = odt.nonlinear_optimization(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
                 step_filename_format=args.step_filename_format,
-                uniform_density=args.uniform_density,
+                verbosity=args.verbosity,
+            )
+        elif args.method == "cpt-fp":
+            X, cls = cpt.fixed_point_uniform(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                verbosity=args.verbosity,
+            )
+        else:
+            assert args.method == "cpt-qn", "Illegal method {}".format(args.method)
+            X, cls = cpt.quasi_newton_uniform(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
                 verbosity=args.verbosity,
             )
 

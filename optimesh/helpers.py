@@ -3,7 +3,6 @@
 import numpy
 import fastfunc
 from meshplex import MeshTri
-import quadpy
 
 import asciiplotlib as apl
 
@@ -11,12 +10,12 @@ import asciiplotlib as apl
 def print_stats(mesh, extra_cols=None):
     extra_cols = [] if extra_cols is None else extra_cols
 
-    angles = mesh.get_angles() / numpy.pi * 180
+    angles = mesh.angles / numpy.pi * 180
     angles_hist, angles_bin_edges = numpy.histogram(
         angles, bins=numpy.linspace(0.0, 180.0, num=73, endpoint=True)
     )
 
-    q = mesh.get_quality()
+    q = mesh.triangle_quality
     q_hist, q_bin_edges = numpy.histogram(
         q, bins=numpy.linspace(0.0, 1.0, num=41, endpoint=True)
     )
@@ -41,71 +40,12 @@ def print_stats(mesh, extra_cols=None):
     return
 
 
-def write(mesh, file_prefix, filetype, k):
-    if filetype == "png":
-        from matplotlib import pyplot as plt
-
-        fig = mesh.plot(show_coedges=False, show_centroids=False, show_axes=False)
-        fig.suptitle("step {}".format(k), fontsize=20)
-        plt.savefig("{}{:04d}.png".format(file_prefix, k))
-        plt.close(fig)
-        return
-
-    mesh.write("{}{:04d}.{}".format(file_prefix, k, filetype))
-    return
-
-
 def sit_in_plane(X, tol=1.0e-15):
     """Checks if all points X sit in a plane.
     """
     orth = numpy.cross(X[1] - X[0], X[2] - X[0])
     orth /= numpy.sqrt(numpy.dot(orth, orth))
     return (abs(numpy.dot(X - X[0], orth)) < tol).all()
-
-
-def energy(mesh, uniform_density=False):
-    """The mesh energy is defined as
-
-    E = int_Omega |u_l(x) - u(x)| rho(x) dx
-
-    where u(x) = ||x||^2 and u_l is its piecewise linearization on the mesh.
-    """
-    # E = 1/(d+1) sum_i ||x_i||^2 |omega_i| - int_Omega_i ||x||^2
-    dim = mesh.cells["nodes"].shape[1] - 1
-
-    star_volume = numpy.zeros(mesh.node_coords.shape[0])
-    for i in range(3):
-        idx = mesh.cells["nodes"][:, i]
-        if uniform_density:
-            # rho = 1,
-            # int_{star} phi_i * rho = 1/(d+1) sum_{triangles in star} |triangle|
-            fastfunc.add.at(star_volume, idx, mesh.cell_volumes)
-        else:
-            # rho = 1 / tau_j,
-            # int_{star} phi_i * rho = 1/(d+1) |num triangles in star|
-            fastfunc.add.at(star_volume, idx, numpy.ones(idx.shape, dtype=float))
-    x2 = numpy.einsum("ij,ij->i", mesh.node_coords, mesh.node_coords)
-    out = 1 / (dim + 1) * numpy.dot(star_volume, x2)
-
-    # could be cached
-    assert dim == 2
-    x = mesh.node_coords[:, :2]
-    triangles = numpy.moveaxis(x[mesh.cells["nodes"]], 0, 1)
-    val = quadpy.triangle.integrate(
-        lambda x: x[0] ** 2 + x[1] ** 2,
-        triangles,
-        # Take any scheme with order 2
-        quadpy.triangle.Dunavant(2),
-    )
-    if uniform_density:
-        val = numpy.sum(val)
-    else:
-        rho = 1.0 / mesh.cell_volumes
-        val = numpy.dot(val, rho)
-
-    assert out >= val
-
-    return out - val
 
 
 def runner(
@@ -137,12 +77,7 @@ def runner(
 
     if verbosity > 0:
         print("Before:")
-        extra_cols = [
-            "energy: {:.5e}".format(energy(mesh, uniform_density=uniform_density))
-        ]
-        print_stats(mesh, extra_cols=extra_cols)
-
-    mesh.mark_boundary()
+        print_stats(mesh)
 
     k = 0
     while True:
@@ -150,7 +85,7 @@ def runner(
 
         new_interior_points = get_new_interior_points(mesh)
 
-        original_orient = mesh.get_signed_tri_areas() > 0.0
+        original_orient = mesh.signed_tri_areas > 0.0
         original_coords = mesh.node_coords[mesh.is_interior_node]
 
         # Step unless the orientation of any cell changes.
@@ -158,7 +93,7 @@ def runner(
         while True:
             xnew = (1 - alpha) * original_coords + alpha * new_interior_points
             mesh.update_interior_node_coordinates(xnew)
-            new_orient = mesh.get_signed_tri_areas() > 0.0
+            new_orient = mesh.signed_tri_areas > 0.0
             if numpy.all(original_orient == new_orient):
                 break
             alpha /= 2
@@ -188,10 +123,40 @@ def runner(
 
     if verbosity > 0:
         print("\nFinal ({} steps):".format(k))
-        extra_cols = [
-            "energy: {:.5e}".format(energy(mesh, uniform_density=uniform_density))
-        ]
-        print_stats(mesh, extra_cols=extra_cols)
+        print_stats(mesh)
         print()
 
     return mesh.node_coords, mesh.cells["nodes"]
+
+
+def get_new_points_volume_averaged(mesh, reference_points):
+    scaled_rp = (reference_points.T * mesh.cell_volumes).T
+
+    weighted_rp_average = numpy.zeros(mesh.node_coords.shape)
+    for i in mesh.cells["nodes"].T:
+        fastfunc.add.at(weighted_rp_average, i, scaled_rp)
+
+    omega = numpy.zeros(len(mesh.node_coords))
+    for i in mesh.cells["nodes"].T:
+        fastfunc.add.at(omega, i, mesh.cell_volumes)
+
+    idx = mesh.is_interior_node
+    new_points = (weighted_rp_average[idx].T / omega[idx]).T
+    return new_points
+
+
+def get_new_points_count_averaged(mesh, reference_points):
+    # Estimate the density as 1/|tau|. This leads to some simplifcations: The
+    # new point is simply the average of of the reference points
+    # (barycenters/cirumcenters) in the star.
+    rp_average = numpy.zeros(mesh.node_coords.shape)
+    for i in mesh.cells["nodes"].T:
+        fastfunc.add.at(rp_average, i, reference_points)
+
+    omega = numpy.zeros(len(mesh.node_coords))
+    for i in mesh.cells["nodes"].T:
+        fastfunc.add.at(omega, i, numpy.ones(i.shape, dtype=float))
+
+    idx = mesh.is_interior_node
+    new_points = (rp_average[idx].T / omega[idx]).T
+    return new_points

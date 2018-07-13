@@ -1,16 +1,103 @@
 # -*- coding: utf-8 -*-
 #
+"""
+Optimal Delaunay Triangulation.
+
+Long Chen, Michael Holst,
+Efficient mesh optimization schemes based on Optimal Delaunay
+Triangulations,
+Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
+<https://doi.org/10.1016/j.cma.2010.11.007>.
+"""
 from __future__ import print_function
 
 import numpy
 import fastfunc
+import quadpy
 
 from meshplex import MeshTri
 
-from .helpers import print_stats, energy
+from .helpers import (
+    runner,
+    get_new_points_volume_averaged,
+    get_new_points_count_averaged,
+    print_stats,
+)
 
 
-def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
+def energy(mesh, uniform_density=False):
+    """The mesh energy is defined as
+
+    E = int_Omega |u_l(x) - u(x)| rho(x) dx
+
+    where u(x) = ||x||^2 and u_l is its piecewise linearization on the mesh.
+    """
+    # E = 1/(d+1) sum_i ||x_i||^2 |omega_i| - int_Omega_i ||x||^2
+    dim = mesh.cells["nodes"].shape[1] - 1
+
+    star_volume = numpy.zeros(mesh.node_coords.shape[0])
+    for i in range(3):
+        idx = mesh.cells["nodes"][:, i]
+        if uniform_density:
+            # rho = 1,
+            # int_{star} phi_i * rho = 1/(d+1) sum_{triangles in star} |triangle|
+            fastfunc.add.at(star_volume, idx, mesh.cell_volumes)
+        else:
+            # rho = 1 / tau_j,
+            # int_{star} phi_i * rho = 1/(d+1) |num triangles in star|
+            fastfunc.add.at(star_volume, idx, numpy.ones(idx.shape, dtype=float))
+    x2 = numpy.einsum("ij,ij->i", mesh.node_coords, mesh.node_coords)
+    out = 1 / (dim + 1) * numpy.dot(star_volume, x2)
+
+    # could be cached
+    assert dim == 2
+    x = mesh.node_coords[:, :2]
+    triangles = numpy.moveaxis(x[mesh.cells["nodes"]], 0, 1)
+    val = quadpy.triangle.integrate(
+        lambda x: x[0] ** 2 + x[1] ** 2,
+        triangles,
+        # Take any scheme with order 2
+        quadpy.triangle.Dunavant(2),
+    )
+    if uniform_density:
+        val = numpy.sum(val)
+    else:
+        rho = 1.0 / mesh.cell_volumes
+        val = numpy.dot(val, rho)
+
+    assert out >= val
+
+    return out - val
+
+
+def fixed_point(*args, uniform_density=False, **kwargs):
+    """Idea:
+    Move interior mesh points into the weighted averages of the circumcenters
+    of their adjacent cells. If a triangle cell switches orientation in the
+    process, don't move quite so far.
+    """
+    compute_average = (
+        get_new_points_volume_averaged
+        if uniform_density
+        else get_new_points_count_averaged
+    )
+
+    def get_new_points(mesh):
+        # Get circumcenters everywhere except at cells adjacent to the boundary;
+        # barycenters there.
+        cc = mesh.cell_circumcenters
+        bc = mesh.cell_barycenters
+        # Find all cells with a boundary edge
+        boundary_cell_ids = mesh.edges_cells[1][:, 0]
+        cc[boundary_cell_ids] = bc[boundary_cell_ids]
+        return compute_average(mesh, cc)
+
+    return runner(get_new_points, *args, **kwargs)
+
+
+def nonlinear_optimization(
+    X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None
+):
     """Optimal Delaunay Triangulation smoothing.
 
     This method minimizes the energy
@@ -52,8 +139,6 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(mesh, extra_cols=extra_cols)
 
-    mesh.mark_boundary()
-
     def f(x):
         mesh.update_interior_node_coordinates(x.reshape(-1, 2))
         return energy(mesh, uniform_density=True)
@@ -63,7 +148,7 @@ def odt(X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None):
         mesh.update_interior_node_coordinates(x.reshape(-1, 2))
 
         grad = numpy.zeros(mesh.node_coords.shape)
-        cc = mesh.get_cell_circumcenters()
+        cc = mesh.cell_circumcenters
         for mcn in mesh.cells["nodes"].T:
             fastfunc.add.at(
                 grad, mcn, ((mesh.node_coords[mcn] - cc).T * mesh.cell_volumes).T

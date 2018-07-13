@@ -5,7 +5,7 @@ from __future__ import print_function
 import numpy
 from meshplex import MeshTri
 
-from .helpers import print_stats, energy
+from .helpers import print_stats
 
 
 def lloyd(
@@ -39,17 +39,16 @@ def lloyd(
 
     if verbosity > 0:
         print("\nBefore:")
-        extra_cols = ["energy: {:.5e}".format(energy(mesh, uniform_density=True))]
-        print_stats(mesh, extra_cols=extra_cols)
+        print_stats(mesh)
 
     k = 0
     while True:
         k += 1
 
         # move interior points into centroids
-        new_points = mesh.get_control_volume_centroids()[mesh.is_interior_node]
+        new_points = mesh.control_volume_centroids[mesh.is_interior_node]
 
-        original_orient = mesh.get_signed_tri_areas() > 0.0
+        original_orient = mesh.signed_tri_areas > 0.0
         original_coords = mesh.node_coords[mesh.is_interior_node]
 
         # Step unless the orientation of any cell changes.
@@ -63,9 +62,8 @@ def lloyd(
             mesh = MeshTri(
                 original_X, mesh.cells["nodes"], flat_cell_correction=fcc_type
             )
-            mesh.mark_boundary()
             # mesh.update_node_coordinates(xnew)
-            new_orient = mesh.get_signed_tri_areas() > 0.0
+            new_orient = mesh.signed_tri_areas > 0.0
             if numpy.all(original_orient == new_orient):
                 break
             alpha /= 2
@@ -95,8 +93,7 @@ def lloyd(
 
     if verbosity > 0:
         print("\nFinal ({} steps):".format(k))
-        extra_cols = ["energy: {:.5e}".format(energy(mesh, uniform_density=True))]
-        print_stats(mesh, extra_cols=extra_cols)
+        print_stats(mesh)
         print()
 
     return mesh.node_coords, mesh.cells["nodes"]

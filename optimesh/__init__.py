@@ -11,11 +11,11 @@ from .__about__ import (
     __license__,
 )
 
-from .laplace import laplace
-from .lloyd import lloyd
-from .odt import odt
-from . import chen_holst
 from . import cli
+from . import cpt
+from . import laplace
+from .lloyd import lloyd
+from . import odt
 
 __all__ = [
     "__version__",
@@ -24,8 +24,8 @@ __all__ = [
     "__website__",
     "__status__",
     "__license__",
-    "chen_holst",
     "cli",
+    "cpt",
     "laplace",
     "lloyd",
     "odt",
