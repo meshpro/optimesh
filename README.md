@@ -55,8 +55,8 @@ convergence.
 #### CVT/pseudo-Lloyd smoothing
 
 ![lloyd](https://nschloe.github.io/optimesh/lloyd.png) |
-:---------------------------------------:|
-fixed-point iteration (`--method lloyd`) |
+:---------------:|
+`--method lloyd` |
 
 Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
 algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm).
@@ -73,8 +73,8 @@ density.
 ![cpt-ls](https://nschloe.github.io/optimesh/cpt-ls.png) |
 ![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
 ![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
-----------------------------------------------------:|:-----------------------------------------:|:--------------------------------:|
-linear solve (density-preserving, `--method cpt-ls`) | fixed-point iteration (`--method cpt-fp`) | quasi-Newton (`--method cpt-qn`) |
+-------------------------------------------:|:--------------------------------:|:-----------------------:|
+linear solve (density-preserving, `cpt-ls`) | fixed-point iteration (`cpt-fp`) | quasi-Newton (`cpt-qn`) |
 
 Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
 Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
