@@ -40,8 +40,8 @@ optimesh -h
 
 ![laplace-fp](https://nschloe.github.io/optimesh/laplace-fp.png) |
 ![laplace-ls](https://nschloe.github.io/optimesh/laplace-ls.png) |
-:--------------------------------------:|:------------------------------------------------------:|
-classical Laplace (density-preserving) :|: linear solve (density-preserving, `--method laplace`) |
+:-------------------------------------:|:-----------------------------------------------------:|
+classical Laplace (density-preserving) | linear solve (density-preserving, `--method laplace`) |
 
 Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing)
 means moving all points into the average of their neighbors until an equilibrium has
@@ -73,8 +73,8 @@ density.
 ![cpt-ls](https://nschloe.github.io/optimesh/cpt-ls.png) |
 ![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
 ![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
------------------------------------------------------:|:-------------------------------------------:|:---------------------------------:|
-linear solve (density-preserving, `--method cpt-ls`) :|: fixed-point iteration (`--method cpt-fp`) :|: quasi-Newton (`--method cpt-qn`) |
+----------------------------------------------------:|:-----------------------------------------:|:--------------------------------:|
+linear solve (density-preserving, `--method cpt-ls`) | fixed-point iteration (`--method cpt-fp`) | quasi-Newton (`--method cpt-qn`) |
 
 Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
 Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
@@ -84,8 +84,8 @@ Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh de
 
 ![odt-fp](https://nschloe.github.io/optimesh/odt-fp.png) |
 ![odt-no](https://nschloe.github.io/optimesh/odt-no.png) |
-:-----------------------------------------:|:-------------------------------------------:|
-fixed-point iteration (`--method odt-fp`) :|: nonlinear optimization (`--method odt-no`) |
+:----------------------------------------:|:------------------------------------------:|
+fixed-point iteration (`--method odt-fp`) | nonlinear optimization (`--method odt-no`) |
 
 Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
 Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
