@@ -5,7 +5,7 @@ default:
 
 prepare:
 	for file in step*.png; do \
-	  convert -trim -resize 200x200 $$file $$file; \
+		convert -trim -resize 200x200 $$file png8:$$file; \
 	done
 	for file in step*.png; do \
 	  optipng -quiet $$file; \

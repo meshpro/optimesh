@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
 #
+"""
+Optimal Delaunay Triangulation.
+
+Long Chen, Michael Holst,
+Efficient mesh optimization schemes based on Optimal Delaunay
+Triangulations,
+Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
+<https://doi.org/10.1016/j.cma.2010.11.007>.
+"""
 from __future__ import print_function
 
 import numpy
@@ -62,15 +71,7 @@ def energy(mesh, uniform_density=False):
 
 
 def fixed_point(*args, uniform_density=False, **kwargs):
-    """Optimal Delaunay Triangulation.
-
-    Long Chen, Michael Holst,
-    Efficient mesh optimization schemes based on Optimal Delaunay
-    Triangulations,
-    Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
-    <https://doi.org/10.1016/j.cma.2010.11.007>.
-
-    Idea:
+    """Idea:
     Move interior mesh points into the weighted averages of the circumcenters
     of their adjacent cells. If a triangle cell switches orientation in the
     process, don't move quite so far.

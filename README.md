@@ -39,20 +39,20 @@ optimesh -h
 #### Laplacian smoothing
 
 ![laplace-fp](https://nschloe.github.io/optimesh/laplace-fp.png) |
-![laplace-ls](https://nschloe.github.io/optimesh/laplace.png)    |
+![laplace-ls](https://nschloe.github.io/optimesh/laplace.png) |
 :----------------:|:---------------------------------:|
 classical Laplace | linear solve (`--method laplace`) |
 
 Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing)
-means moving all points into the average of their neighbors until an equilibrium has
-been reached. The method preserves the mesh density (i.e., small simplices
-are not blown up as part of the smoothing).
+means moving all (interior) points into the average of their neighbors until an
+equilibrium has been reached. The method preserves the mesh density (i.e., small
+simplices are not blown up as part of the smoothing).
 
-Instead a fixed-point iteration, one can do a simple linear solve, yielding much faster
-convergence.
+Instead of a fixed-point iteration, one can do a few linear solves, interleaved with
+facet-flipping. This approach converges _much_ faster.
 
 
-#### CVT/pseudo-Lloyd smoothing
+#### CVT (centroidal Voronoi tesselation)
 
 ![lloyd](https://nschloe.github.io/optimesh/lloyd.png) |
 :---------------:|
@@ -64,19 +64,16 @@ If the topological neighbors of any node are also the geometrically closest
 nodes, this is exactly Lloyd's algorithm. That is fulfilled in many practical cases, but
 the algorithm can break down if it is not.
 
-Assumes a uniform mesh density (for now), so it does _not_ preserve the original mesh
-density.
 
-
-#### CPT smoothing
+#### CPT (centroidal patch tessalation)
 
 ![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
 ![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
---------------------------------:|:-----------------------:|
-fixed-point iteration (`cpt-fp`) | quasi-Newton (`cpt-qn`) |
+-----------------------------------------:|:--------------------------------:|
+fixed-point iteration (`--method cpt-fp`) | quasi-Newton (`--method cpt-qn`) |
 
 
-#### ODT smoothing
+#### ODT (optimal Delaunay tesselation)
 
 ![odt-fp](https://nschloe.github.io/optimesh/odt-fp.png) |
 ![odt-no](https://nschloe.github.io/optimesh/odt-no.png) |
@@ -84,7 +81,6 @@ fixed-point iteration (`cpt-fp`) | quasi-Newton (`cpt-qn`) |
 fixed-point iteration (`--method odt-fp`) | nonlinear optimization (`--method odt-no`) |
 
 Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
-Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
 
 
 ### Access from Python
