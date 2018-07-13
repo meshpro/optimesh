@@ -29,14 +29,7 @@ def _get_parser():
         "--method",
         "-m",
         required=True,
-        choices=[
-            "lloyd",
-            "laplace",
-            "odt-fp",
-            "odt-no",
-            "cpt-fp",
-            "cpt-qn",
-        ],
+        choices=["lloyd", "laplace", "odt-fp", "odt-no", "cpt-fp", "cpt-qn"],
         help="smoothing method",
     )
 
