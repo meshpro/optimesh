@@ -31,8 +31,7 @@ def _get_parser():
         required=True,
         choices=[
             "lloyd",
-            "laplace-ls",
-            "laplace-fp",
+            "laplace",
             "odt-fp",
             "odt-no",
             "cpt-fp",
@@ -133,16 +132,7 @@ def main(argv=None):
     cells = mesh.cells["triangle"]
 
     for cell_idx in cell_sets:
-        if args.method == "laplace-fp":
-            X, cls = laplace.fixed_point(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
-        elif args.method == "laplace-ls":
+        if args.method == "laplace":
             X, cls = laplace.linear_solve(
                 mesh.points,
                 cells[cell_idx],

@@ -40,61 +40,56 @@ optimesh -h
 
 ![laplace-fp](https://nschloe.github.io/optimesh/laplace-fp.png) |
 ![laplace-ls](https://nschloe.github.io/optimesh/laplace-ls.png) |
-:---------------------:|:----------------------------------:|
-fixed-point iteration :|: linear solve (density-preserving) |
+:-----------------:|:----------------------------------:|
+classical Laplace :|: linear solve (`--method laplace`) |
 
-Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
-Implemented for historical reasons.
+Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing)
+means moving all points into the average of their neighbors until an equilibrium has
+been reached. The method preserves the mesh density (i.e., small simplices
+are not blown up as part of the smoothing).
 
-[Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing) can be
-formulated as a simple linear solve; convergence is much faster than the classical
-fixed-point iteration.
-```
-optimesh circle.vtk out.vtk --method laplace-ls
-```
+Instead a fixed-point iteration, one can do a simple linear solve, yielding much faster
+convergence.
+
+
+#### CVT/pseudo-Lloyd smoothing
+
+![lloyd](https://nschloe.github.io/optimesh/lloyd.png) |
+:---------------------------------------:|
+fixed-point iteration (`--method lloyd`) |
+
+Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
+algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm).
+If the topological neighbors of any node are also the geometrically closest
+nodes, this is exactly Lloyd's algorithm. That is fulfilled in many practical cases, but
+the algorithm can break down if it is not.
+
+Assumes a uniform mesh density (for now), so it does _not_ preserve the original mesh
+density.
+
+
+#### CPT smoothing
+
+![cpt-ls](https://nschloe.github.io/optimesh/cpt-ls.png) |
+![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
+![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
+---------------------------------:|:----------------------------------:|:------------------------:|
+linear solve (`--method cpt-ls`) :|: fixed-point iteration (`cpt-fp`) :|: quasi-Newton (`cpt-qn`) |
+
+Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
+Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
+
 
 #### ODT smoothing
 
 ![odt-fp](https://nschloe.github.io/optimesh/odt-fp.png) |
 ![odt-no](https://nschloe.github.io/optimesh/odt-no.png) |
-:---------------------:|:----------------------------------:|:----------------------:|
-fixed-point iteration :|: linear solve (density-preserving) | nonlinear optimization |
+:-------------------------------:|:----------------------------------:|
+fixed-point iteration (`odt-fp`):|: nonlinear optimization (`odt-no`) |
 
 Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
 Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
 
-```
-optimesh circle.vtk out.vtk --method odt-no
-```
-
-#### CPT smoothing
-
-![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png)
-![cpt-ls](https://nschloe.github.io/optimesh/cpt-ls.png)
-![cpt-no](https://nschloe.github.io/optimesh/cpt-no.png)
-:---------------------:|:----------------------------------:|:----------------------:|
-fixed-point iteration :|: linear solve (density-preserving) | nonlinear optimization |
-
-Optimal Delaunay Triangulation (ODT) treated as a minimization problem.
-Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
-
-```
-optimesh circle.vtk out.vtk --method cpt-ls
-```
-
-#### CVT/pseudo-Lloyd smoothing
-![lloyd](https://nschloe.github.io/optimesh/lloyd.png)
-
-Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
-algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) adapted for triangular
-meshes. If the topological neighbors of any node are also the geometrically closest
-nodes, this is exactly Lloyd's algorithm. That is fulfilled in many practical cases, but
-the algorithm can break down if it is not.
-
-Assumes a uniform mesh (for now), so it does _not_ preserve the original mesh density.
-```
-optimesh circle.vtk out.vtk --method lloyd
-```
 
 ### Access from Python
 
