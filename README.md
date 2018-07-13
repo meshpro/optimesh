@@ -39,7 +39,7 @@ optimesh -h
 #### Laplacian smoothing
 
 ![laplace-fp](https://nschloe.github.io/optimesh/laplace-fp.png) |
-![laplace-ls](https://nschloe.github.io/optimesh/laplace-ls.png) |
+![laplace-ls](https://nschloe.github.io/optimesh/laplace.png)    |
 :-------------------------------------:|:-----------------------------------------------------:|
 classical Laplace (density-preserving) | linear solve (density-preserving, `--method laplace`) |
 
