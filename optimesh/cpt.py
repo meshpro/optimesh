@@ -14,7 +14,6 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 import fastfunc
 from meshplex import MeshTri
 import numpy
-import optipy
 import pyamg
 import quadpy
 import scipy.sparse
