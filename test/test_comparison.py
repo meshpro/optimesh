@@ -24,6 +24,7 @@ def test_comparison():
     avg_quality = numpy.empty((len(d), num_steps + 1))
 
     for i, method in enumerate(d.values()):
+
         def callback(k, mesh):
             avg_quality[i, k] = numpy.average(mesh.triangle_quality)
             return
@@ -31,7 +32,7 @@ def test_comparison():
         X_in = X.copy()
         cells_in = cells.copy()
 
-        method(X_in, cells_in, 0.0, num_steps, callback=callback)
+        method(X_in, cells_in, 0.0, num_steps, callback=callback, verbosity=0)
 
     # sort by best final quality
     idx = numpy.argsort(avg_quality[:, -1])[::-1]
@@ -40,7 +41,7 @@ def test_comparison():
     sorted_labels = [labels[i] for i in idx]
 
     for label, values in zip(sorted_labels, avg_quality[idx]):
-        plt.plot(values, '-', label=label)
+        plt.plot(values, "-", label=label)
 
     plt.xlim(0, num_steps)
     plt.ylim(0.9, 1.0)

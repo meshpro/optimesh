@@ -170,10 +170,9 @@ def circle_random():
     r = numpy.random.rand(m)
     alpha = 2 * numpy.pi * numpy.random.rand(m)
 
-    interior_pts = numpy.column_stack([
-        numpy.sqrt(r) * numpy.cos(alpha),
-        numpy.sqrt(r) * numpy.sin(alpha)
-    ])
+    interior_pts = numpy.column_stack(
+        [numpy.sqrt(r) * numpy.cos(alpha), numpy.sqrt(r) * numpy.sin(alpha)]
+    )
 
     pts = numpy.concatenate([boundary_pts, interior_pts])
 
