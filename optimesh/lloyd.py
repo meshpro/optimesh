@@ -15,6 +15,7 @@ def lloyd(
     max_num_steps,
     fcc_type="boundary",
     verbosity=1,
+    callback=None,
     step_filename_format=None,
 ):
     # flat mesh
@@ -42,6 +43,9 @@ def lloyd(
         print_stats(mesh)
 
     k = 0
+    if callback:
+        callback(k, mesh)
+
     while True:
         k += 1
 
@@ -83,6 +87,9 @@ def lloyd(
         diff = mesh.node_coords[mesh.is_interior_node] - original_coords
         if numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2):
             break
+
+        if callback:
+            callback(k, mesh)
 
         if k >= max_num_steps:
             break

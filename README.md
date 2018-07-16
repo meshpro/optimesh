@@ -70,7 +70,7 @@ not.
 
 ![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
 ![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
------------------------------------------:|:--------------------------------:|
+:----------------------------------------:|:--------------------------------:|
 fixed-point iteration (`--method cpt-fp`) | quasi-Newton (`--method cpt-qn`) |
 
 A smooting method suggested by [Chen and Holst](#relevant-publications), mimicking CVT
@@ -95,6 +95,18 @@ compute.
 
 Implemented once classically as a fixed-point iteration, once as a nonlinear
 optimization method. The latter typically leads to better results.
+
+
+### Which method is best?
+
+As usual, it depends. From practical experiments, it seems that `lloyd` smoothing gives
+very satisfactory results. Here is a comparison of all uniform-density methods applied
+to the random circle mesh seen above:
+
+![comparison](https://nschloe.github.io/optimesh/comparison.png)
+
+(Mesh quality is twice the ratio of incircle and circumcircle radius, with the maximum
+being 1.)
 
 
 ### Access from Python
