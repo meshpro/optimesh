@@ -55,6 +55,7 @@ def runner(
     tol,
     max_num_steps,
     verbosity=1,
+    callback=None,
     step_filename_format=None,
     uniform_density=False,
 ):
@@ -80,6 +81,9 @@ def runner(
         print_stats(mesh)
 
     k = 0
+    if callback:
+        callback(k, mesh)
+
     while True:
         k += 1
 
@@ -108,6 +112,9 @@ def runner(
                 show_axes=False,
                 nondelaunay_edge_color="k",
             )
+
+        if callback:
+            callback(k, mesh)
 
         # Abort the loop if the update is small
         diff = mesh.node_coords[mesh.is_interior_node] - original_coords

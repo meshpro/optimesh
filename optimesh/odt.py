@@ -96,7 +96,7 @@ def fixed_point(*args, uniform_density=False, **kwargs):
 
 
 def nonlinear_optimization(
-    X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None
+    X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None, callback=None
 ):
     """Optimal Delaunay Triangulation smoothing.
 
@@ -175,6 +175,9 @@ def nonlinear_optimization(
             print("\nStep {}:".format(flip_delaunay.step))
             print_stats(mesh, extra_cols=["energy: {}".format(f(x))])
 
+        if callback:
+            callback(flip_delaunay.step, mesh)
+
         # mesh.show()
         # exit(1)
         return
@@ -182,6 +185,9 @@ def nonlinear_optimization(
     flip_delaunay.step = 0
 
     x0 = X[mesh.is_interior_node, :2].flatten()
+
+    if callback:
+        callback(0, mesh)
 
     out = scipy.optimize.minimize(
         f,
