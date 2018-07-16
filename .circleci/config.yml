@@ -16,7 +16,7 @@ jobs:
       - run: LC_ALL=C.UTF-8 black --check setup.py optimesh/ test/*.py
       - run: flake8 setup.py optimesh/ test/*.py
       # The tests
-      - run: cd test/ && pytest --maxfail=1 --cov optimesh
+      - run: cd test/ && MPLBACKEND=Agg pytest --maxfail=1 --cov optimesh
       # submit to codecov
       - run: apt install -y curl
       - run: bash <(curl -s https://codecov.io/bash)
