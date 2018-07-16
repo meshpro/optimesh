@@ -70,7 +70,7 @@ not.
 
 ![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
 ![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
------------------------------------------:|:--------------------------------:|
+:----------------------------------------:|:--------------------------------:|
 fixed-point iteration (`--method cpt-fp`) | quasi-Newton (`--method cpt-qn`) |
 
 A smooting method suggested by [Chen and Holst](#relevant-publications), mimicking CVT

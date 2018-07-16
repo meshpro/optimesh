@@ -146,15 +146,15 @@ def solve_hessian_approx_uniform(X, cells, rhs):
 
     # terms corresponding to -2/(d+1) * b_j |tau_j|
     a = mesh.cell_volumes * (2 / (dim + 1) ** 2)
-    for i in [[0, 1], [1, 2], [2, 0]]:
+    for i in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
         edges = cells[i]
-        # Hardly any movement at all; see docstring
-        # row_idx += [edges[0], edges[1], edges[0], edges[1]]
-        # col_idx += [edges[0], edges[1], edges[1], edges[0]]
-        # val += [-a, -a, -a, -a]
+        # Leads to funny osciilatory movements
+        # row_idx += [edges[0], edges[0], edges[0]]
+        # col_idx += [edges[0], edges[1], edges[2]]
+        # val += [-a, -a, -a]
         # Best so far
-        row_idx += [edges[0], edges[1]]
-        col_idx += [edges[1], edges[0]]
+        row_idx += [edges[0], edges[0]]
+        col_idx += [edges[1], edges[2]]
         val += [-a, -a]
 
     row_idx = numpy.concatenate(row_idx)
