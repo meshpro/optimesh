@@ -7,11 +7,11 @@ import sys
 import meshio
 import numpy
 
-from .__about__ import __version__
-from .lloyd import lloyd
-from . import laplace
-from . import odt
-from . import cpt
+from ..__about__ import __version__
+from ..lloyd import lloyd
+from .. import laplace
+from .. import odt
+from .. import cpt
 
 
 def _get_parser():
