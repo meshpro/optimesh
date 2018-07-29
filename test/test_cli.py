@@ -23,7 +23,7 @@ def test_cli(method):
     return
 
 
-def test_info(method):
+def test_info():
     input_file = download_mesh(
         "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
     )
