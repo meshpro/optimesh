@@ -25,8 +25,7 @@ def test_cli(method):
 
 def test_info(method):
     input_file = download_mesh(
-        "pacman.vtk",
-        "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6",
+        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
     )
     output_file = "out.vtk"
     optimesh.cli.inf([input_file, output_file])
