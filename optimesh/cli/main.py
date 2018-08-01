@@ -8,10 +8,9 @@ import meshio
 import numpy
 
 from ..__about__ import __version__
-from ..lloyd import lloyd
-from .. import laplace
-from .. import odt
 from .. import cpt
+from .. import cvt
+from .. import odt
 
 
 def _get_parser():
@@ -29,7 +28,17 @@ def _get_parser():
         "--method",
         "-m",
         required=True,
-        choices=["lloyd", "laplace", "odt-fp", "odt-no", "cpt-fp", "cpt-qn"],
+        choices=[
+            "cpt-dp",
+            "cpt-uniform-fp",
+            "cpt-uniform-qn",
+            #
+            "cvt-uniform-fp",
+            #
+            "odt-dp-fp",
+            "odt-uniform-fp",
+            "odt-uniform-no",
+        ],
         help="smoothing method",
     )
 
@@ -57,18 +66,6 @@ def _get_parser():
         choices=[0, 1, 2],
         help="verbosity level (default: 1)",
         default=1,
-    )
-
-    # TODO remove once ODT is updated with a density-preserving linear solver
-    parser.add_argument(
-        "--uniform-density",
-        "-u",
-        action="store_true",
-        default=False,
-        help=(
-            "assume uniform mesh density "
-            "(where applicable, default: False, estimate from cell size)"
-        ),
     )
 
     parser.add_argument(
@@ -124,8 +121,8 @@ def main(argv=None):
     cells = mesh.cells["triangle"]
 
     for cell_idx in cell_sets:
-        if args.method == "laplace":
-            X, cls = laplace.linear_solve(
+        if args.method == "cpt-dp":
+            X, cls = cpt.linear_solve_density_preserving(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
@@ -133,36 +130,7 @@ def main(argv=None):
                 step_filename_format=args.step_filename_format,
                 verbosity=args.verbosity,
             )
-        elif args.method == "lloyd":
-            X, cls = lloyd(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                verbosity=args.verbosity,
-                fcc_type="boundary",
-                step_filename_format=args.step_filename_format,
-            )
-        elif args.method == "odt-fp":
-            X, cls = odt.fixed_point(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                uniform_density=args.uniform_density,
-                verbosity=args.verbosity,
-            )
-        elif args.method == "odt-no":
-            X, cls = odt.nonlinear_optimization(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
-        elif args.method == "cpt-fp":
+        elif args.method == "cpt-uniform-fp":
             X, cls = cpt.fixed_point_uniform(
                 mesh.points,
                 cells[cell_idx],
@@ -171,9 +139,48 @@ def main(argv=None):
                 step_filename_format=args.step_filename_format,
                 verbosity=args.verbosity,
             )
-        else:
-            assert args.method == "cpt-qn", "Illegal method {}".format(args.method)
+        elif "cpt-uniform-qn":
             X, cls = cpt.quasi_newton_uniform(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                verbosity=args.verbosity,
+            )
+        elif args.method == "cvt-fp":
+            X, cls = cvt.fixed_point_uniform(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                verbosity=args.verbosity,
+                fcc_type="boundary",
+                step_filename_format=args.step_filename_format,
+            )
+        elif args.method == "odt-dp-fp":
+            X, cls = odt.fixed_point_density_preserving(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                verbosity=args.verbosity,
+            )
+        elif args.method == "odt-uniform-fp":
+            X, cls = odt.fixed_point_uniform(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                step_filename_format=args.step_filename_format,
+                verbosity=args.verbosity,
+            )
+        else:
+            assert args.method == "odt-uniform-no", "Illegal method {}".format(
+                args.method
+            )
+            X, cls = odt.nonlinear_optimization_uniform(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,

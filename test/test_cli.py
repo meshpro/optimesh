@@ -8,7 +8,18 @@ from helpers import download_mesh
 
 
 @pytest.mark.parametrize(
-    "method", ["laplace", "lloyd", "odt-fp", "odt-no", "cpt-fp", "cpt-qn"]
+    "method",
+    [
+        "cpt-dp",
+        "cpt-uniform-fp",
+        "cpt-uniform-qn",
+        #
+        "cvt-uniform-fp",
+        #
+        "odt-dp-fp",
+        "odt-uniform-fp",
+        "odt-uniform-no",
+    ],
 )
 def test_cli(method):
     input_file = download_mesh(

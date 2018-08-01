@@ -20,7 +20,7 @@ from meshes import simple1, simple2, simple3, pacman, circle
 def test_fixed_point(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    X, cells = optimesh.odt.fixed_point(X, cells, 1.0e-3, 100, uniform_density=True)
+    X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-3, 100, uniform_density=True)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -50,7 +50,7 @@ def test_nonlinear_optimization(mesh, ref1, ref2, refi):
     # TODO remove
     X = X[:, :2]
 
-    X, cells = optimesh.odt.nonlinear_optimization(X, cells, 1.0e-5, 100)
+    X, cells = optimesh.odt.nonlinear_optimization_uniform(X, cells, 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()

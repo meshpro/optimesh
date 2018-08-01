@@ -22,7 +22,7 @@ pip install optimesh
 ```
 Example call:
 ```
-optimesh in.e out.vtk --method lloyd -n 50
+optimesh in.e out.vtk --method cvt-fp-uniform -n 50
 ```
 Output:
 ![terminal-screenshot](https://nschloe.github.io/optimesh/term-screenshot.png)
@@ -36,27 +36,11 @@ All command-line options are viewed with
 optimesh -h
 ```
 
-#### Laplacian smoothing
-
-![laplace-fp](https://nschloe.github.io/optimesh/laplace-fp.png) |
-![laplace-ls](https://nschloe.github.io/optimesh/laplace.png) |
-:----------------:|:---------------------------------:|
-classical Laplace | linear solve (`--method laplace`) |
-
-Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing)
-means moving all (interior) points into the average of their neighbors until an
-equilibrium has been reached. The method preserves the mesh density (i.e., small
-simplices are not blown up as part of the smoothing).
-
-Instead of a fixed-point iteration, one can do a few linear solves, interleaved with
-facet-flipping. This approach converges _much_ faster.
-
-
 #### CVT (centroidal Voronoi tesselation)
 
-![lloyd](https://nschloe.github.io/optimesh/lloyd.png) |
+![cvt-fp-uniform](https://nschloe.github.io/optimesh/lloyd.png) |
 :---------------:|
-`--method lloyd` |
+`--method cvt-fp-uniform` (Lloyd's algorithm) |
 
 Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
 algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), i.e., points are
@@ -68,18 +52,18 @@ not.
 
 #### CPT (centroidal patch tessalation)
 
+![cpt-ls](https://nschloe.github.io/optimesh/laplace.png) |
 ![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
 ![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
-:----------------------------------------:|:--------------------------------:|
-fixed-point iteration (`--method cpt-fp`) | quasi-Newton (`--method cpt-qn`) |
+|:----------------------------------------------------------------------:|:-------------------------------------------------:|:----------------------------------------:|
+density-preserving linear solve (Laplacian smoothing, `--method cpt-dp`) | fixed-point iteration (`--method cpt-uniform-fp`) | quasi-Newton (`--method cpt-uniform-qn`) |
 
 A smooting method suggested by [Chen and Holst](#relevant-publications), mimicking CVT
 but much more easily implemented. The density-preserving variant leads to the exact same
-equation system as Laplace smoothing, so optimesh only contains the the uniform-density
-variant.
+equation system as [Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
 
-Implemented once classically as a fixed-point iteration, once as a quasi-Newton method.
-The latter typically leads to better results.
+The unform-density variants are implemented classically as a fixed-point iteration and
+as a quasi-Newton method. The latter typically converges faster.
 
 
 #### ODT (optimal Delaunay tesselation)
@@ -99,9 +83,9 @@ optimization method. The latter typically leads to better results.
 
 ### Which method is best?
 
-As usual, it depends. From practical experiments, it seems that `lloyd` smoothing gives
-very satisfactory results. Here is a comparison of all uniform-density methods applied
-to the random circle mesh seen above:
+From practical experiments, it seems that CVT smoothing gives very satisfactory results.
+Here is a comparison of all uniform-density methods applied to the random circle mesh
+seen above:
 
 <img src="https://nschloe.github.io/optimesh/comparison.svg" width="70%">
 

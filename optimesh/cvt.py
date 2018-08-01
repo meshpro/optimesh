@@ -8,7 +8,7 @@ from meshplex import MeshTri
 from .helpers import print_stats
 
 
-def lloyd(
+def fixed_point_uniform(
     X,
     cells,
     tol,
@@ -18,6 +18,8 @@ def lloyd(
     callback=None,
     step_filename_format=None,
 ):
+    """Lloyd's algorithm.
+    """
     # flat mesh
     if X.shape[1] == 3:
         assert numpy.all(numpy.abs(X[:, 2]) < 1.0e-15)

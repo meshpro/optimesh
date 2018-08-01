@@ -13,8 +13,8 @@ from .__about__ import (
 
 from . import cli
 from . import cpt
+from . import cvt
 from . import laplace
-from .lloyd import lloyd
 from . import odt
 
 __all__ = [
@@ -26,8 +26,8 @@ __all__ = [
     "__license__",
     "cli",
     "cpt",
+    "cvt",
     "laplace",
-    "lloyd",
     "odt",
 ]
 
