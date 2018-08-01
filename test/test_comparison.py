@@ -50,7 +50,7 @@ def test_comparison():
     plt.ylabel("average cell quality")
     plt.legend()
 
-    plt.savefig("comparison.png", transparent=True, bbox_inches="tight")
+    plt.savefig("comparison.svg", transparent=True, bbox_inches="tight")
     # plt.show()
     return
 
