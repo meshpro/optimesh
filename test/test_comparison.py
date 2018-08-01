@@ -12,13 +12,15 @@ def test_comparison():
     X, cells = circle_random()
     X = X[:, :2]
 
-    num_steps = 70
+    num_steps = 100
     d = {
-        "cpt-fp": optimesh.cpt.fixed_point_uniform,
-        "cpt-qn": optimesh.cpt.quasi_newton_uniform,
-        "odt-fp": optimesh.odt.fixed_point,
-        "odt-no": optimesh.odt.nonlinear_optimization,
-        "lloyd": optimesh.lloyd,
+        "cpt-uniform-fp": optimesh.cpt.fixed_point_uniform,
+        "cpt-uniform-qn": optimesh.cpt.quasi_newton_uniform,
+        #
+        "cvt-uniform-fp": optimesh.cvt.fixed_point_uniform,
+        #
+        "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
+        "odt-uniform-no": optimesh.odt.nonlinear_optimization_uniform,
     }
 
     avg_quality = numpy.empty((len(d), num_steps + 1))
@@ -50,7 +52,7 @@ def test_comparison():
     plt.ylabel("average cell quality")
     plt.legend()
 
-    plt.savefig("comparison.png", transparent=True, bbox_inches="tight")
+    plt.savefig("comparison.svg", transparent=True, bbox_inches="tight")
     # plt.show()
     return
 

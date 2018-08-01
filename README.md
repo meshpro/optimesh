@@ -2,7 +2,6 @@
 
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/optimesh/master.svg)](https://circleci.com/gh/nschloe/optimesh)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg)](https://codecov.io/gh/nschloe/optimesh)
-[![Codacy grade](https://img.shields.io/codacy/grade/97175bbf62854fcfbfc1f5812ce840f7.svg)](https://app.codacy.com/app/nschloe/optimesh/dashboard)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![smooth](https://img.shields.io/badge/smooth-operator-8209ba.svg)](https://youtu.be/4TYv2PhG89A)
 [![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg)](https://pypi.org/project/optimesh)
@@ -22,7 +21,7 @@ pip install optimesh
 ```
 Example call:
 ```
-optimesh in.e out.vtk --method lloyd -n 50
+optimesh in.e out.vtk --method cvt-uniform-fp -n 50
 ```
 Output:
 ![terminal-screenshot](https://nschloe.github.io/optimesh/term-screenshot.png)
@@ -31,32 +30,16 @@ The left hand-side graph shows the distribution of angles (the grid line is at t
 optimal 60 degrees). The right hand-side graph shows the distribution of simplex
 quality, where quality is twice the ratio of circumcircle and incircle radius.
 
-All command-line options are viewed with
+All command-line options are documented at
 ```
 optimesh -h
 ```
 
-#### Laplacian smoothing
-
-![laplace-fp](https://nschloe.github.io/optimesh/laplace-fp.png) |
-![laplace-ls](https://nschloe.github.io/optimesh/laplace.png) |
-:----------------:|:---------------------------------:|
-classical Laplace | linear solve (`--method laplace`) |
-
-Classical [Laplacian mesh smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing)
-means moving all (interior) points into the average of their neighbors until an
-equilibrium has been reached. The method preserves the mesh density (i.e., small
-simplices are not blown up as part of the smoothing).
-
-Instead of a fixed-point iteration, one can do a few linear solves, interleaved with
-facet-flipping. This approach converges _much_ faster.
-
-
 #### CVT (centroidal Voronoi tesselation)
 
-![lloyd](https://nschloe.github.io/optimesh/lloyd.png) |
-:---------------:|
-`--method lloyd` |
+![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-fp.webp) |
+:--------------------------------------------:|
+`--method cvt-uniform-fp` (Lloyd's algorithm) |
 
 Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
 algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), i.e., points are
@@ -66,28 +49,29 @@ That is fulfilled in many practical cases, but the algorithm can break down if i
 not.
 
 
-#### CPT (centroidal patch tessalation)
+#### CPT (centroidal patch tesselation)
 
-![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
-![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
-:----------------------------------------:|:--------------------------------:|
-fixed-point iteration (`--method cpt-fp`) | quasi-Newton (`--method cpt-qn`) |
+![cpt-cp](https://nschloe.github.io/optimesh/cpt-dp.png) |
+![cpt-uniform-fp](https://nschloe.github.io/optimesh/cpt-uniform-fp.webp) |
+![cpt-uniform-qn](https://nschloe.github.io/optimesh/cpt-uniform-qn.webp) |
+:-----------------------------------------------------------------------:|:-----------------------------------------------------------------:|:--------------------------------------------------------:|
+density-preserving linear solve (Laplacian smoothing, `--method cpt-dp`) | uniform-density fixed-point iteration (`--method cpt-uniform-fp`) | uniform-density quasi-Newton (`--method cpt-uniform-qn`) |
 
-A smooting method suggested by [Chen and Holst](#relevant-publications), mimicking CVT
+A smoothing method suggested by [Chen and Holst](#relevant-publications), mimicking CVT
 but much more easily implemented. The density-preserving variant leads to the exact same
-equation system as Laplace smoothing, so optimesh only contains the the uniform-density
-variant.
+equation system as [Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
 
-Implemented once classically as a fixed-point iteration, once as a quasi-Newton method.
-The latter typically leads to better results.
+The uniform-density variants are implemented classically as a fixed-point iteration and
+as a quasi-Newton method. The latter typically converges faster.
 
 
 #### ODT (optimal Delaunay tesselation)
 
-![odt-fp](https://nschloe.github.io/optimesh/odt-fp.png) |
-![odt-no](https://nschloe.github.io/optimesh/odt-no.png) |
-:----------------------------------------:|:------------------------------------------:|
-fixed-point iteration (`--method odt-fp`) | nonlinear optimization (`--method odt-no`) |
+![odt-dp-fp](https://nschloe.github.io/optimesh/odt-dp-fp.webp) |
+![odt-uniform-fp](https://nschloe.github.io/optimesh/odt-uniform-fp.webp) |
+![odt-uniform-bfgs](https://nschloe.github.io/optimesh/odt-uniform-bfgs.webp) |
+:--------------------------------------------------------------:|:-----------------------------------------------------------------:|:------------------------------------------------------------------:|
+density-preserving fixed-point iteration (`--method odt-dp-fp`) | uniform-density fixed-point iteration (`--method odt-uniform-fp`) | uniform-density BFGS (`--method odt-uniform-bfgs`) |
 
 Optimal Delaunay Triangulation (ODT) as suggested by [Chen and
 Holst](#relevant-publications). Typically superior to CPT, but also more expensive to
@@ -99,11 +83,11 @@ optimization method. The latter typically leads to better results.
 
 ### Which method is best?
 
-As usual, it depends. From practical experiments, it seems that `lloyd` smoothing gives
-very satisfactory results. Here is a comparison of all uniform-density methods applied
-to the random circle mesh seen above:
+From practical experiments, it seems that CVT smoothing gives very satisfactory results.
+Here is a comparison of all uniform-density methods applied to the random circle mesh
+seen above:
 
-![comparison](https://nschloe.github.io/optimesh/comparison.png)
+<img src="https://nschloe.github.io/optimesh/comparison.svg" width="70%">
 
 (Mesh quality is twice the ratio of incircle and circumcircle radius, with the maximum
 being 1.)
@@ -115,7 +99,7 @@ All optimesh functions can also be accessed from Python directly, for example:
 ```python
 import optimesh
 
-X, cells = optimesh.odt(X, cells, 1.0e-2, 100, verbosity=1)
+X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbosity=1)
 ```
 
 ### Installation

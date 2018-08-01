@@ -4,7 +4,7 @@
 
 * Run the smoothers:
   ```
-  optimesh circle.vtk out.vtk -m {method} -n 50 -f "step{:03d}.png" [-u]
+  optimesh circle.vtk out.vtk -m {method} -n 50 -f "step{:03d}.png"
   ```
 
 * Create the animated PNG/GIF: `make apng`/`make gif`

@@ -15,10 +15,10 @@ from meshes import simple1, pacman
         (pacman, 1939.1198108068188, 75.94965207932323, 5.0),
     ],
 )
-def test_simple_lloyd(mesh, ref1, ref2, refi):
+def test_simple_cvt(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    X, cells = optimesh.lloyd(X, cells, 1.0e-2, 100, fcc_type="boundary", verbosity=2)
+    X, cells = optimesh.cvt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbosity=2)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()

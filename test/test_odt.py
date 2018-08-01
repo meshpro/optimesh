@@ -20,7 +20,9 @@ from meshes import simple1, simple2, simple3, pacman, circle
 def test_fixed_point(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    X, cells = optimesh.odt.fixed_point(X, cells, 1.0e-3, 100, uniform_density=True)
+    X, cells = optimesh.odt.fixed_point_uniform(
+        X, cells, 1.0e-3, 100, uniform_density=True
+    )
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -38,9 +40,9 @@ def test_fixed_point(mesh, ref1, ref2, refi):
 @pytest.mark.parametrize(
     "mesh, ref1, ref2, refi",
     [
-        (simple1, 4.999994919473657, 2.1213191460738456, 1.0),
-        (simple2, 7.374076666666667, 2.8007819180622477, 1.7),
-        (simple3, 12.000000734595783, 3.9828838201616144, 2.0),
+        (simple1, 5.0, 2.1213203435596424, 1.0),
+        (simple2, 1991.0 / 270.0, 2.8007812940925643, 1.7),
+        (simple3, 12.000001546277293, 3.9828845062967257, 2.0),
         # (pacman, 1919.2497615803882, 75.226990639805, 5.0),
     ],
 )
@@ -50,7 +52,7 @@ def test_nonlinear_optimization(mesh, ref1, ref2, refi):
     # TODO remove
     X = X[:, :2]
 
-    X, cells = optimesh.odt.nonlinear_optimization(X, cells, 1.0e-5, 100)
+    X, cells = optimesh.odt.nonlinear_optimization_uniform(X, cells, 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()

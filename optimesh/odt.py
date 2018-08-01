@@ -70,17 +70,12 @@ def energy(mesh, uniform_density=False):
     return out - val
 
 
-def fixed_point(*args, uniform_density=False, **kwargs):
+def fixed_point_uniform(*args, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the circumcenters
     of their adjacent cells. If a triangle cell switches orientation in the
     process, don't move quite so far.
     """
-    compute_average = (
-        get_new_points_volume_averaged
-        if uniform_density
-        else get_new_points_count_averaged
-    )
 
     def get_new_points(mesh):
         # Get circumcenters everywhere except at cells adjacent to the boundary;
@@ -90,12 +85,32 @@ def fixed_point(*args, uniform_density=False, **kwargs):
         # Find all cells with a boundary edge
         boundary_cell_ids = mesh.edges_cells[1][:, 0]
         cc[boundary_cell_ids] = bc[boundary_cell_ids]
-        return compute_average(mesh, cc)
+        return get_new_points_volume_averaged(mesh, cc)
 
     return runner(get_new_points, *args, **kwargs)
 
 
-def nonlinear_optimization(
+def fixed_point_density_preserving(*args, **kwargs):
+    """Idea:
+    Move interior mesh points into the weighted averages of the circumcenters
+    of their adjacent cells. If a triangle cell switches orientation in the
+    process, don't move quite so far.
+    """
+
+    def get_new_points(mesh):
+        # Get circumcenters everywhere except at cells adjacent to the boundary;
+        # barycenters there.
+        cc = mesh.cell_circumcenters
+        bc = mesh.cell_barycenters
+        # Find all cells with a boundary edge
+        boundary_cell_ids = mesh.edges_cells[1][:, 0]
+        cc[boundary_cell_ids] = bc[boundary_cell_ids]
+        return get_new_points_count_averaged(mesh, cc)
+
+    return runner(get_new_points, *args, **kwargs)
+
+
+def nonlinear_optimization_uniform(
     X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None, callback=None
 ):
     """Optimal Delaunay Triangulation smoothing.
@@ -193,8 +208,15 @@ def nonlinear_optimization(
         f,
         x0,
         jac=jac,
-        method="CG",
-        # method='newton-cg',
+        # method="Nelder-Mead",
+        # method="Powell",
+        # method="CG",
+        # method="Newton-CG",
+        method="BFGS",
+        # method="L-BFGS-B",
+        # method="TNC",
+        # method="COBYLA",
+        # method="SLSQP",
         tol=tol,
         callback=flip_delaunay,
         options={"maxiter": max_num_steps},
