@@ -5,7 +5,7 @@ default:
 
 prepare:
 	for file in step*.png; do \
-		convert -trim -resize 200x200 -colorspace gray -colors 4 $$file $$file; \
+		convert -trim -resize 200x200 -colorspace gray -colors 16 $$file $$file; \
 	done
 	for file in step*.png; do \
 	  optipng -quiet $$file; \
