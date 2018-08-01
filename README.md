@@ -22,7 +22,7 @@ pip install optimesh
 ```
 Example call:
 ```
-optimesh in.e out.vtk --method cvt-fp-uniform -n 50
+optimesh in.e out.vtk --method cvt-uniform-fp -n 50
 ```
 Output:
 ![terminal-screenshot](https://nschloe.github.io/optimesh/term-screenshot.png)
@@ -38,9 +38,9 @@ optimesh -h
 
 #### CVT (centroidal Voronoi tesselation)
 
-![cvt-fp-uniform](https://nschloe.github.io/optimesh/lloyd.png) |
-:---------------:|
-`--method cvt-fp-uniform` (Lloyd's algorithm) |
+![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-fp.png) |
+:--------------------------------------------:|
+`--method cvt-uniform-fp` (Lloyd's algorithm) |
 
 Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
 algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), i.e., points are
@@ -52,9 +52,9 @@ not.
 
 #### CPT (centroidal patch tessalation)
 
-![cpt-ls](https://nschloe.github.io/optimesh/laplace.png) |
-![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
-![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
+![cpt-cp](https://nschloe.github.io/optimesh/cpt-dp.png) |
+![cpt-uniform-fp](https://nschloe.github.io/optimesh/cpt-uniform-fp.png) |
+![cpt-uniform-qn](https://nschloe.github.io/optimesh/cpt-uniform-qn.png) |
 :-----------------------------------------------------------------------:|:-----------------------------------------------------------------:|:--------------------------------------------------------:|
 density-preserving linear solve (Laplacian smoothing, `--method cpt-dp`) | uniform-density fixed-point iteration (`--method cpt-uniform-fp`) | uniform-density quasi-Newton (`--method cpt-uniform-qn`) |
 
@@ -68,10 +68,10 @@ as a quasi-Newton method. The latter typically converges faster.
 
 #### ODT (optimal Delaunay tesselation)
 
-![odt-fp](https://nschloe.github.io/optimesh/odt-fp.png) |
-![odt-no](https://nschloe.github.io/optimesh/odt-no.png) |
-:----------------------------------------:|:------------------------------------------:|
-fixed-point iteration (`--method odt-fp`) | nonlinear optimization (`--method odt-no`) |
+![odt-uniform-fp](https://nschloe.github.io/optimesh/odt-uniform-fp.png) |
+![odt-uniform-no](https://nschloe.github.io/optimesh/odt-uniform-no.png) |
+:------------------------------------------------:|:------------------------------------------:|
+uniform-density fixed-point iteration (`--method odt-uniform-fp`) | uniform-density nonlinear optimization (`--method odt-uniform-no`) |
 
 Optimal Delaunay Triangulation (ODT) as suggested by [Chen and
 Holst](#relevant-publications). Typically superior to CPT, but also more expensive to
