@@ -139,7 +139,7 @@ def main(argv=None):
                 step_filename_format=args.step_filename_format,
                 verbosity=args.verbosity,
             )
-        elif "cpt-uniform-qn":
+        elif args.method == "cpt-uniform-qn":
             X, cls = cpt.quasi_newton_uniform(
                 mesh.points,
                 cells[cell_idx],
@@ -148,7 +148,7 @@ def main(argv=None):
                 step_filename_format=args.step_filename_format,
                 verbosity=args.verbosity,
             )
-        elif args.method == "cvt-fp":
+        elif args.method == "cvt-uniform-fp":
             X, cls = cvt.fixed_point_uniform(
                 mesh.points,
                 cells[cell_idx],
