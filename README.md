@@ -70,7 +70,7 @@ as a quasi-Newton method. The latter typically converges faster.
 ![odt-dp-fp](https://nschloe.github.io/optimesh/odt-dp-fp.webp) |
 ![odt-uniform-fp](https://nschloe.github.io/optimesh/odt-uniform-fp.webp) |
 ![odt-uniform-no](https://nschloe.github.io/optimesh/odt-uniform-no.webp) |
-:------------------------------------------------:|:------------------------------------------:|
+:--------------------------------------------------------------:|:-----------------------------------------------------------------:|:------------------------------------------------------------------:|
 density-preserving fixed-point iteration (`--method odt-dp-fp`) | uniform-density fixed-point iteration (`--method odt-uniform-fp`) | uniform-density nonlinear optimization (`--method odt-uniform-no`) |
 
 Optimal Delaunay Triangulation (ODT) as suggested by [Chen and
