@@ -55,14 +55,18 @@ not.
 ![cpt-ls](https://nschloe.github.io/optimesh/laplace.png) |
 ![cpt-fp](https://nschloe.github.io/optimesh/cpt-fp.png) |
 ![cpt-qn](https://nschloe.github.io/optimesh/cpt-qn.png) |
-|:----------------------------------------------------------------------:|:-------------------------------------------------:|:----------------------------------------:|
-density-preserving linear solve (Laplacian smoothing, `--method cpt-dp`) | fixed-point iteration (`--method cpt-uniform-fp`) | quasi-Newton (`--method cpt-uniform-qn`) |
+:----------------------------------------------------------------------:
+|:-----------------------------------------------------------------:
+|:--------------------------------------------------------:|
+density-preserving linear solve (Laplacian smoothing, `--method cpt-dp`)
+| uniform-density fixed-point iteration (`--method cpt-uniform-fp`)
+| uniform-density quasi-Newton (`--method cpt-uniform-qn`) |
 
 A smooting method suggested by [Chen and Holst](#relevant-publications), mimicking CVT
 but much more easily implemented. The density-preserving variant leads to the exact same
 equation system as [Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
 
-The unform-density variants are implemented classically as a fixed-point iteration and
+The uniform-density variants are implemented classically as a fixed-point iteration and
 as a quasi-Newton method. The latter typically converges faster.
 
 
