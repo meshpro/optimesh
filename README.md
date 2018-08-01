@@ -103,7 +103,7 @@ As usual, it depends. From practical experiments, it seems that `lloyd` smoothin
 very satisfactory results. Here is a comparison of all uniform-density methods applied
 to the random circle mesh seen above:
 
-![comparison](https://nschloe.github.io/optimesh/comparison.png)
+<img src="https://nschloe.github.io/optimesh/comparison.svg" width="70%">
 
 (Mesh quality is twice the ratio of incircle and circumcircle radius, with the maximum
 being 1.)
