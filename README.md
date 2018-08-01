@@ -30,7 +30,7 @@ The left hand-side graph shows the distribution of angles (the grid line is at t
 optimal 60 degrees). The right hand-side graph shows the distribution of simplex
 quality, where quality is twice the ratio of circumcircle and incircle radius.
 
-All command-line options are viewed with
+All command-line options are documented at
 ```
 optimesh -h
 ```
@@ -49,7 +49,7 @@ That is fulfilled in many practical cases, but the algorithm can break down if i
 not.
 
 
-#### CPT (centroidal patch tessalation)
+#### CPT (centroidal patch tesselation)
 
 ![cpt-cp](https://nschloe.github.io/optimesh/cpt-dp.png) |
 ![cpt-uniform-fp](https://nschloe.github.io/optimesh/cpt-uniform-fp.webp) |
@@ -57,7 +57,7 @@ not.
 :-----------------------------------------------------------------------:|:-----------------------------------------------------------------:|:--------------------------------------------------------:|
 density-preserving linear solve (Laplacian smoothing, `--method cpt-dp`) | uniform-density fixed-point iteration (`--method cpt-uniform-fp`) | uniform-density quasi-Newton (`--method cpt-uniform-qn`) |
 
-A smooting method suggested by [Chen and Holst](#relevant-publications), mimicking CVT
+A smoothing method suggested by [Chen and Holst](#relevant-publications), mimicking CVT
 but much more easily implemented. The density-preserving variant leads to the exact same
 equation system as [Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
 
