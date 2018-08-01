@@ -37,7 +37,7 @@ optimesh -h
 
 #### CVT (centroidal Voronoi tesselation)
 
-![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-fp.png) |
+![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-fp.webp) |
 :--------------------------------------------:|
 `--method cvt-uniform-fp` (Lloyd's algorithm) |
 
