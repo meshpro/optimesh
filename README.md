@@ -52,8 +52,8 @@ not.
 #### CPT (centroidal patch tessalation)
 
 ![cpt-cp](https://nschloe.github.io/optimesh/cpt-dp.png) |
-![cpt-uniform-fp](https://nschloe.github.io/optimesh/cpt-uniform-fp.png) |
-![cpt-uniform-qn](https://nschloe.github.io/optimesh/cpt-uniform-qn.png) |
+![cpt-uniform-fp](https://nschloe.github.io/optimesh/cpt-uniform-fp.webp) |
+![cpt-uniform-qn](https://nschloe.github.io/optimesh/cpt-uniform-qn.webp) |
 :-----------------------------------------------------------------------:|:-----------------------------------------------------------------:|:--------------------------------------------------------:|
 density-preserving linear solve (Laplacian smoothing, `--method cpt-dp`) | uniform-density fixed-point iteration (`--method cpt-uniform-fp`) | uniform-density quasi-Newton (`--method cpt-uniform-qn`) |
 
@@ -67,10 +67,11 @@ as a quasi-Newton method. The latter typically converges faster.
 
 #### ODT (optimal Delaunay tesselation)
 
-![odt-uniform-fp](https://nschloe.github.io/optimesh/odt-uniform-fp.png) |
-![odt-uniform-no](https://nschloe.github.io/optimesh/odt-uniform-no.png) |
+![odt-dp-fp](https://nschloe.github.io/optimesh/odt-dp-fp.webp) |
+![odt-uniform-fp](https://nschloe.github.io/optimesh/odt-uniform-fp.webp) |
+![odt-uniform-no](https://nschloe.github.io/optimesh/odt-uniform-no.webp) |
 :------------------------------------------------:|:------------------------------------------:|
-uniform-density fixed-point iteration (`--method odt-uniform-fp`) | uniform-density nonlinear optimization (`--method odt-uniform-no`) |
+density-preserving fixed-point iteration (`--method odt-dp-fp`) | uniform-density fixed-point iteration (`--method odt-uniform-fp`) | uniform-density nonlinear optimization (`--method odt-uniform-no`) |
 
 Optimal Delaunay Triangulation (ODT) as suggested by [Chen and
 Holst](#relevant-publications). Typically superior to CPT, but also more expensive to

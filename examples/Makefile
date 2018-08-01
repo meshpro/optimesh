@@ -1,7 +1,17 @@
 
 
 default:
-	@echo "make apng?"
+	@echo "make all?"
+
+all:
+	for method in cvt-uniform-fp cpt-uniform-fp cpt-uniform-qn odt-dp-fp odt-uniform-fp odt-uniform-no; do \
+	  optimesh circle.vtk out.vtk -m cpt-uniform-qn -n 50 -f "$$method-step{:03d}.png"; \
+	  for file in $$method-step*.png; do \
+	    convert -trim -resize 200x200 -colorspace gray -colors 4 $$file $$file; \
+	    optipng -quiet $$file; \
+	  done; \
+	  img2webp $$method-step*.png -min_size -lossy -o $$method.webp; \
+	done
 
 prepare:
 	for file in step*.png; do \
