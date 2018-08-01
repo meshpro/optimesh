@@ -18,9 +18,7 @@ from meshes import simple1, pacman
 def test_simple_cvt(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    X, cells = optimesh.cvt.fixed_point_uniform(
-        X, cells, 1.0e-2, 100, fcc_type="boundary", verbosity=2
-    )
+    X, cells = optimesh.cvt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbosity=2)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()

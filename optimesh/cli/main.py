@@ -120,75 +120,27 @@ def main(argv=None):
 
     cells = mesh.cells["triangle"]
 
-    for cell_idx in cell_sets:
-        if args.method == "cpt-dp":
-            X, cls = cpt.linear_solve_density_preserving(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
-        elif args.method == "cpt-uniform-fp":
-            X, cls = cpt.fixed_point_uniform(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
-        elif args.method == "cpt-uniform-qn":
-            X, cls = cpt.quasi_newton_uniform(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
-        elif args.method == "cvt-uniform-fp":
-            X, cls = cvt.fixed_point_uniform(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                verbosity=args.verbosity,
-                fcc_type="boundary",
-                step_filename_format=args.step_filename_format,
-            )
-        elif args.method == "odt-dp-fp":
-            X, cls = odt.fixed_point_density_preserving(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
-        elif args.method == "odt-uniform-fp":
-            X, cls = odt.fixed_point_uniform(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
-        else:
-            assert args.method == "odt-uniform-no", "Illegal method {}".format(
-                args.method
-            )
-            X, cls = odt.nonlinear_optimization_uniform(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                step_filename_format=args.step_filename_format,
-                verbosity=args.verbosity,
-            )
+    method = {
+        "cpt-dp": cpt.linear_solve_density_preserving,
+        "cpt-uniform-fp": cpt.fixed_point_uniform,
+        "cpt-uniform-qn": cpt.quasi_newton_uniform,
+        #
+        "cvt-uniform-fp": cvt.fixed_point_uniform,
+        #
+        "odt-dp-fp": odt.fixed_point_density_preserving,
+        "odt-uniform-fp": odt.fixed_point_uniform,
+        "odt-uniform-no": odt.nonlinear_optimization_uniform,
+    }[args.method]
 
+    for cell_idx in cell_sets:
+        X, cls = method(
+            mesh.points,
+            cells[cell_idx],
+            args.tolerance,
+            args.max_num_steps,
+            verbosity=args.verbosity,
+            step_filename_format=args.step_filename_format,
+        )
         cells[cell_idx] = cls
 
     if X.shape[1] != 3:

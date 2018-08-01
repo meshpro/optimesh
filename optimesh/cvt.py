@@ -9,14 +9,7 @@ from .helpers import print_stats
 
 
 def fixed_point_uniform(
-    X,
-    cells,
-    tol,
-    max_num_steps,
-    fcc_type="boundary",
-    verbosity=1,
-    callback=None,
-    step_filename_format=None,
+    X, cells, tol, max_num_steps, verbosity=1, callback=None, step_filename_format=None
 ):
     """Lloyd's algorithm.
     """
@@ -28,6 +21,7 @@ def fixed_point_uniform(
     original_X = X.copy()
 
     # create mesh data structure
+    fcc_type = "boundary"
     mesh = MeshTri(X, cells, flat_cell_correction=fcc_type)
     mesh.flip_until_delaunay()
 
