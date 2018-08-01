@@ -18,7 +18,7 @@ from helpers import download_mesh
         #
         "odt-dp-fp",
         "odt-uniform-fp",
-        "odt-uniform-no",
+        "odt-uniform-bfgs",
     ],
 )
 def test_cli(method):

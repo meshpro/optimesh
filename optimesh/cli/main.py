@@ -37,7 +37,7 @@ def _get_parser():
             #
             "odt-dp-fp",
             "odt-uniform-fp",
-            "odt-uniform-no",
+            "odt-uniform-bfgs",
         ],
         help="smoothing method",
     )
@@ -129,7 +129,7 @@ def main(argv=None):
         #
         "odt-dp-fp": odt.fixed_point_density_preserving,
         "odt-uniform-fp": odt.fixed_point_uniform,
-        "odt-uniform-no": odt.nonlinear_optimization_uniform,
+        "odt-uniform-bfgs": odt.nonlinear_optimization_uniform,
     }[args.method]
 
     for cell_idx in cell_sets:

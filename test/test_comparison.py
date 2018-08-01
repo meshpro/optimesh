@@ -12,7 +12,7 @@ def test_comparison():
     X, cells = circle_random()
     X = X[:, :2]
 
-    num_steps = 70
+    num_steps = 100
     d = {
         "cpt-uniform-fp": optimesh.cpt.fixed_point_uniform,
         "cpt-uniform-qn": optimesh.cpt.quasi_newton_uniform,
