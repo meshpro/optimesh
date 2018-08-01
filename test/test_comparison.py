@@ -20,7 +20,7 @@ def test_comparison():
         "cvt-uniform-fp": optimesh.cvt.fixed_point_uniform,
         #
         "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
-        "odt-uniform-no": optimesh.odt.nonlinear_optimization_uniform,
+        "odt-uniform-bfgs": optimesh.odt.nonlinear_optimization_uniform,
     }
 
     avg_quality = numpy.empty((len(d), num_steps + 1))
