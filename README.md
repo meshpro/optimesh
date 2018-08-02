@@ -38,15 +38,13 @@ optimesh -h
 #### CVT (centroidal Voronoi tesselation)
 
 ![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-fp.webp) |
-:--------------------------------------------:|
-`--method cvt-uniform-fp` (Lloyd's algorithm) |
+![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-qn2.webp) |
+![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
+:-------------------:|:------------------------:|:---------------------:|
+uniform-density fixed-point iteration ([Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), `--method cvt-uniform-fp`) | uniform-density quasi-Newton iteration (overrelaxed Lloyd's algorithm, `--method cvt-uniform-qn2`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) |
 
-Centroidal Voronoi tessellation smoothing, realized by [Lloyd's
-algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), i.e., points are
-iteratively moved into the centroid of their Voronoi cell.  If the topological neighbors
-of any node are also the geometrically closest nodes, this is exactly Lloyd's algorithm.
-That is fulfilled in many practical cases, but the algorithm can break down if it is
-not.
+Centroidal Voronoi tessellation ([Du et al.](#relevant-publications)) smoothing gives
+very satisfactory results in many cases.
 
 
 #### CPT (centroidal patch tesselation)
@@ -83,9 +81,9 @@ optimization method. The latter typically leads to better results.
 
 ### Which method is best?
 
-From practical experiments, it seems that CVT smoothing gives very satisfactory results.
-Here is a comparison of all uniform-density methods applied to the random circle mesh
-seen above:
+From practical experiments, it seems that the CVT smoothing variants give very
+satisfactory results.  Here is a comparison of all uniform-density methods applied to
+the random circle mesh seen above:
 
 <img src="https://nschloe.github.io/optimesh/comparison.svg" width="70%">
 
@@ -113,6 +111,9 @@ to install or upgrade. Use `sudo -H` to install as root or the `--user` option
 of `pip` to install in `$HOME`.
 
 ### Relevant publications
+
+ * [Qiang Du, Vance Faber, and Max Gunzburger._Centroidal Voronoi Tessellations: Applications and Algorithms_,
+   SIAM Rev., 41(4), 637–676.](https://doi.org/10.1137/S0036144599352836)
 
  * [Long Chen, Michael Holst, _Efficient mesh optimization schemes based on Optimal Delaunay Triangulations_,
    Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984.](https://doi.org/10.1016/j.cma.2010.11.007)

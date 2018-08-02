@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 import numpy
-import pyamg
+# import pyamg
 import scipy.sparse
 from meshplex import MeshTri
 
@@ -72,7 +72,74 @@ def newton_update(mesh):
     return out.reshape(-1, 2)
 
 
-def quasi_newton_update(mesh):
+def quasi_newton_uniform2(*args, **kwargs):
+    """Relaxation with omega. omega=1 leads to Lloyd's algorithm, omega=2 gives good
+    results. Check out
+
+    Xiao Xiao,
+    Over-Relaxation Lloyd Method For Computing Centroidal Voronoi Tessellations,
+    Master's thesis,
+    <https://scholarcommons.sc.edu/etd/295/>.
+
+    Everything above omega=2 can lead to flickering, i.e., rapidly alternating updates
+    and bad meshes.
+    """
+    def get_new_points(mesh):
+        # TODO need copy?
+        x = mesh.node_coords.copy()
+        omega = 2.0
+        x -= omega / 2 * (jac_uniform(mesh).reshape(-1, 2).T / mesh.control_volumes).T
+        return x[mesh.is_interior_node]
+
+    return runner(get_new_points, *args, **kwargs, flat_cell_correction="boundary")
+
+
+def quasi_newton_update_diagonal_blocks(mesh):
+    """Lloyd's algorithm can be though of a diagonal-only Hessian; this method
+    incorporates the diagonal blocks, too.
+    """
+    X = mesh.node_coords
+
+    # TODO remove this assertion and test
+    # flat mesh
+    assert X.shape[1] == 2
+
+    # Collect the diagonal blocks.
+    diagonal_blocks = numpy.zeros((X.shape[0], 2, 2))
+    # First the Lloyd part.
+    #
+    diagonal_blocks[:, 0, 0] += 2 * mesh.control_volumes
+    diagonal_blocks[:, 1, 1] += 2 * mesh.control_volumes
+
+    for edges, ce_ratios, ei_outer_ei in zip(
+        mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(mesh.ei_outer_ei, 0, 1)
+    ):
+        # m3 = -0.5 * (ce_ratios * ei_outer_ei.T).T
+        for edge, ce in zip(edges, ce_ratios):
+            # The diagonal blocks are always positive definite if the mesh is Delaunay.
+            i = edge
+            ei = mesh.node_coords[i[1]] - mesh.node_coords[i[0]]
+            ei_outer_ei = numpy.outer(ei, ei)
+            diagonal_blocks[i[0]] -= 0.5 * ce * ei_outer_ei
+            diagonal_blocks[i[1]] -= 0.5 * ce * ei_outer_ei
+
+    rhs = -jac_uniform(mesh).reshape(-1, 2)
+
+    return numpy.linalg.solve(diagonal_blocks, rhs)
+
+
+def quasi_newton_uniform_blocks(*args, **kwargs):
+    def get_new_points(mesh):
+        # do one Newton step
+        # TODO need copy?
+        x = mesh.node_coords.copy()
+        x += quasi_newton_update_diagonal_blocks(mesh)
+        return x[mesh.is_interior_node]
+
+    return runner(get_new_points, *args, **kwargs, flat_cell_correction="boundary")
+
+
+def quasi_newton_update_full(mesh):
     X = mesh.node_coords
 
     # TODO remove this assertion and test
@@ -161,74 +228,12 @@ def quasi_newton_update(mesh):
     return out.reshape(-1, 2)
 
 
-def quasi_newton_update_relaxed_lloyd(mesh, omega=2.0):
-    """Relaxation with omega. omega=1 leads to Lloyd's algorithm, omega=2 gives good
-    results. Check out
-
-    Xiao Xiao,
-    Over-Relaxation Lloyd Method For Computing Centroidal Voronoi Tessellations,
-    Master's thesis,
-    <https://scholarcommons.sc.edu/etd/295/>.
-
-    Everything above omega=2 can lead to flickering, i.e., rapidly alternating updates
-    and bad meshes.
-    """
-    return -omega / 2 * (jac_uniform(mesh).reshape(-1, 2).T / mesh.control_volumes).T
-
-
-def quasi_newton_uniform2(*args, **kwargs):
+def quasi_newton_uniform_full(*args, **kwargs):
     def get_new_points(mesh):
         # do one Newton step
         # TODO need copy?
         x = mesh.node_coords.copy()
-        x += quasi_newton_update_relaxed_lloyd(mesh, omega=2.0)
-        return x[mesh.is_interior_node]
-
-    return runner(get_new_points, *args, **kwargs, flat_cell_correction="boundary")
-
-
-def quasi_newton_update_blocks(mesh):
-    """Lloyd's algorithm can be though of a diagonal-only Hessian; this method
-    incorporates the diagonal blocks, too.
-    """
-    X = mesh.node_coords
-
-    # TODO remove this assertion and test
-    # flat mesh
-    assert X.shape[1] == 2
-
-    # Collect the diagonal blocks.
-    diagonal_blocks = numpy.zeros((X.shape[0], 2, 2))
-    # First the Lloyd part.
-    #
-    diagonal_blocks[:, 0, 0] += 2 * mesh.control_volumes
-    diagonal_blocks[:, 1, 1] += 2 * mesh.control_volumes
-
-    for edges, ce_ratios, ei_outer_ei in zip(
-        mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(mesh.ei_outer_ei, 0, 1)
-    ):
-        # m3 = -0.5 * (ce_ratios * ei_outer_ei.T).T
-        for edge, ce in zip(edges, ce_ratios):
-            # The diagonal blocks are always positive definite if the mesh is Delaunay.
-            i = edge
-            ei = mesh.node_coords[i[1]] - mesh.node_coords[i[0]]
-            ei_outer_ei = numpy.outer(ei, ei)
-            diagonal_blocks[i[0]] -= 0.5 * ce * ei_outer_ei
-            diagonal_blocks[i[1]] -= 0.5 * ce * ei_outer_ei
-
-    rhs = -jac_uniform(mesh).reshape(-1, 2)
-
-    # Solve
-    out = numpy.linalg.solve(diagonal_blocks, rhs)
-    return out
-
-
-def quasi_newton_uniform_blocks(*args, **kwargs):
-    def get_new_points(mesh):
-        # do one Newton step
-        # TODO need copy?
-        x = mesh.node_coords.copy()
-        x += quasi_newton_update_blocks(mesh)
+        x += quasi_newton_update_full(mesh)
         return x[mesh.is_interior_node]
 
     return runner(get_new_points, *args, **kwargs, flat_cell_correction="boundary")
