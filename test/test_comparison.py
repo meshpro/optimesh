@@ -12,12 +12,16 @@ def test_comparison():
     X, cells = circle_random()
     X = X[:, :2]
 
+    # Do one Lloyd step to avoid too crazy meshes.
+    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 2, verbosity=0)
+
     num_steps = 100
     d = {
         "cpt-uniform-fp": optimesh.cpt.fixed_point_uniform,
         "cpt-uniform-qn": optimesh.cpt.quasi_newton_uniform,
         #
         "cvt-uniform-fp": optimesh.cvt.fixed_point_uniform,
+        "cvt-uniform-qn": optimesh.cvt.quasi_newton_uniform,
         #
         "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
         "odt-uniform-bfgs": optimesh.odt.nonlinear_optimization_uniform,
