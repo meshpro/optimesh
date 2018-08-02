@@ -38,8 +38,8 @@ optimesh -h
 #### CVT (centroidal Voronoi tesselation)
 
 ![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-fp.webp) |
-![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-qn2.webp) |
-![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
+![cvt-uniform-qn2](https://nschloe.github.io/optimesh/cvt-uniform-qn2.webp) |
+![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
 :-------------------:|:------------------------:|:---------------------:|
 uniform-density fixed-point iteration ([Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), `--method cvt-uniform-fp`) | uniform-density quasi-Newton iteration (overrelaxed Lloyd's algorithm, `--method cvt-uniform-qn2`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) |
 
@@ -85,7 +85,7 @@ From practical experiments, it seems that the CVT smoothing variants give very
 satisfactory results.  Here is a comparison of all uniform-density methods applied to
 the random circle mesh seen above:
 
-<img src="https://nschloe.github.io/optimesh/comparison.svg" width="100%">
+<img src="https://nschloe.github.io/optimesh/comparison.svg" width="90%">
 
 (Mesh quality is twice the ratio of incircle and circumcircle radius, with the maximum
 being 1.)
