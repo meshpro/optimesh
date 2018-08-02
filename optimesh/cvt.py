@@ -13,18 +13,11 @@ from .helpers import runner
 def fixed_point_uniform(*args, **kwargs):
     """Lloyd's algorithm.
     """
+
     def get_new_points(mesh):
         return mesh.control_volume_centroids[mesh.is_interior_node]
 
     return runner(get_new_points, *args, **kwargs, flat_cell_correction="boundary")
-
-
-def scaled_gradient_update(mesh):
-    """Equivalent to Lloyd's algorithm.
-    """
-    # out = mesh.control_volume_centroids - mesh.node_coords
-    out = -0.5 * (jac_uniform(mesh).reshape(-1, 2).T / mesh.control_volumes).T
-    return out
 
 
 def jac_uniform(mesh):
@@ -92,69 +85,34 @@ def quasi_newton_update(mesh):
     row_idx = []
     col_idx = []
     vals = []
-    for cell, ce_ratios, ei_outer_ei in zip(
-        mesh.cells["nodes"], mesh.ce_ratios.T, numpy.moveaxis(mesh.ei_outer_ei, 0, 1)
+    for edges, ce_ratios, ei_outer_ei in zip(
+        mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(mesh.ei_outer_ei, 0, 1)
     ):
         # m3 = -0.5 * (ce_ratios * ei_outer_ei.T).T
-        for idx, ce in zip([[1, 2], [2, 0], [0, 1]], ce_ratios):
-            i = [cell[idx[0]], cell[idx[1]]]
+        for edge, ce in zip(edges, ce_ratios):
+            # The diagonal blocks are always positive definite if the mesh is Delaunay.
+            i = edge
             ei = mesh.node_coords[i[1]] - mesh.node_coords[i[0]]
             ei_outer_ei = numpy.outer(ei, ei)
             m = -0.5 * ce * ei_outer_ei
-            row_idx += [
-                2 * i[0] + 0,
-                2 * i[0] + 0,
-                # 2 * i[0] + 0,
-                # 2 * i[0] + 0,
-                2 * i[0] + 1,
-                2 * i[0] + 1,
-                # 2 * i[0] + 1,
-                # 2 * i[0] + 1,
-                # 2 * i[1] + 0,
-                # 2 * i[1] + 0,
-                2 * i[1] + 0,
-                2 * i[1] + 0,
-                # 2 * i[1] + 1,
-                # 2 * i[1] + 1,
-                2 * i[1] + 1,
-                2 * i[1] + 1,
-            ]
-            col_idx += [
-                2 * i[0] + 0,
-                2 * i[0] + 1,
-                # 2 * i[1] + 0,
-                # 2 * i[1] + 1,
-                2 * i[0] + 0,
-                2 * i[0] + 1,
-                # 2 * i[1] + 0,
-                # 2 * i[1] + 1,
-                # 2 * i[0] + 0,
-                # 2 * i[0] + 1,
-                2 * i[1] + 0,
-                2 * i[1] + 1,
-                # 2 * i[0] + 0,
-                # 2 * i[0] + 1,
-                2 * i[1] + 0,
-                2 * i[1] + 1,
-            ]
-            vals += [
-                m[0, 0],
-                m[0, 1],
-                # m[0, 0],
-                # m[0, 1],
-                m[1, 0],
-                m[1, 1],
-                # m[1, 0],
-                # m[1, 1],
-                # m[0, 0],
-                # m[0, 1],
-                m[0, 0],
-                m[0, 1],
-                # m[1, 0],
-                # m[1, 1],
-                m[1, 0],
-                m[1, 1],
-            ]
+            # (i0, i0) block
+            row_idx += [2 * i[0] + 0, 2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 1]
+            col_idx += [2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 0, 2 * i[0] + 1]
+            vals += [m[0, 0], m[0, 1], m[1, 0], m[1, 1]]
+            # (i1, i1) block
+            row_idx += [2 * i[1] + 0, 2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 1]
+            col_idx += [2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 0, 2 * i[1] + 1]
+            vals += [m[0, 0], m[0, 1], m[1, 0], m[1, 1]]
+            # if ce < 0.33:
+            #     continue
+            # # (i0, i1) block
+            # row_idx += [2 * i[0] + 0, 2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 1]
+            # col_idx += [2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 0, 2 * i[1] + 1]
+            # vals += [m[0, 0], m[0, 1], m[1, 0], m[1, 1]]
+            # # (i1, i0) block
+            # row_idx += [2 * i[1] + 0, 2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 1]
+            # col_idx += [2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 0, 2 * i[0] + 1]
+            # vals += [m[0, 0], m[0, 1], m[1, 0], m[1, 1]]
 
     # add diagonal
     for k, control_volume in enumerate(mesh.control_volumes):
@@ -203,14 +161,74 @@ def quasi_newton_update(mesh):
     return out.reshape(-1, 2)
 
 
-def quasi_newton_uniform(*args, **kwargs):
+def quasi_newton_update_relaxed_lloyd(mesh, omega=2.0):
+    """Relaxation with omega. omega=1 leads to Lloyd's algorithm, omega=2 gives good
+    results. Check out
+
+    Xiao Xiao,
+    Over-Relaxation Lloyd Method For Computing Centroidal Voronoi Tessellations,
+    Master's thesis,
+    <https://scholarcommons.sc.edu/etd/295/>.
+
+    Everything above omega=2 can lead to flickering, i.e., rapidly alternating updates
+    and bad meshes.
+    """
+    return -omega / 2 * (jac_uniform(mesh).reshape(-1, 2).T / mesh.control_volumes).T
+
+
+def quasi_newton_uniform2(*args, **kwargs):
     def get_new_points(mesh):
         # do one Newton step
         # TODO need copy?
         x = mesh.node_coords.copy()
-        # x += scaled_gradient_update(mesh)
-        # x += newton_update(mesh)
-        x += quasi_newton_update(mesh)
+        x += quasi_newton_update_relaxed_lloyd(mesh, omega=2.0)
+        return x[mesh.is_interior_node]
+
+    return runner(get_new_points, *args, **kwargs, flat_cell_correction="boundary")
+
+
+def quasi_newton_update_blocks(mesh):
+    """Lloyd's algorithm can be though of a diagonal-only Hessian; this method
+    incorporates the diagonal blocks, too.
+    """
+    X = mesh.node_coords
+
+    # TODO remove this assertion and test
+    # flat mesh
+    assert X.shape[1] == 2
+
+    # Collect the diagonal blocks.
+    diagonal_blocks = numpy.zeros((X.shape[0], 2, 2))
+    # First the Lloyd part.
+    #
+    diagonal_blocks[:, 0, 0] += 2 * mesh.control_volumes
+    diagonal_blocks[:, 1, 1] += 2 * mesh.control_volumes
+
+    for edges, ce_ratios, ei_outer_ei in zip(
+        mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(mesh.ei_outer_ei, 0, 1)
+    ):
+        # m3 = -0.5 * (ce_ratios * ei_outer_ei.T).T
+        for edge, ce in zip(edges, ce_ratios):
+            # The diagonal blocks are always positive definite if the mesh is Delaunay.
+            i = edge
+            ei = mesh.node_coords[i[1]] - mesh.node_coords[i[0]]
+            ei_outer_ei = numpy.outer(ei, ei)
+            diagonal_blocks[i[0]] -= 0.5 * ce * ei_outer_ei
+            diagonal_blocks[i[1]] -= 0.5 * ce * ei_outer_ei
+
+    rhs = -jac_uniform(mesh).reshape(-1, 2)
+
+    # Solve
+    out = numpy.linalg.solve(diagonal_blocks, rhs)
+    return out
+
+
+def quasi_newton_uniform_blocks(*args, **kwargs):
+    def get_new_points(mesh):
+        # do one Newton step
+        # TODO need copy?
+        x = mesh.node_coords.copy()
+        x += quasi_newton_update_blocks(mesh)
         return x[mesh.is_interior_node]
 
     return runner(get_new_points, *args, **kwargs, flat_cell_correction="boundary")

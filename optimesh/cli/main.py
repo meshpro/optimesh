@@ -34,7 +34,8 @@ def _get_parser():
             "cpt-uniform-qn",
             #
             "cvt-uniform-fp",
-            "cvt-uniform-qn",
+            "cvt-uniform-qn2",
+            "cvt-uniform-qnb",
             #
             "odt-dp-fp",
             "odt-uniform-fp",
@@ -127,7 +128,8 @@ def main(argv=None):
         "cpt-uniform-qn": cpt.quasi_newton_uniform,
         #
         "cvt-uniform-fp": cvt.fixed_point_uniform,
-        "cvt-uniform-qn": cvt.quasi_newton_uniform,
+        "cvt-uniform-qn2": cvt.quasi_newton_uniform2,
+        "cvt-uniform-qnb": cvt.quasi_newton_uniform_blocks,
         #
         "odt-dp-fp": odt.fixed_point_density_preserving,
         "odt-uniform-fp": odt.fixed_point_uniform,

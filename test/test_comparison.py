@@ -13,15 +13,16 @@ def test_comparison():
     X = X[:, :2]
 
     # Do one Lloyd step to avoid too crazy meshes.
-    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 2, verbosity=0)
+    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 1, verbosity=0)
 
-    num_steps = 100
+    num_steps = 200
     d = {
         "cpt-uniform-fp": optimesh.cpt.fixed_point_uniform,
         "cpt-uniform-qn": optimesh.cpt.quasi_newton_uniform,
         #
         "cvt-uniform-fp": optimesh.cvt.fixed_point_uniform,
-        "cvt-uniform-qn": optimesh.cvt.quasi_newton_uniform,
+        "cvt-uniform-qn2": optimesh.cvt.quasi_newton_uniform2,
+        "cvt-uniform-qnb": optimesh.cvt.quasi_newton_uniform_blocks,
         #
         "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
         "odt-uniform-bfgs": optimesh.odt.nonlinear_optimization_uniform,
