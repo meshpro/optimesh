@@ -15,7 +15,7 @@ def test_comparison():
     # Do one Lloyd step to avoid too crazy meshes.
     X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 1, verbosity=0)
 
-    num_steps = 200
+    num_steps = 100
     d = {
         "cpt-uniform-fp": optimesh.cpt.fixed_point_uniform,
         "cpt-uniform-qn": optimesh.cpt.quasi_newton_uniform,
@@ -55,7 +55,7 @@ def test_comparison():
     plt.grid()
     plt.xlabel("step")
     plt.ylabel("average cell quality")
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
 
     plt.savefig("comparison.svg", transparent=True, bbox_inches="tight")
     # plt.show()
