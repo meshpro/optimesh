@@ -85,7 +85,7 @@ From practical experiments, it seems that the CVT smoothing variants give very
 satisfactory results.  Here is a comparison of all uniform-density methods applied to
 the random circle mesh seen above:
 
-<img src="https://nschloe.github.io/optimesh/comparison.svg" width="70%">
+<img src="https://nschloe.github.io/optimesh/comparison.svg" width="100%">
 
 (Mesh quality is twice the ratio of incircle and circumcircle radius, with the maximum
 being 1.)
