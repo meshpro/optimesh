@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import numpy
+
 # import pyamg
 import scipy.sparse
 from meshplex import MeshTri
@@ -84,6 +85,7 @@ def quasi_newton_uniform2(*args, **kwargs):
     Everything above omega=2 can lead to flickering, i.e., rapidly alternating updates
     and bad meshes.
     """
+
     def get_new_points(mesh):
         # TODO need copy?
         x = mesh.node_coords.copy()

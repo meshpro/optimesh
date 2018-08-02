@@ -108,9 +108,7 @@ def runner(
                 new = original_coords.copy()
                 new[mesh.is_interior_node] = xnew
                 mesh = MeshTri(
-                    new,
-                    mesh.cells["nodes"],
-                    flat_cell_correction=flat_cell_correction,
+                    new, mesh.cells["nodes"], flat_cell_correction=flat_cell_correction
                 )
 
             new_orient = mesh.signed_tri_areas > 0.0

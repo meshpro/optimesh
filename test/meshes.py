@@ -166,7 +166,9 @@ def circle_random():
     # Compute the number of interior nodes such that all triangles can be somewhat
     # equilateral.
     edge_length = 2 * numpy.pi * radius / n
-    domain_area = numpy.pi - n * (radius ** 2 / 2 * (edge_length - numpy.sin(edge_length)))
+    domain_area = numpy.pi - n * (
+        radius ** 2 / 2 * (edge_length - numpy.sin(edge_length))
+    )
     cell_area = numpy.sqrt(3) / 4 * edge_length ** 2
     approximate_num_cells = domain_area / cell_area
     # Euler:
