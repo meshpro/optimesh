@@ -5,7 +5,7 @@ from __future__ import print_function
 import numpy
 
 # import pyamg
-import scipy.sparse
+# import scipy.sparse
 from meshplex import MeshTri
 
 from .helpers import runner
