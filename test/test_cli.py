@@ -14,7 +14,9 @@ from helpers import download_mesh
         "cpt-uniform-fp",
         "cpt-uniform-qn",
         #
-        "cvt-uniform-fp",
+        "cvt-uniform-lloyd",
+        "cvt-uniform-lloyd2",
+        "cvt-uniform-qnb",
         #
         "odt-dp-fp",
         "odt-uniform-fp",
