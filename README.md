@@ -21,7 +21,7 @@ pip install optimesh
 ```
 Example call:
 ```
-optimesh in.e out.vtk --method cvt-uniform-fp -n 50
+optimesh in.e out.vtk --method cvt-uniform-lloyd2 -n 50
 ```
 Output:
 ![terminal-screenshot](https://nschloe.github.io/optimesh/term-screenshot.png)
