@@ -33,8 +33,8 @@ def _get_parser():
             "cpt-uniform-fp",
             "cpt-uniform-qn",
             #
-            "cvt-uniform-fp",
-            "cvt-uniform-qn2",
+            "cvt-uniform-lloyd",
+            "cvt-uniform-lloyd2",
             "cvt-uniform-qnb",
             #
             "odt-dp-fp",

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 #
-import numpy
 import pytest
 
 import optimesh
 
 from meshes import simple1, pacman
+
+import helpers
 
 
 @pytest.mark.parametrize(
@@ -15,19 +16,45 @@ from meshes import simple1, pacman
         (pacman, 1939.1198108068188, 75.94965207932323, 5.0),
     ],
 )
-def test_simple_cvt(mesh, ref1, ref2, refi):
+def test_simple_cvt_lloyd(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
     X, cells = optimesh.cvt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbosity=2)
 
-    # Test if we're dealing with the mesh we expect.
-    nc = X.flatten()
-    norm1 = numpy.linalg.norm(nc, ord=1)
-    norm2 = numpy.linalg.norm(nc, ord=2)
-    normi = numpy.linalg.norm(nc, ord=numpy.inf)
+    # Assert that we're dealing with the mesh we expect.
+    helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
+    return
 
-    tol = 1.0e-12
-    assert abs(norm1 - ref1) < tol * ref1
-    assert abs(norm2 - ref2) < tol * ref2
-    assert abs(normi - refi) < tol * refi
+
+@pytest.mark.parametrize(
+    "mesh, ref1, ref2, refi",
+    [
+        (simple1, 4.9983732074913103, 2.1209374941155565, 1.0),
+        (pacman, 1.9366263346460530e+03, 7.5925218787552041e+01, 5.0),
+    ],
+)
+def test_simple_cvt_lloyd2(mesh, ref1, ref2, refi):
+    X, cells = mesh()
+
+    X, cells = optimesh.cvt.quasi_newton_uniform2(X, cells, 1.0e-2, 100)
+
+    # Assert that we're dealing with the mesh we expect.
+    helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
+    return
+
+
+@pytest.mark.parametrize(
+    "mesh, ref1, ref2, refi",
+    [
+        (simple1, 4.9977815348259513, 2.1207985421566282, 1.0),
+        (pacman, 1.9367442016873219e+03, 7.5930642880889266e+01, 5.0),
+    ],
+)
+def test_simple_cvt_qnb(mesh, ref1, ref2, refi):
+    X, cells = mesh()
+
+    X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 1.0e-2, 100)
+
+    # Assert that we're dealing with the mesh we expect.
+    helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
     return
