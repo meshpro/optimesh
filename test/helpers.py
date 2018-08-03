@@ -82,10 +82,13 @@ def assert_norms(X, ref, tol):
     norm2 = numpy.linalg.norm(nc, ord=2)
     normi = numpy.linalg.norm(nc, ord=numpy.inf)
 
-    assert abs(norm1 - ref[0]) < tol * ref[0], \
-        "Expected: {:.16e}  Computed: {:.16e}".format(ref[0], norm1)
-    assert abs(norm2 - ref[1]) < tol * ref[1], \
-        "Expected: {:.16e}  Computed: {:.16e}".format(ref[1], norm2)
-    assert abs(normi - ref[2]) < tol * ref[2], \
-        "Expected: {:.16e}  Computed: {:.16e}".format(ref[2], normi)
+    assert (
+        abs(norm1 - ref[0]) < tol * ref[0]
+    ), "Expected: {:.16e}  Computed: {:.16e}".format(ref[0], norm1)
+    assert (
+        abs(norm2 - ref[1]) < tol * ref[1]
+    ), "Expected: {:.16e}  Computed: {:.16e}".format(ref[1], norm2)
+    assert (
+        abs(normi - ref[2]) < tol * ref[2]
+    ), "Expected: {:.16e}  Computed: {:.16e}".format(ref[2], normi)
     return
