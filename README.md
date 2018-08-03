@@ -37,14 +37,15 @@ optimesh -h
 
 #### CVT (centroidal Voronoi tesselation)
 
-![cvt-uniform-fp](https://nschloe.github.io/optimesh/cvt-uniform-fp.webp) |
-![cvt-uniform-qn2](https://nschloe.github.io/optimesh/cvt-uniform-qn2.webp) |
+![cvt-uniform-lloyd](https://nschloe.github.io/optimesh/cvt-uniform-lloyd.webp) |
+![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/cvt-uniform-lloyd2.webp) |
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
 :-------------------:|:------------------------:|:---------------------:|
-uniform-density fixed-point iteration ([Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), `--method cvt-uniform-fp`) | uniform-density quasi-Newton iteration (overrelaxed Lloyd's algorithm, `--method cvt-uniform-qn2`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) |
+uniform-density fixed-point iteration ([Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), `--method cvt-uniform-lloyd`) | uniform-density overrelaxed Lloyd's algorithm (factor 2, `--method cvt-uniform-lloyd2`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) |
 
-Centroidal Voronoi tessellation ([Du et al.](#relevant-publications)) smoothing gives
-very satisfactory results in many cases.
+Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications))
+is one of the oldest and most reliable approaches. optimesh provides classical Lloyd
+smoothing as well as several variants that provide faster convergence.
 
 
 #### CPT (centroidal patch tesselation)
@@ -53,11 +54,12 @@ very satisfactory results in many cases.
 ![cpt-uniform-fp](https://nschloe.github.io/optimesh/cpt-uniform-fp.webp) |
 ![cpt-uniform-qn](https://nschloe.github.io/optimesh/cpt-uniform-qn.webp) |
 :-----------------------------------------------------------------------:|:-----------------------------------------------------------------:|:--------------------------------------------------------:|
-density-preserving linear solve (Laplacian smoothing, `--method cpt-dp`) | uniform-density fixed-point iteration (`--method cpt-uniform-fp`) | uniform-density quasi-Newton (`--method cpt-uniform-qn`) |
+density-preserving linear solve ([Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing), `--method cpt-dp`) | uniform-density fixed-point iteration (`--method cpt-uniform-fp`) | uniform-density quasi-Newton (`--method cpt-uniform-qn`) |
 
 A smoothing method suggested by [Chen and Holst](#relevant-publications), mimicking CVT
 but much more easily implemented. The density-preserving variant leads to the exact same
-equation system as [Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing).
+equation system as Laplacian smoothing, so CPT smoothing can be thought of as a
+generalization.
 
 The uniform-density variants are implemented classically as a fixed-point iteration and
 as a quasi-Newton method. The latter typically converges faster.
@@ -113,7 +115,10 @@ of `pip` to install in `$HOME`.
 ### Relevant publications
 
  * [Qiang Du, Vance Faber, and Max Gunzburger._Centroidal Voronoi Tessellations: Applications and Algorithms_,
-   SIAM Rev., 41(4), 637–676.](https://doi.org/10.1137/S0036144599352836)
+   SIAM Rev., 41(4), 1999, 637–676.](https://doi.org/10.1137/S0036144599352836)
+
+ * [Yang Liu et al., _On centroidal Voronoi tessellation—Energy smoothness and fast computation_,
+   ACM Transactions on Graphics, Volume 28, Issue 4, August 2009.](https://dl.acm.org/citation.cfm?id=1559758)
 
  * [Long Chen, Michael Holst, _Efficient mesh optimization schemes based on Optimal Delaunay Triangulations_,
    Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984.](https://doi.org/10.1016/j.cma.2010.11.007)
