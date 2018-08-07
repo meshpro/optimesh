@@ -93,7 +93,7 @@ def _energy_uniform_per_node(X, cells):
     see Chen-Holst. This method gives the E_i and  assumes uniform density, rho(x) = 1.
     """
     dim = 2
-    mesh = MeshTri(X, cells, flat_cell_correction=None)
+    mesh = MeshTri(X, cells)
 
     star_integrals = numpy.zeros(mesh.node_coords.shape[0])
     # Python loop over the cells... slow!
@@ -129,7 +129,7 @@ def jac_uniform(X, cells):
     with b_j being the ordinary barycenter.
     """
     dim = 2
-    mesh = MeshTri(X, cells, flat_cell_correction=None)
+    mesh = MeshTri(X, cells)
 
     jac = numpy.zeros(X.shape)
     for k in range(mesh.cells["nodes"].shape[1]):

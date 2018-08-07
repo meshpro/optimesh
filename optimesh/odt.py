@@ -138,7 +138,7 @@ def nonlinear_optimization_uniform(
     # flat mesh
     assert X.shape[1] == 2
 
-    mesh = MeshTri(X, cells, flat_cell_correction=None)
+    mesh = MeshTri(X, cells)
 
     if step_filename_format:
         mesh.save(
