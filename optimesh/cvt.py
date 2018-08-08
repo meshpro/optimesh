@@ -153,6 +153,7 @@ class GhostedMesh(object):
         mesh2 = copy.deepcopy(self.mesh)
         mesh2.flip_interior_edges(self.get_flip_ghost_edges())
         # remove ghost cells
+        # TODO this is too crude; sometimes the wrong cells are cut
         points = mesh2.node_coords[: self.num_original_points]
         cells = mesh2.cells["nodes"][: self.num_original_cells]
         return MeshTri(points, cells)
@@ -213,10 +214,10 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         *args,
         **kwargs,
         straighten_out=lambda mesh: ghosted_mesh.straighten_out(),
-        get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
+        # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
     )
 
-    return ghosted_mesh.node_coords, ghosted_mesh.mesh.cells["nodes"]
+    return ghosted_mesh.mesh.node_coords, ghosted_mesh.mesh.cells["nodes"]
 
 
 def jac_uniform(mesh):
@@ -271,7 +272,7 @@ def jac_uniform(mesh):
 #     return out.reshape(-1, 2)
 
 
-def quasi_newton_uniform2(*args, **kwargs):
+def quasi_newton_uniform2(points, cells, *args, **kwargs):
     """Relaxation with omega. omega=1 leads to Lloyd's algorithm, omega=2 gives good
     results. Check out
 
@@ -291,7 +292,18 @@ def quasi_newton_uniform2(*args, **kwargs):
         x -= omega / 2 * (jac_uniform(mesh).reshape(-1, 2).T / mesh.control_volumes).T
         return x[mesh.is_interior_node]
 
-    return runner(get_new_points, *args, **kwargs)
+    ghosted_mesh = GhostedMesh(points, cells)
+
+    runner(
+        get_new_points,
+        ghosted_mesh.mesh,
+        *args,
+        **kwargs,
+        straighten_out=lambda mesh: ghosted_mesh.straighten_out(),
+        # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
+    )
+
+    return ghosted_mesh.mesh.node_coords, ghosted_mesh.mesh.cells["nodes"]
 
 
 def quasi_newton_update_diagonal_blocks(mesh):

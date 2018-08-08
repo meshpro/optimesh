@@ -13,22 +13,22 @@ def test_comparison():
     X, cells = circle_random()
     X = X[:, :2]
 
-    # Do one CPT step to avoid too crazy meshes.
-    # mesh = MeshTri(X, cells)
-    # optimesh.cpt.fixed_point_uniform(mesh, 0.0, 1)
+    # Do one step to avoid too crazy meshes.
+    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 1)
+    # X, cells = optimesh.odt.fixed_point_uniform(X, cells, 0.0, 1)
 
     num_steps = 100
     d = {
         "cpt-uniform-fp": optimesh.cpt.fixed_point_uniform,
         "cpt-uniform-qn": optimesh.cpt.quasi_newton_uniform,
         #
-        # "cvt-uniform-lloyd": optimesh.cvt.fixed_point_uniform,
-        # "cvt-uniform-lloyd2": optimesh.cvt.quasi_newton_uniform2,
+        "cvt-uniform-lloyd": optimesh.cvt.fixed_point_uniform,
+        "cvt-uniform-lloyd2": optimesh.cvt.quasi_newton_uniform2,
         # # "cvt-uniform-qnb": optimesh.cvt.quasi_newton_uniform_blocks,
         # # "cvt-uniform-qnf": optimesh.cvt.quasi_newton_uniform_full,
         # #
-        # "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
-        # "odt-uniform-bfgs": optimesh.odt.nonlinear_optimization_uniform,
+        "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
+        "odt-uniform-bfgs": optimesh.odt.nonlinear_optimization_uniform,
     }
 
     avg_quality = numpy.empty((len(d), num_steps + 1))
@@ -54,7 +54,7 @@ def test_comparison():
         plt.plot(values, "-", label=label)
 
     plt.xlim(0, num_steps)
-    # plt.ylim(0.9, 1.0)
+    plt.ylim(0.9, 1.0)
     plt.grid()
     plt.xlabel("step")
     plt.ylabel("average cell quality")
