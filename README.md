@@ -11,7 +11,7 @@ Several mesh smoothing/optimization methods with one simple interface. optimesh
 
  * is fast,
  * preserves submeshes,
- * only works for triangular meshes (for now), and
+ * only works for triangular meshes (for now; upvote [this issue](https://github.com/nschloe/optimesh/issues/17) if you're interested), and
  * supports all mesh formats that [meshio](https://github.com/nschloe/meshio) can
    handle.
 
@@ -21,7 +21,7 @@ pip install optimesh
 ```
 Example call:
 ```
-optimesh in.e out.vtk --method cvt-uniform-lloyd2 -n 50
+optimesh in.e out.vtk --method cvt-uniform-lloyd -n 50
 ```
 Output:
 ![terminal-screenshot](https://nschloe.github.io/optimesh/term-screenshot.png)
@@ -41,7 +41,7 @@ optimesh -h
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
 ![cvt-uniform-qnf-09](https://nschloe.github.io/optimesh/cvt-uniform-qnf-0.9.webp) |
 :------------------------:|:---------------------:|:----:|
-uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method cvt-uniform-lloyd2 --omega 2.0`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf --omega 0.9`) |
+uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method cvt-uniform-lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf --omega 0.9`) |
 
 Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications))
 is one of the oldest and most reliable approaches. optimesh provides classical Lloyd
