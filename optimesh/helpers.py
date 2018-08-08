@@ -112,15 +112,17 @@ def runner(
 
         # Abort the loop if the update is small
         diff = mesh.node_coords[mesh.is_interior_node] - original_interior_coords
-        if (
+        is_final = (
             numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2)
             or k >= max_num_steps
-        ):
-            break
+        )
 
         stats_mesh = get_stats_mesh(mesh)
-        if verbose:
+        if verbose and not is_final:
             print("\nstep {}:".format(k))
+            print_stats(stats_mesh)
+        elif is_final:
+            print("\nFinal ({} steps):".format(k))
             print_stats(stats_mesh)
         if step_filename_format:
             stats_mesh.save(
@@ -130,21 +132,12 @@ def runner(
                 show_axes=False,
                 nondelaunay_edge_color="k",
             )
-
         if callback:
             callback(k, mesh)
 
-    stats_mesh = get_stats_mesh(mesh)
-    print("\nFinal ({} steps):".format(k))
-    print_stats(mesh)
-    if step_filename_format:
-        stats_mesh.save(
-            step_filename_format.format(k),
-            show_centroids=False,
-            show_coedges=False,
-            show_axes=False,
-            nondelaunay_edge_color="k",
-        )
+        if is_final:
+            break
+
     return
 
 
