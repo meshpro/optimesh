@@ -115,7 +115,13 @@ def fixed_point_density_preserving(points, cells, *args, **kwargs):
 
 
 def nonlinear_optimization_uniform(
-    X, cells, tol, max_num_steps, verbose=False, step_filename_format=None, callback=None
+    X,
+    cells,
+    tol,
+    max_num_steps,
+    verbose=False,
+    step_filename_format=None,
+    callback=None,
 ):
     """Optimal Delaunay Triangulation smoothing.
 
