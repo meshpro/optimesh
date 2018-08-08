@@ -41,7 +41,7 @@ optimesh -h
 ![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/cvt-uniform-lloyd2.webp) |
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
 ![cvt-uniform-qnf](https://nschloe.github.io/optimesh/cvt-uniform-qnf.webp) |
-:-------------------:|:------------------------:|:---------------------:|
+:-------------------:|:------------------------:|:---------------------:|:----:|
 uniform-density fixed-point iteration ([Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), `--method cvt-uniform-lloyd`) | uniform-density overrelaxed Lloyd's algorithm (factor 2, `--method cvt-uniform-lloyd2`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf`) |
 
 Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications))
