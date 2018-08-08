@@ -88,7 +88,8 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         return get_new_points_volume_averaged(mesh, cc)
 
     mesh = MeshTri(points, cells)
-    return runner(get_new_points, mesh, *args, **kwargs)
+    runner(get_new_points, mesh, *args, **kwargs)
+    return mesh.node_coords, mesh.cells["nodes"]
 
 
 def fixed_point_density_preserving(points, cells, *args, **kwargs):
@@ -109,7 +110,8 @@ def fixed_point_density_preserving(points, cells, *args, **kwargs):
         return get_new_points_count_averaged(mesh, cc)
 
     mesh = MeshTri(points, cells)
-    return runner(get_new_points, mesh, *args, **kwargs)
+    runner(get_new_points, mesh, *args, **kwargs)
+    return mesh.node_coords, mesh.cells["nodes"]
 
 
 def nonlinear_optimization_uniform(

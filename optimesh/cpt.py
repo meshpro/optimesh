@@ -69,7 +69,8 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
         return out[mesh.is_interior_node]
 
     mesh = MeshTri(points, cells)
-    return runner(get_new_points, mesh, *args, **kwargs)
+    runner(get_new_points, mesh, *args, **kwargs)
+    return mesh.node_coords, mesh.cells["nodes"]
 
 
 def fixed_point_uniform(points, cells, *args, **kwargs):
@@ -83,7 +84,8 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         return get_new_points_volume_averaged(mesh, mesh.cell_barycenters)
 
     mesh = MeshTri(points, cells)
-    return runner(get_new_points, mesh, *args, **kwargs)
+    runner(get_new_points, mesh, *args, **kwargs)
+    return mesh.node_coords, mesh.cells["nodes"]
 
 
 def _energy_uniform_per_node(X, cells):
@@ -263,4 +265,5 @@ def quasi_newton_uniform(points, cells, *args, **kwargs):
         return x[mesh.is_interior_node]
 
     mesh = MeshTri(points, cells)
-    return runner(get_new_points, mesh, *args, **kwargs)
+    runner(get_new_points, mesh, *args, **kwargs)
+    return mesh.node_coords, mesh.cells["nodes"]
