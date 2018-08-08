@@ -62,7 +62,7 @@ def runner(
     callback=None,
     step_filename_format=None,
     uniform_density=False,
-    straighten_out=lambda mesh: mesh.flip_until_delaunay,
+    straighten_out=lambda mesh: mesh.flip_until_delaunay(),
     get_stats_mesh=lambda mesh: mesh,
 ):
     if mesh.node_coords.shape[1] == 3:
