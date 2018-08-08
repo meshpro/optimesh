@@ -385,7 +385,7 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
     return mesh.node_coords, mesh.cells["nodes"]
 
 
-def quasi_newton_update_full(mesh):
+def quasi_newton_update_full(mesh, omega):
     X = mesh.node_coords
 
     # TODO remove this assertion and test
@@ -410,8 +410,7 @@ def quasi_newton_update_full(mesh):
             # By reducing this factor, the method can be made more robust. Not sure if
             # necessary though; simply use the block-diagonal preconditioning for
             # robustness, and this one here for the last steps.
-            omega = 1.0
-            m = -0.5 * ce * ei_outer_ei * omega
+            m = -0.5 * ce * ei_outer_ei
             # (i0, i0) block
             row_idx += [2 * i[0] + 0, 2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 1]
             col_idx += [2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 0, 2 * i[0] + 1]
@@ -420,6 +419,10 @@ def quasi_newton_update_full(mesh):
             row_idx += [2 * i[1] + 0, 2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 1]
             col_idx += [2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 0, 2 * i[1] + 1]
             vals += [m[0, 0], m[0, 1], m[1, 0], m[1, 1]]
+            # Scale the off-diagonal blocks with some factor. If omega == 1, this is the
+            # Hessian. Unfortunately, it seems that Newton domain of convergence is
+            # really small. The relaxation makes the method more stable.
+            m *= omega
             # (i0, i1) block
             row_idx += [2 * i[0] + 0, 2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 1]
             col_idx += [2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 0, 2 * i[1] + 1]
@@ -467,11 +470,11 @@ def quasi_newton_update_full(mesh):
     return out.reshape(-1, 2)
 
 
-def quasi_newton_uniform_full(points, cells, *args, **kwargs):
+def quasi_newton_uniform_full(points, cells, omega, *args, **kwargs):
     def get_new_points(mesh):
         # TODO need copy?
         x = mesh.node_coords.copy()
-        x += quasi_newton_update_full(mesh)
+        x += quasi_newton_update_full(mesh, omega)
         return x[mesh.is_interior_node]
 
     ghosted_mesh = GhostedMesh(points, cells)
@@ -482,8 +485,9 @@ def quasi_newton_uniform_full(points, cells, *args, **kwargs):
         *args,
         **kwargs,
         straighten_out=lambda mesh: ghosted_mesh.straighten_out(),
-        get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
+        # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
     )
 
-    mesh = ghosted_mesh.get_stats_mesh()
+    # mesh = ghosted_mesh.get_stats_mesh()
+    mesh = ghosted_mesh.mesh
     return mesh.node_coords, mesh.cells["nodes"]

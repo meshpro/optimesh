@@ -3,9 +3,9 @@
 import matplotlib.pyplot as plt
 import numpy
 
-from meshplex import MeshTri
 import optimesh
 
+from meshplex import MeshTri
 from meshes import circle_random
 
 
@@ -13,17 +13,14 @@ def test_comparison():
     X, cells = circle_random()
     X = X[:, :2]
 
-    mesh = MeshTri(X, cells)
-    mesh.write("out.vtk")
-    exit(1)
-
     # Do one step to avoid too crazy meshes.
-    # X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 1)
-    X, cells = optimesh.odt.fixed_point_uniform(X, cells, 0.0, 1)
-    X, cells = optimesh.cvt.fixed_point_uniform(X, cells, 0.0, 20)
-    # X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 0.0, 20)
+    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 1)
+    # X, cells = optimesh.odt.fixed_point_uniform(X, cells, 0.0, 1)
+    # X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 0.0, 15)
 
-    exit(1)
+    # mesh = MeshTri(X, cells)
+    # mesh.write("out.vtk")
+    # exit(1)
 
     num_steps = 100
     d = {

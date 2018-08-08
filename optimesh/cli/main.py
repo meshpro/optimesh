@@ -46,6 +46,14 @@ def _get_parser():
     )
 
     parser.add_argument(
+        "--omega",
+        metavar="OMEGA",
+        default=1.0,
+        type=float,
+        help="CVT quasi-newton relaxation parameter (default: 1.0, no relaxation)",
+    )
+
+    parser.add_argument(
         "--max-num-steps",
         "-n",
         metavar="MAX_NUM_STEPS",
@@ -138,14 +146,25 @@ def main(argv=None):
     }[args.method]
 
     for cell_idx in cell_sets:
-        X, cls = method(
-            mesh.points,
-            cells[cell_idx],
-            args.tolerance,
-            args.max_num_steps,
-            verbose=args.verbose,
-            step_filename_format=args.step_filename_format,
-        )
+        if args.method == "cvt-uniform-qnf":
+            X, cls = method(
+                mesh.points,
+                cells[cell_idx],
+                args.omega,
+                args.tolerance,
+                args.max_num_steps,
+                verbose=args.verbose,
+                step_filename_format=args.step_filename_format,
+            )
+        else:
+            X, cls = method(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                verbose=args.verbose,
+                step_filename_format=args.step_filename_format,
+            )
         cells[cell_idx] = cls
 
     if X.shape[1] != 3:
