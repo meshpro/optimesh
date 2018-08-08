@@ -62,7 +62,7 @@ def runner(
     callback=None,
     step_filename_format=None,
     uniform_density=False,
-    update_coordinates=default_node_coords_updater,
+    straighten_out=lambda mesh: mesh.flip_until_delaunay,
     get_stats_mesh=lambda mesh: mesh,
 ):
     if mesh.node_coords.shape[1] == 3:
@@ -87,7 +87,7 @@ def runner(
     if callback:
         callback(k, mesh)
 
-    mesh.flip_until_delaunay()
+    straighten_out(mesh)
 
     while True:
         k += 1
@@ -101,13 +101,14 @@ def runner(
         alpha = 1.0
         while True:
             xnew = (1 - alpha) * original_interior_coords + alpha * new_interior_points
-            update_coordinates(mesh, xnew)
+            mesh.node_coords[mesh.is_interior_node] = xnew
+            mesh.update_values()
             new_orient = mesh.signed_cell_areas > 0.0
             if numpy.all(original_orient == new_orient):
                 break
             alpha /= 2
 
-        mesh.flip_until_delaunay()
+        straighten_out(mesh)
 
         # Abort the loop if the update is small
         diff = mesh.node_coords[mesh.is_interior_node] - original_interior_coords

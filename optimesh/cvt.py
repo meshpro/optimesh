@@ -18,10 +18,10 @@ def _row_dot(a, b):
     return numpy.einsum("ij, ij->i", a, b)
 
 
-def _mirror_point(p0, p1, p2):
+def _reflect_point(p0, p1, p2):
     """For any given triangle p0--p1--p2, this method creates the point p0',
-    namely p0 mirrored along the edge p1--p2, and the point q at the
-    perpendicular intersection of the mirror.
+    namely p0 reflected along the edge p1--p2, and the point q at the
+    perpendicular intersection of the reflection.
 
             p0
           _/| \__
@@ -51,7 +51,7 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
     """
     assert points.shape[1] == 2
 
-    def mirror_ghost_points(mesh):
+    def reflect_ghost_points(mesh):
         # The ghost mirror facet points ghost_mirror[1], ghost_mirror[2] are on the
         # boundary and never change in any way. The point that is mirrored,
         # ghost_mirror[0], however, does move and may after a facet flip even refer to
@@ -64,18 +64,20 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
 
         # In the beginning, the ghost points are appended to the points array and hence
         # have higher GIDs than all other points. Since the edges["nodes"] are sorted,
-        # the second entry must by the ghost point.
-        print(new_edges_nodes[has_flipped])
-        print(ghost_point_gids[has_flipped])
-        assert numpy.all(is_ghost_point[new_edges_nodes[has_flipped, 1]])
+        # the second entry must be the ghost point.
+        assert numpy.all(is_ghost_point[new_edges_nodes[has_flipped, 1]]), \
+            "A ghost edge is flipped, but does not contain the ghost point. This " \
+            "usually indicates that the initial mesh is *very* weird around the " \
+            "boundary. Try applying one or two CPT steps first."
         # The first point is the one at the other end of the flipped edge.
         mirrors[has_flipped] = new_edges_nodes[has_flipped, 0]
 
         # Now let's look at the ghost points whose edge has _not_ flipped. We need to
         # find the cell on the other side and there the point opposite of the ghost
         # edge.
-        num_adjacent_cells, interior_edge_idx = \
-            mesh.edge_gid_to_edge_list[ghost_edge_gids][~has_flipped].T
+        num_adjacent_cells, interior_edge_idx = mesh.edge_gid_to_edge_list[
+            ghost_edge_gids
+        ][~has_flipped].T
         assert numpy.all(num_adjacent_cells == 2)
         #
         adj_cells = mesh.edges_cells[2][interior_edge_idx]
@@ -85,13 +87,16 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         assert numpy.all(numpy.logical_xor(is_first, is_second))
         #
         opposite_cell_id = numpy.empty(adj_cells.shape[0], dtype=int)
-        opposite_cell_id[is_first] = adj_cells[is_first, 0]
-        opposite_cell_id[is_second] = adj_cells[is_second, 1]
+        opposite_cell_id[is_first] = adj_cells[is_first, 1]
+        opposite_cell_id[is_second] = adj_cells[is_second, 0]
         # Now find the cell opposite of the ghost edge in the oppisite cell.
-        eq = numpy.array([
-            mesh.cells["edges"][opposite_cell_id, k] == ghost_edge_gids[~has_flipped]
-            for k in range(mesh.cells["edges"].shape[1])
-        ])
+        eq = numpy.array(
+            [
+                mesh.cells["edges"][opposite_cell_id, k]
+                == ghost_edge_gids[~has_flipped]
+                for k in range(mesh.cells["edges"].shape[1])
+            ]
+        )
         assert numpy.all(numpy.sum(eq, axis=0) == 1)
         opposite_node_id = numpy.empty(eq.shape[1], dtype=int)
         cn = mesh.cells["nodes"][opposite_cell_id]
@@ -102,17 +107,8 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
 
         # finally get the reflection
         pts = mesh.node_coords
-        mp = _mirror_point(
-            pts[mirrors], pts[ghost_mirror[1]], pts[ghost_mirror[2]]
-        )
+        mp = _reflect_point(pts[mirrors], pts[ghost_mirror[1]], pts[ghost_mirror[2]])
         return mp
-
-    def update_coordinates(mesh, xnew):
-        print("update_coordinates")
-        mesh.node_coords[mesh.is_interior_node] = xnew
-        mesh.node_coords[is_ghost_point] = mirror_ghost_points(mesh)
-        mesh.update_values()
-        return
 
     def get_new_points(mesh):
         return mesh.control_volume_centroids[mesh.is_interior_node]
@@ -139,9 +135,7 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
     )
     is_ghost_point[points.shape[0] :] = True
     is_ghost_cell = numpy.zeros(cells.shape[0] + num_boundary_cells, dtype=bool)
-    ghost_cell_gids = numpy.arange(
-        cells.shape[0], cells.shape[0] + num_boundary_cells
-    )
+    ghost_cell_gids = numpy.arange(cells.shape[0], cells.shape[0] + num_boundary_cells)
     is_ghost_cell[cells.shape[0] :] = True
 
     ghost_mirror = numpy.concatenate(ghost_mirror, axis=1)
@@ -155,10 +149,9 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
     cells = numpy.concatenate([cells, *ghost_cells])
 
     # Set ghost points
-    mp = _mirror_point(
+    points[is_ghost_point] = _reflect_point(
         points[ghost_mirror[0]], points[ghost_mirror[1]], points[ghost_mirror[2]]
     )
-    points[is_ghost_point] = mp
 
     # Create new mesh, remember the pseudo-boundary edges
     mesh = MeshTri(points, cells)
@@ -185,39 +178,25 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         assert numpy.all(num_adjacent_cells == 2)
         return flip_interior_edge_idx
 
-    # def get_stats_mesh(k, is_final, mesh):
+    # def get_stats_mesh(mesh):
     #     # Make deep copy to avoid influencing the actual mesh
-    #     mesh2 = copy.deepcopy(mesh)
+    #     print("stats_mesh ghost points")
+    #     print(mesh.node_coords[is_ghost_point])
+    #     return mesh
 
-    #     # flip_interior_edge_idx = get_flip_ghost_edges(mesh2)
-    #     # mesh2.flip_interior_edges(flip_interior_edge_idx)
+    def straighten_out(mesh):
+        mesh.flip_until_delaunay()
+        mesh.node_coords[is_ghost_point] = reflect_ghost_points(mesh)
+        mesh.update_values()
+        return
 
-    #     # # Create new mesh without ghost cells and points
-    #     # mesh2 = MeshTri(
-    #     #     mesh2.node_coords[:num_original_points],
-    #     #     mesh2.cells["nodes"][:num_original_cells],
-    #     # )
-
-    #     mesh2.save(
-    #         "step{:03d}.png".format(k),
-    #         # show_centroids=False,
-    #         # show_coedges=False,
-    #         # show_axes=False,
-    #         # nondelaunay_edge_color="k",
-    #     )
-
-    #     if k == 0:
-    #         print("\nBefore:".format(k))
-    #         print_stats(mesh2)
-    #     elif is_final:
-    #         print("\nFinal ({} steps):".format(k))
-    #         print_stats(mesh2)
-    #     else:
-    #         print("\nstep {}:".format(k))
-    #         print_stats(mesh2)
-    #     return
-
-    runner(get_new_points, mesh, *args, **kwargs, update_coordinates=update_coordinates)
+    runner(
+        get_new_points,
+        mesh,
+        *args,
+        **kwargs,
+        straighten_out=straighten_out,
+    )
 
     return mesh.node_coords, mesh.cells["nodes"]
 
