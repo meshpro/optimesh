@@ -197,27 +197,27 @@ def _reflect_point(p0, p1, p2):
     return 2 * q - p0
 
 
-def fixed_point_uniform(points, cells, *args, **kwargs):
-    """Lloyd's algorithm.
-    """
-    assert points.shape[1] == 2
-
-    def get_new_points(mesh):
-        return mesh.control_volume_centroids[mesh.is_interior_node]
-
-    ghosted_mesh = GhostedMesh(points, cells)
-
-    runner(
-        get_new_points,
-        ghosted_mesh.mesh,
-        *args,
-        **kwargs,
-        straighten_out=lambda mesh: ghosted_mesh.straighten_out(),
-        # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
-    )
-
-    mesh = ghosted_mesh.get_stats_mesh()
-    return mesh.node_coords, mesh.cells["nodes"]
+# def fixed_point_uniform(points, cells, *args, **kwargs):
+#     """Lloyd's algorithm.
+#     """
+#     assert points.shape[1] == 2
+#
+#     def get_new_points(mesh):
+#         return mesh.control_volume_centroids[mesh.is_interior_node]
+#
+#     ghosted_mesh = GhostedMesh(points, cells)
+#
+#     runner(
+#         get_new_points,
+#         ghosted_mesh.mesh,
+#         *args,
+#         **kwargs,
+#         straighten_out=lambda mesh: ghosted_mesh.straighten_out(),
+#         # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
+#     )
+#
+#     mesh = ghosted_mesh.get_stats_mesh()
+#     return mesh.node_coords, mesh.cells["nodes"]
 
 
 def jac_uniform(mesh):
@@ -272,9 +272,9 @@ def jac_uniform(mesh):
 #     return out.reshape(-1, 2)
 
 
-def quasi_newton_uniform2(points, cells, *args, **kwargs):
-    """Relaxation with omega. omega=1 leads to Lloyd's algorithm, omega=2 gives good
-    results. Check out
+def quasi_newton_uniform_lloyd(points, cells, *args, omega=1.0, **kwargs):
+    """Relaxed Lloyd's algorithm. omega=1 leads to Lloyd's algorithm, overrelaxation
+    omega=2 gives good results. Check out
 
     Xiao Xiao,
     Over-Relaxation Lloyd Method For Computing Centroidal Voronoi Tessellations,
@@ -288,7 +288,6 @@ def quasi_newton_uniform2(points, cells, *args, **kwargs):
     def get_new_points(mesh):
         # TODO need copy?
         x = mesh.node_coords.copy()
-        omega = 2.0
         x -= omega / 2 * (jac_uniform(mesh).reshape(-1, 2).T / mesh.control_volumes).T
         return x[mesh.is_interior_node]
 

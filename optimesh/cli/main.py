@@ -34,7 +34,6 @@ def _get_parser():
             "cpt-uniform-qn",
             #
             "cvt-uniform-lloyd",
-            "cvt-uniform-lloyd2",
             "cvt-uniform-qnb",
             "cvt-uniform-qnf",
             #
@@ -50,7 +49,7 @@ def _get_parser():
         metavar="OMEGA",
         default=1.0,
         type=float,
-        help="CVT quasi-newton relaxation parameter (default: 1.0, no relaxation)",
+        help="CVT relaxation parameter, used in cvt-uniform-lloyd and cvt-uniform-qnf (default: 1.0, no relaxation)",
     )
 
     parser.add_argument(
@@ -135,8 +134,7 @@ def main(argv=None):
         "cpt-uniform-fp": cpt.fixed_point_uniform,
         "cpt-uniform-qn": cpt.quasi_newton_uniform,
         #
-        "cvt-uniform-lloyd": cvt.fixed_point_uniform,
-        "cvt-uniform-lloyd2": cvt.quasi_newton_uniform2,
+        "cvt-uniform-lloyd": cvt.quasi_newton_uniform_lloyd,
         "cvt-uniform-qnb": cvt.quasi_newton_uniform_blocks,
         "cvt-uniform-qnf": cvt.quasi_newton_uniform_full,
         #
@@ -146,7 +144,7 @@ def main(argv=None):
     }[args.method]
 
     for cell_idx in cell_sets:
-        if args.method == "cvt-uniform-qnf":
+        if args.method in ["cvt-uniform-lloyd", "cvt-uniform-qnf"]:
             X, cls = method(
                 mesh.points,
                 cells[cell_idx],

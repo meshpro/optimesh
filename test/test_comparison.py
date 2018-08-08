@@ -27,8 +27,8 @@ def test_comparison():
         "cpt-uniform-fp": optimesh.cpt.fixed_point_uniform,
         "cpt-uniform-qn": optimesh.cpt.quasi_newton_uniform,
         #
-        "cvt-uniform-lloyd": optimesh.cvt.fixed_point_uniform,
-        "cvt-uniform-lloyd2": optimesh.cvt.quasi_newton_uniform2,
+        "cvt-uniform-lloyd": optimesh.cvt.quasi_newton_uniform_lloyd,
+        "cvt-uniform-lloyd(2.0)": optimesh.cvt.quasi_newton_uniform_lloyd,
         "cvt-uniform-qnb": optimesh.cvt.quasi_newton_uniform_blocks,
         "cvt-uniform-qnf(0.9)": optimesh.cvt.quasi_newton_uniform_full,
         #
@@ -49,6 +49,8 @@ def test_comparison():
 
         if name == "cvt-uniform-qnf(0.9)":
             method(X_in, cells_in, 0.0, num_steps, omega=0.9, callback=callback)
+        elif name == "cvt-uniform-lloyd(2.0)":
+            method(X_in, cells_in, 0.0, num_steps, omega=2.0, callback=callback)
         else:
             method(X_in, cells_in, 0.0, num_steps, callback=callback)
 
