@@ -482,7 +482,7 @@ def quasi_newton_uniform_full(points, cells, *args, **kwargs):
         *args,
         **kwargs,
         straighten_out=lambda mesh: ghosted_mesh.straighten_out(),
-        # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
+        get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
     )
 
     mesh = ghosted_mesh.get_stats_mesh()
