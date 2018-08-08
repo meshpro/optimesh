@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 import numpy
 
+from meshplex import MeshTri
 import optimesh
 
 from meshes import circle_random
@@ -12,10 +13,17 @@ def test_comparison():
     X, cells = circle_random()
     X = X[:, :2]
 
+    mesh = MeshTri(X, cells)
+    mesh.write("out.vtk")
+    exit(1)
+
     # Do one step to avoid too crazy meshes.
     # X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 1)
     X, cells = optimesh.odt.fixed_point_uniform(X, cells, 0.0, 1)
-    # X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 0.0, 10)
+    X, cells = optimesh.cvt.fixed_point_uniform(X, cells, 0.0, 20)
+    # X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 0.0, 20)
+
+    exit(1)
 
     num_steps = 100
     d = {
@@ -25,7 +33,7 @@ def test_comparison():
         "cvt-uniform-lloyd": optimesh.cvt.fixed_point_uniform,
         "cvt-uniform-lloyd2": optimesh.cvt.quasi_newton_uniform2,
         "cvt-uniform-qnb": optimesh.cvt.quasi_newton_uniform_blocks,
-        # "cvt-uniform-qnf": optimesh.cvt.quasi_newton_uniform_full,
+        "cvt-uniform-qnf": optimesh.cvt.quasi_newton_uniform_full,
         #
         "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
         "odt-uniform-bfgs": optimesh.odt.nonlinear_optimization_uniform,

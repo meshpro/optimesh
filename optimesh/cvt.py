@@ -101,9 +101,8 @@ class GhostedMesh(object):
         # have higher GIDs than all other points. Since the edges["nodes"] are sorted,
         # the second entry must be the ghost point.
         assert numpy.all(self.is_ghost_point[new_edges_nodes[has_flipped, 1]]), (
-            "A ghost edge is flipped, but does not contain the ghost point. This "
-            "usually indicates that the initial mesh is *very* weird around the "
-            "boundary. Try applying one or two CPT steps first."
+            "A ghost edge is flipped, but does not contain the ghost point. Try "
+            "applying some steps of a more robust method first."
         )
         # The first point is the one at the other end of the flipped edge.
         mirrors[has_flipped] = new_edges_nodes[has_flipped, 0]
@@ -381,7 +380,8 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
         # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
     )
 
-    mesh = ghosted_mesh.get_stats_mesh()
+    # mesh = ghosted_mesh.get_stats_mesh()
+    mesh = ghosted_mesh.mesh
     return mesh.node_coords, mesh.cells["nodes"]
 
 

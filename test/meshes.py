@@ -2,6 +2,7 @@
 #
 import os.path
 
+from meshplex import MeshTri
 import meshio
 import numpy
 from scipy.spatial import Delaunay
@@ -170,7 +171,7 @@ def circle_random():
     m = int(0.5 * (approximate_num_cells + n) + 1)
 
     # generate random points in circle; <http://mathworld.wolfram.com/DiskPointPicking.html>
-    numpy.random.seed(0)
+    numpy.random.seed(1)
     r = numpy.random.rand(m)
     alpha = 2 * numpy.pi * numpy.random.rand(m)
 
@@ -182,4 +183,9 @@ def circle_random():
 
     tri = Delaunay(pts)
     pts = numpy.column_stack([pts[:, 0], pts[:, 1], numpy.zeros(pts.shape[0])])
+
+    # Make sure there are exactly `n` boundary points
+    mesh = MeshTri(pts, tri.simplices)
+    assert numpy.sum(mesh.is_boundary_node) == n
+
     return pts, tri.simplices
