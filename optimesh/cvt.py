@@ -65,10 +65,11 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         # In the beginning, the ghost points are appended to the points array and hence
         # have higher GIDs than all other points. Since the edges["nodes"] are sorted,
         # the second entry must be the ghost point.
-        assert numpy.all(is_ghost_point[new_edges_nodes[has_flipped, 1]]), \
-            "A ghost edge is flipped, but does not contain the ghost point. This " \
-            "usually indicates that the initial mesh is *very* weird around the " \
+        assert numpy.all(is_ghost_point[new_edges_nodes[has_flipped, 1]]), (
+            "A ghost edge is flipped, but does not contain the ghost point. This "
+            "usually indicates that the initial mesh is *very* weird around the "
             "boundary. Try applying one or two CPT steps first."
+        )
         # The first point is the one at the other end of the flipped edge.
         mirrors[has_flipped] = new_edges_nodes[has_flipped, 0]
 
@@ -130,9 +131,6 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
     num_boundary_cells = numpy.sum(msh.is_boundary_facet)
 
     is_ghost_point = numpy.zeros(points.shape[0] + num_boundary_cells, dtype=bool)
-    ghost_point_gids = numpy.arange(
-        points.shape[0], points.shape[0] + num_boundary_cells
-    )
     is_ghost_point[points.shape[0] :] = True
     is_ghost_cell = numpy.zeros(cells.shape[0] + num_boundary_cells, dtype=bool)
     ghost_cell_gids = numpy.arange(cells.shape[0], cells.shape[0] + num_boundary_cells)
@@ -178,11 +176,14 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         assert numpy.all(num_adjacent_cells == 2)
         return flip_interior_edge_idx
 
-    # def get_stats_mesh(mesh):
-    #     # Make deep copy to avoid influencing the actual mesh
-    #     print("stats_mesh ghost points")
-    #     print(mesh.node_coords[is_ghost_point])
-    #     return mesh
+    def get_stats_mesh(mesh):
+        # Make deep copy to avoid influencing the actual mesh
+        mesh2 = copy.deepcopy(mesh)
+        mesh2.flip_interior_edges(get_flip_ghost_edges(mesh2))
+        # remove ghost cells
+        points = mesh2.node_coords[:num_original_points]
+        cells = mesh2.cells["nodes"][:num_original_cells]
+        return MeshTri(points, cells)
 
     def straighten_out(mesh):
         mesh.flip_until_delaunay()
@@ -196,6 +197,7 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         *args,
         **kwargs,
         straighten_out=straighten_out,
+        get_stats_mesh=get_stats_mesh
     )
 
     return mesh.node_coords, mesh.cells["nodes"]
