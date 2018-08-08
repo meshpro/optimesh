@@ -17,6 +17,7 @@ from helpers import download_mesh
         "cvt-uniform-lloyd",
         "cvt-uniform-lloyd2",
         "cvt-uniform-qnb",
+        "cvt-uniform-qnf",
         #
         "odt-dp-fp",
         "odt-uniform-fp",
@@ -31,7 +32,7 @@ def test_cli(method):
     )
     output_file = "out.vtk"
     optimesh.cli.main(
-        [input_file, output_file, "--method", method, "-t", "1.0e-5", "-n", "100"]
+        [input_file, output_file, "--method", method, "-t", "1.0e-5", "-n", "5"]
     )
     return
 

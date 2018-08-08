@@ -13,7 +13,7 @@ import helpers
     "mesh, ref1, ref2, refi",
     [
         (simple1, 4.985355657854027, 2.1179164560036154, 1.0),
-        (pacman, 1939.1198108068188, 75.94965207932323, 5.0),
+        (pacman, 1.9391197406035919e+03, 7.5949649769908106e+01, 5.0),
     ],
 )
 def test_cvt_lloyd(mesh, ref1, ref2, refi):
@@ -30,7 +30,7 @@ def test_cvt_lloyd(mesh, ref1, ref2, refi):
     "mesh, ref1, ref2, refi",
     [
         (simple1, 4.9983732074913103, 2.1209374941155565, 1.0),
-        (pacman, 1.9366263346460530e+03, 7.5925218787552041e+01, 5.0),
+        (pacman, 1.9366254113952259e+03, 7.5925183214072376e+01, 5.0),
     ],
 )
 def test_cvt_lloyd2(mesh, ref1, ref2, refi):
@@ -46,8 +46,8 @@ def test_cvt_lloyd2(mesh, ref1, ref2, refi):
 @pytest.mark.parametrize(
     "mesh, ref1, ref2, refi",
     [
-        (simple1, 4.9977815348259513, 2.1207985421566282, 1.0),
-        (pacman, 1.9367442016873219e+03, 7.5930642880889266e+01, 5.0),
+        (simple1, 4.9968942224093542e+00, 2.1205904527427726e+00, 1.0),
+        (pacman, 1.9366979037816668e+03, 7.5929224540258218e+01, 5.0),
     ],
 )
 def test_cvt_qnb(mesh, ref1, ref2, refi):

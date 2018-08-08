@@ -485,4 +485,5 @@ def quasi_newton_uniform_full(points, cells, *args, **kwargs):
         # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
     )
 
-    return ghosted_mesh.mesh.node_coords, ghosted_mesh.mesh.cells["nodes"]
+    mesh = ghosted_mesh.get_stats_mesh()
+    return mesh.node_coords, mesh.cells["nodes"]

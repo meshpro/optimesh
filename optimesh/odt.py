@@ -115,7 +115,7 @@ def fixed_point_density_preserving(points, cells, *args, **kwargs):
 
 
 def nonlinear_optimization_uniform(
-    X, cells, tol, max_num_steps, verbosity=1, step_filename_format=None, callback=None
+    X, cells, tol, max_num_steps, verbose=False, step_filename_format=None, callback=None
 ):
     """Optimal Delaunay Triangulation smoothing.
 
@@ -153,10 +153,9 @@ def nonlinear_optimization_uniform(
             nondelaunay_edge_color="k",
         )
 
-    if verbosity > 0:
-        print("Before:")
-        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(mesh, extra_cols=extra_cols)
+    print("Before:")
+    extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+    print_stats(mesh, extra_cols=extra_cols)
 
     def f(x):
         mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, 2)
@@ -193,7 +192,7 @@ def nonlinear_optimization_uniform(
                 show_axes=False,
                 nondelaunay_edge_color="k",
             )
-        if verbosity > 1:
+        if verbose:
             print("\nStep {}:".format(flip_delaunay.step))
             print_stats(mesh, extra_cols=["energy: {}".format(f(x))])
 
@@ -235,10 +234,9 @@ def nonlinear_optimization_uniform(
     mesh.update_values()
     mesh.flip_until_delaunay()
 
-    if verbosity > 0:
-        print("\nFinal ({} steps):".format(out.nit))
-        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-        print_stats(mesh, extra_cols=extra_cols)
-        print()
+    print("\nFinal ({} steps):".format(out.nit))
+    extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+    print_stats(mesh, extra_cols=extra_cols)
+    print()
 
     return mesh.node_coords, mesh.cells["nodes"]
