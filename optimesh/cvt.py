@@ -470,7 +470,7 @@ def quasi_newton_update_full(mesh, omega):
     return out.reshape(-1, 2)
 
 
-def quasi_newton_uniform_full(points, cells, omega, *args, **kwargs):
+def quasi_newton_uniform_full(points, cells, *args, omega=1.0, **kwargs):
     def get_new_points(mesh):
         # TODO need copy?
         x = mesh.node_coords.copy()
@@ -485,9 +485,9 @@ def quasi_newton_uniform_full(points, cells, omega, *args, **kwargs):
         *args,
         **kwargs,
         straighten_out=lambda mesh: ghosted_mesh.straighten_out(),
-        # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
+        get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
     )
 
-    # mesh = ghosted_mesh.get_stats_mesh()
-    mesh = ghosted_mesh.mesh
+    mesh = ghosted_mesh.get_stats_mesh()
+    # mesh = ghosted_mesh.mesh
     return mesh.node_coords, mesh.cells["nodes"]

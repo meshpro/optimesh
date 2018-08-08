@@ -150,9 +150,9 @@ def main(argv=None):
             X, cls = method(
                 mesh.points,
                 cells[cell_idx],
-                args.omega,
                 args.tolerance,
                 args.max_num_steps,
+                omega=args.omega,
                 verbose=args.verbose,
                 step_filename_format=args.step_filename_format,
             )

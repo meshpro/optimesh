@@ -5,7 +5,6 @@ import numpy
 
 import optimesh
 
-from meshplex import MeshTri
 from meshes import circle_random
 
 
@@ -18,6 +17,7 @@ def test_comparison():
     # X, cells = optimesh.odt.fixed_point_uniform(X, cells, 0.0, 1)
     # X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 0.0, 15)
 
+    # from meshplex import MeshTri
     # mesh = MeshTri(X, cells)
     # mesh.write("out.vtk")
     # exit(1)
@@ -30,7 +30,7 @@ def test_comparison():
         "cvt-uniform-lloyd": optimesh.cvt.fixed_point_uniform,
         "cvt-uniform-lloyd2": optimesh.cvt.quasi_newton_uniform2,
         "cvt-uniform-qnb": optimesh.cvt.quasi_newton_uniform_blocks,
-        "cvt-uniform-qnf": optimesh.cvt.quasi_newton_uniform_full,
+        "cvt-uniform-qnf(0.9)": optimesh.cvt.quasi_newton_uniform_full,
         #
         "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
         "odt-uniform-bfgs": optimesh.odt.nonlinear_optimization_uniform,
@@ -38,7 +38,7 @@ def test_comparison():
 
     avg_quality = numpy.empty((len(d), num_steps + 1))
 
-    for i, method in enumerate(d.values()):
+    for i, (name, method) in enumerate(d.items()):
 
         def callback(k, mesh):
             avg_quality[i, k] = numpy.average(mesh.triangle_quality)
@@ -47,7 +47,10 @@ def test_comparison():
         X_in = X.copy()
         cells_in = cells.copy()
 
-        method(X_in, cells_in, 0.0, num_steps, callback=callback)
+        if name == "cvt-uniform-qnf(0.9)":
+            method(X_in, cells_in, 0.0, num_steps, omega=0.9, callback=callback)
+        else:
+            method(X_in, cells_in, 0.0, num_steps, callback=callback)
 
     # sort by best final quality
     idx = numpy.argsort(avg_quality[:, -1])[::-1]

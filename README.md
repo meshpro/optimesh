@@ -42,11 +42,15 @@ optimesh -h
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
 ![cvt-uniform-qnf](https://nschloe.github.io/optimesh/cvt-uniform-qnf.webp) |
 :-------------------:|:------------------------:|:---------------------:|:----:|
-uniform-density fixed-point iteration ([Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), `--method cvt-uniform-lloyd`) | uniform-density overrelaxed Lloyd's algorithm (factor 2, `--method cvt-uniform-lloyd2`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf`) |
+uniform-density fixed-point iteration ([Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), `--method cvt-uniform-lloyd`) | uniform-density overrelaxed Lloyd's algorithm (factor 2, `--method cvt-uniform-lloyd2`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf --omega 0.9`) |
 
 Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications))
 is one of the oldest and most reliable approaches. optimesh provides classical Lloyd
 smoothing as well as several variants that provide faster convergence.
+
+The method `cvt-uniform-qnf` provides updates closest to the actual Newton updates, but
+is unstable. Set the relaxation parameter `--omega` to someting smaller than 1 to
+stabilize.
 
 
 #### CPT (centroidal patch tesselation)
