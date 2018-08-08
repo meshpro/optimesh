@@ -2,13 +2,15 @@
 #
 from __future__ import print_function
 
+import copy
+
 import numpy
 
 # import pyamg
 # import scipy.sparse
 from meshplex import MeshTri
 
-from .helpers import runner
+from .helpers import runner, print_stats
 
 
 def _row_dot(a, b):
@@ -34,6 +36,7 @@ def _mirror_point(p0, p1, p2):
     """
     if len(p0) == 0:
         return numpy.empty(p0.shape), numpy.empty(p0.shape)
+    # TODO cache some of the entities here (the ones related to p1 and p2
     alpha = _row_dot(p0 - p1, p2 - p1) / _row_dot(p2 - p1, p2 - p1)
     # q: Intersection point of old and new edge
     # q = p1 + dot(p0-p1, (p2-p1)/||p2-p1||) * (p2-p1)/||p2-p1||
@@ -48,18 +51,66 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
     """
     assert points.shape[1] == 2
 
-    def update_ghost_points(pts):
+    def mirror_ghost_points(mesh):
+        # The ghost mirror facet points ghost_mirror[1], ghost_mirror[2] are on the
+        # boundary and never change in any way. The point that is mirrored,
+        # ghost_mirror[0], however, does move and may after a facet flip even refer to
+        # an entirely different point. Find out which.
+        # mirrors = numpy.empty(num_boundary_cells,_dtype=int)
+        mirrors = numpy.zeros(num_boundary_cells, dtype=int)
+
+        new_edges_nodes = mesh.edges["nodes"][ghost_edge_gids]
+        has_flipped = original_edges_nodes[:, 0] != new_edges_nodes[:, 0]
+
+        # In the beginning, the ghost points are appended to the points array and hence
+        # have higher GIDs than all other points. Since the edges["nodes"] are sorted,
+        # the second entry must by the ghost point.
+        print(new_edges_nodes[has_flipped])
+        print(ghost_point_gids[has_flipped])
+        assert numpy.all(is_ghost_point[new_edges_nodes[has_flipped, 1]])
+        # The first point is the one at the other end of the flipped edge.
+        mirrors[has_flipped] = new_edges_nodes[has_flipped, 0]
+
+        # Now let's look at the ghost points whose edge has _not_ flipped. We need to
+        # find the cell on the other side and there the point opposite of the ghost
+        # edge.
+        num_adjacent_cells, interior_edge_idx = \
+            mesh.edge_gid_to_edge_list[ghost_edge_gids][~has_flipped].T
+        assert numpy.all(num_adjacent_cells == 2)
+        #
+        adj_cells = mesh.edges_cells[2][interior_edge_idx]
+        is_first = adj_cells[:, 0] == ghost_cell_gids[~has_flipped]
+        #
+        is_second = adj_cells[:, 1] == ghost_cell_gids[~has_flipped]
+        assert numpy.all(numpy.logical_xor(is_first, is_second))
+        #
+        opposite_cell_id = numpy.empty(adj_cells.shape[0], dtype=int)
+        opposite_cell_id[is_first] = adj_cells[is_first, 0]
+        opposite_cell_id[is_second] = adj_cells[is_second, 1]
+        # Now find the cell opposite of the ghost edge in the oppisite cell.
+        eq = numpy.array([
+            mesh.cells["edges"][opposite_cell_id, k] == ghost_edge_gids[~has_flipped]
+            for k in range(mesh.cells["edges"].shape[1])
+        ])
+        assert numpy.all(numpy.sum(eq, axis=0) == 1)
+        opposite_node_id = numpy.empty(eq.shape[1], dtype=int)
+        cn = mesh.cells["nodes"][opposite_cell_id]
+        for k in range(eq.shape[0]):
+            opposite_node_id[eq[k]] = cn[eq[k], k]
+        # Set in mirrors
+        mirrors[~has_flipped] = opposite_node_id
+
+        # finally get the reflection
+        pts = mesh.node_coords
         mp = _mirror_point(
-            pts[ghost_mirror[0]],
-            pts[ghost_mirror[1]],
-            pts[ghost_mirror[2]],
+            pts[mirrors], pts[ghost_mirror[1]], pts[ghost_mirror[2]]
         )
-        pts[is_ghost_point] = mp
-        return
+        return mp
 
     def update_coordinates(mesh, xnew):
+        print("update_coordinates")
         mesh.node_coords[mesh.is_interior_node] = xnew
-        update_ghost_points(mesh.node_coords)
+        mesh.node_coords[is_ghost_point] = mirror_ghost_points(mesh)
         mesh.update_values()
         return
 
@@ -74,13 +125,7 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
     for i in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
         bf = msh.is_boundary_facet[i[0]]
         c = msh.cells["nodes"][bf].T
-        ghost_mirror.append(
-            [
-                c[i[0]],
-                c[i[1]],
-                c[i[2]],
-            ]
-        )
+        ghost_mirror.append(c[i])
         n = c.shape[1]
         p = numpy.arange(k, k + n)
         ghost_cells.append(numpy.column_stack([p, c[i[1]], c[i[2]]]))
@@ -89,26 +134,92 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
     num_boundary_cells = numpy.sum(msh.is_boundary_facet)
 
     is_ghost_point = numpy.zeros(points.shape[0] + num_boundary_cells, dtype=bool)
+    ghost_point_gids = numpy.arange(
+        points.shape[0], points.shape[0] + num_boundary_cells
+    )
     is_ghost_point[points.shape[0] :] = True
+    is_ghost_cell = numpy.zeros(cells.shape[0] + num_boundary_cells, dtype=bool)
+    ghost_cell_gids = numpy.arange(
+        cells.shape[0], cells.shape[0] + num_boundary_cells
+    )
+    is_ghost_cell[cells.shape[0] :] = True
 
     ghost_mirror = numpy.concatenate(ghost_mirror, axis=1)
     assert ghost_mirror.shape[1] == num_boundary_cells
 
+    num_original_points = points.shape[0]
     points = numpy.concatenate(
         [points, numpy.zeros((num_boundary_cells, points.shape[1]))]
     )
+    num_original_cells = cells.shape[0]
     cells = numpy.concatenate([cells, *ghost_cells])
 
-    update_ghost_points(points)
-
-    return runner(
-        get_new_points,
-        points,
-        cells,
-        *args,
-        **kwargs,
-        update_coordinates=update_coordinates
+    # Set ghost points
+    mp = _mirror_point(
+        points[ghost_mirror[0]], points[ghost_mirror[1]], points[ghost_mirror[2]]
     )
+    points[is_ghost_point] = mp
+
+    # Create new mesh, remember the pseudo-boundary edges
+    mesh = MeshTri(points, cells)
+
+    mesh.create_edges()
+    # Get the first edge in the ghost cells. (The first point is the ghost point, and
+    # opposite edges have the same index.)
+    ghost_edge_gids = mesh.cells["edges"][is_ghost_cell, 0]
+    original_edges_nodes = mesh.edges["nodes"][ghost_edge_gids]
+
+    def get_flip_ghost_edges(mesh):
+        # unflip boundary edges
+        new_edges_nodes = mesh.edges["nodes"][ghost_edge_gids]
+        # Either both nodes are equal or both are unequal; it's enough to check just the
+        # first column.
+        flip_edge_gids = ghost_edge_gids[
+            original_edges_nodes[:, 0] != new_edges_nodes[:, 0]
+        ]
+        # Assert that this is actually an interior edge in the ghosted mesh, and get the
+        # index into the interior edge array of the mesh.
+        num_adjacent_cells, flip_interior_edge_idx = mesh.edge_gid_to_edge_list[
+            flip_edge_gids
+        ].T
+        assert numpy.all(num_adjacent_cells == 2)
+        return flip_interior_edge_idx
+
+    # def get_stats_mesh(k, is_final, mesh):
+    #     # Make deep copy to avoid influencing the actual mesh
+    #     mesh2 = copy.deepcopy(mesh)
+
+    #     # flip_interior_edge_idx = get_flip_ghost_edges(mesh2)
+    #     # mesh2.flip_interior_edges(flip_interior_edge_idx)
+
+    #     # # Create new mesh without ghost cells and points
+    #     # mesh2 = MeshTri(
+    #     #     mesh2.node_coords[:num_original_points],
+    #     #     mesh2.cells["nodes"][:num_original_cells],
+    #     # )
+
+    #     mesh2.save(
+    #         "step{:03d}.png".format(k),
+    #         # show_centroids=False,
+    #         # show_coedges=False,
+    #         # show_axes=False,
+    #         # nondelaunay_edge_color="k",
+    #     )
+
+    #     if k == 0:
+    #         print("\nBefore:".format(k))
+    #         print_stats(mesh2)
+    #     elif is_final:
+    #         print("\nFinal ({} steps):".format(k))
+    #         print_stats(mesh2)
+    #     else:
+    #         print("\nstep {}:".format(k))
+    #         print_stats(mesh2)
+    #     return
+
+    runner(get_new_points, mesh, *args, **kwargs, update_coordinates=update_coordinates)
+
+    return mesh.node_coords, mesh.cells["nodes"]
 
 
 def jac_uniform(mesh):

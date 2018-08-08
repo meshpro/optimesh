@@ -22,7 +22,7 @@ from .helpers import runner, get_new_points_volume_averaged
 
 
 # The density-preserving CPT is exactly Laplacian smoothing.
-def linear_solve_density_preserving(*args, **kwargs):
+def linear_solve_density_preserving(points, cells, *args, **kwargs):
     def get_new_points(mesh, tol=1.0e-10):
         cells = mesh.cells["nodes"].T
 
@@ -68,10 +68,11 @@ def linear_solve_density_preserving(*args, **kwargs):
         )
         return out[mesh.is_interior_node]
 
-    return runner(get_new_points, *args, **kwargs)
+    mesh = MeshTri(points, cells)
+    return runner(get_new_points, mesh, *args, **kwargs)
 
 
-def fixed_point_uniform(*args, **kwargs):
+def fixed_point_uniform(points, cells, *args, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the centroids
     (barycenters) of their adjacent cells. If a triangle cell switches
@@ -81,7 +82,8 @@ def fixed_point_uniform(*args, **kwargs):
     def get_new_points(mesh):
         return get_new_points_volume_averaged(mesh, mesh.cell_barycenters)
 
-    return runner(get_new_points, *args, **kwargs)
+    mesh = MeshTri(points, cells)
+    return runner(get_new_points, mesh, *args, **kwargs)
 
 
 def _energy_uniform_per_node(X, cells):
@@ -235,7 +237,7 @@ def solve_hessian_approx_uniform(X, cells, rhs):
     return out
 
 
-def quasi_newton_uniform(*args, **kwargs):
+def quasi_newton_uniform(points, cells, *args, **kwargs):
     """Like linear_solve above, but assuming rho==1. Note that the energy gradient
 
         \\partial E_i = 2/(d+1) sum_{tau_j in omega_i} (x_i - b_j) \\int_{tau_j} rho
@@ -260,4 +262,5 @@ def quasi_newton_uniform(*args, **kwargs):
         x -= solve_hessian_approx_uniform(x, cells, jac_x)
         return x[mesh.is_interior_node]
 
-    return runner(get_new_points, *args, **kwargs)
+    mesh = MeshTri(points, cells)
+    return runner(get_new_points, mesh, *args, **kwargs)

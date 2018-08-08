@@ -13,20 +13,20 @@ def test_comparison():
     X = X[:, :2]
 
     # Do one Lloyd step to avoid too crazy meshes.
-    # X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 1, verbosity=0)
+    # X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 1)
 
     num_steps = 100
     d = {
-        # "cpt-uniform-fp": optimesh.cpt.fixed_point_uniform,
-        # "cpt-uniform-qn": optimesh.cpt.quasi_newton_uniform,
-        # #
-        # "cvt-uniform-lloyd": optimesh.cvt.fixed_point_uniform,
+        "cpt-uniform-fp": optimesh.cpt.fixed_point_uniform,
+        "cpt-uniform-qn": optimesh.cpt.quasi_newton_uniform,
+        #
+        "cvt-uniform-lloyd": optimesh.cvt.fixed_point_uniform,
         # "cvt-uniform-lloyd2": optimesh.cvt.quasi_newton_uniform2,
-        "cvt-uniform-qnb": optimesh.cvt.quasi_newton_uniform_blocks,
-        # "cvt-uniform-qnf": optimesh.cvt.quasi_newton_uniform_full,
+        # # "cvt-uniform-qnb": optimesh.cvt.quasi_newton_uniform_blocks,
+        # # "cvt-uniform-qnf": optimesh.cvt.quasi_newton_uniform_full,
         # #
-        # "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
-        # "odt-uniform-bfgs": optimesh.odt.nonlinear_optimization_uniform,
+        "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
+        "odt-uniform-bfgs": optimesh.odt.nonlinear_optimization_uniform,
     }
 
     avg_quality = numpy.empty((len(d), num_steps + 1))
@@ -40,7 +40,7 @@ def test_comparison():
         X_in = X.copy()
         cells_in = cells.copy()
 
-        method(X_in, cells_in, 0.0, num_steps, callback=callback, verbosity=0)
+        method(X_in, cells_in, 0.0, num_steps, callback=callback)
 
     # sort by best final quality
     idx = numpy.argsort(avg_quality[:, -1])[::-1]

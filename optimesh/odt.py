@@ -70,7 +70,7 @@ def energy(mesh, uniform_density=False):
     return out - val
 
 
-def fixed_point_uniform(*args, **kwargs):
+def fixed_point_uniform(points, cells, *args, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the circumcenters
     of their adjacent cells. If a triangle cell switches orientation in the
@@ -87,10 +87,11 @@ def fixed_point_uniform(*args, **kwargs):
         cc[boundary_cell_ids] = bc[boundary_cell_ids]
         return get_new_points_volume_averaged(mesh, cc)
 
-    return runner(get_new_points, *args, **kwargs)
+    mesh = MeshTri(points, cells)
+    return runner(get_new_points, mesh, *args, **kwargs)
 
 
-def fixed_point_density_preserving(*args, **kwargs):
+def fixed_point_density_preserving(points, cells, *args, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the circumcenters
     of their adjacent cells. If a triangle cell switches orientation in the
@@ -107,7 +108,8 @@ def fixed_point_density_preserving(*args, **kwargs):
         cc[boundary_cell_ids] = bc[boundary_cell_ids]
         return get_new_points_count_averaged(mesh, cc)
 
-    return runner(get_new_points, *args, **kwargs)
+    mesh = MeshTri(points, cells)
+    return runner(get_new_points, mesh, *args, **kwargs)
 
 
 def nonlinear_optimization_uniform(
@@ -155,12 +157,14 @@ def nonlinear_optimization_uniform(
         print_stats(mesh, extra_cols=extra_cols)
 
     def f(x):
-        mesh.update_interior_node_coordinates(x.reshape(-1, 2))
+        mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, 2)
+        mesh.update_values()
         return energy(mesh, uniform_density=True)
 
     # TODO put f and jac together
     def jac(x):
-        mesh.update_interior_node_coordinates(x.reshape(-1, 2))
+        mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, 2)
+        mesh.update_values()
 
         grad = numpy.zeros(mesh.node_coords.shape)
         cc = mesh.cell_circumcenters
@@ -175,7 +179,8 @@ def nonlinear_optimization_uniform(
     def flip_delaunay(x):
         flip_delaunay.step += 1
         # Flip the edges
-        mesh.update_interior_node_coordinates(x.reshape(-1, 2))
+        mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, 2)
+        mesh.update_values()
         mesh.flip_until_delaunay()
 
         if step_filename_format:
@@ -224,7 +229,8 @@ def nonlinear_optimization_uniform(
     # Don't assert out.success; max_num_steps may be reached, that's fine.
 
     # One last edge flip
-    mesh.update_interior_node_coordinates(out.x.reshape(-1, 2))
+    mesh.node_coords[mesh.is_interior_node] = out.x.reshape(-1, 2)
+    mesh.update_values()
     mesh.flip_until_delaunay()
 
     if verbosity > 0:

@@ -64,11 +64,10 @@ def _get_parser():
     )
 
     parser.add_argument(
-        "--verbosity",
-        type=int,
-        choices=[0, 1, 2],
-        help="verbosity level (default: 1)",
-        default=1,
+        "--verbose",
+        default=False,
+        action="store_true",
+        help="verbose output (default: false)",
     )
 
     parser.add_argument(
@@ -131,7 +130,7 @@ def main(argv=None):
         "cvt-uniform-lloyd": cvt.fixed_point_uniform,
         "cvt-uniform-lloyd2": cvt.quasi_newton_uniform2,
         "cvt-uniform-qnb": cvt.quasi_newton_uniform_blocks,
-        "cvt-uniform-qnf": cvt.quasi_newton_uniform_full,
+        # "cvt-uniform-qnf": cvt.quasi_newton_uniform_full,
         #
         "odt-dp-fp": odt.fixed_point_density_preserving,
         "odt-uniform-fp": odt.fixed_point_uniform,
@@ -144,7 +143,7 @@ def main(argv=None):
             cells[cell_idx],
             args.tolerance,
             args.max_num_steps,
-            verbosity=args.verbosity,
+            verbose=args.verbose,
             step_filename_format=args.step_filename_format,
         )
         cells[cell_idx] = cls

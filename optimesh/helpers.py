@@ -2,7 +2,6 @@
 #
 import numpy
 import fastfunc
-from meshplex import MeshTri
 
 import asciiplotlib as apl
 
@@ -48,42 +47,47 @@ def sit_in_plane(X, tol=1.0e-15):
     return (abs(numpy.dot(X - X[0], orth)) < tol).all()
 
 
+def default_node_coords_updater(mesh, xnew):
+    mesh.node_coords[mesh.is_interior_node] = xnew
+    mesh.update_values()
+    return
+
+
 def runner(
     get_new_interior_points,
-    X,
-    cells,
+    mesh,
     tol,
     max_num_steps,
-    verbosity=1,
+    verbose=False,
     callback=None,
     step_filename_format=None,
     uniform_density=False,
-    update_coordinates=lambda mesh, xnew: mesh.update_interior_node_coordinates(xnew),
+    update_coordinates=default_node_coords_updater,
+    get_stats_mesh=lambda mesh: mesh,
 ):
-    if X.shape[1] == 3:
+    if mesh.node_coords.shape[1] == 3:
         # create flat mesh
-        assert numpy.all(abs(X[:, 2]) < 1.0e-15)
-        X = X[:, :2]
+        assert numpy.all(abs(mesh.node_coords[:, 2]) < 1.0e-15)
+        mesh.node_coords = mesh.node_coords[:, :2]
 
-    mesh = MeshTri(X, cells)
-    mesh.flip_until_delaunay()
+    k = 0
 
+    stats_mesh = get_stats_mesh(mesh)
+    print("\nBefore:")
+    print_stats(stats_mesh)
     if step_filename_format:
-        mesh.save(
-            step_filename_format.format(0),
+        stats_mesh.save(
+            step_filename_format.format(k),
             show_centroids=False,
             show_coedges=False,
             show_axes=False,
             nondelaunay_edge_color="k",
         )
 
-    if verbosity > 0:
-        print("Before:")
-        print_stats(mesh)
-
-    k = 0
     if callback:
         callback(k, mesh)
+
+    mesh.flip_until_delaunay()
 
     while True:
         k += 1
@@ -105,8 +109,20 @@ def runner(
 
         mesh.flip_until_delaunay()
 
+        # Abort the loop if the update is small
+        diff = mesh.node_coords[mesh.is_interior_node] - original_interior_coords
+        if (
+            numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2)
+            or k >= max_num_steps
+        ):
+            break
+
+        stats_mesh = get_stats_mesh(mesh)
+        if verbose:
+            print("\nstep {}:".format(k))
+            print_stats(stats_mesh)
         if step_filename_format:
-            mesh.save(
+            stats_mesh.save(
                 step_filename_format.format(k),
                 show_centroids=False,
                 show_coedges=False,
@@ -117,24 +133,18 @@ def runner(
         if callback:
             callback(k, mesh)
 
-        # Abort the loop if the update is small
-        diff = mesh.node_coords[mesh.is_interior_node] - original_interior_coords
-        if numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2):
-            break
-
-        if k >= max_num_steps:
-            break
-
-        if verbosity > 1:
-            print("\nstep {}:".format(k))
-            print_stats(mesh)
-
-    if verbosity > 0:
-        print("\nFinal ({} steps):".format(k))
-        print_stats(mesh)
-        print()
-
-    return mesh.node_coords, mesh.cells["nodes"]
+    stats_mesh = get_stats_mesh(mesh)
+    print("\nFinal ({} steps):".format(k))
+    print_stats(mesh)
+    if step_filename_format:
+        stats_mesh.save(
+            step_filename_format.format(k),
+            show_centroids=False,
+            show_coedges=False,
+            show_axes=False,
+            nondelaunay_edge_color="k",
+        )
+    return
 
 
 def get_new_points_volume_averaged(mesh, reference_points):
