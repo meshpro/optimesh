@@ -316,19 +316,19 @@ def quasi_newton_update_diagonal_blocks(mesh):
     # flat mesh
     assert X.shape[1] == 2
 
-    assert numpy.all(mesh.ce_ratios_per_interior_edge > 0)
+    # assert numpy.all(mesh.ce_ratios_per_interior_edge > 0)
 
     # Collect the diagonal blocks.
-    diagonal_blocks = numpy.zeros((X.shape[0], 2, 2))
+    # diagonal_blocks_orig = numpy.zeros((X.shape[0], 2, 2))
 
-    # print(mesh.control_volumes)
-    # First the Lloyd part.
-    diagonal_blocks[:, 0, 0] += 2 * mesh.control_volumes
-    diagonal_blocks[:, 1, 1] += 2 * mesh.control_volumes
+    # # print(mesh.control_volumes)
+    # # First the Lloyd part.
+    # diagonal_blocks_orig[:, 0, 0] += 2 * mesh.control_volumes
+    # diagonal_blocks_orig[:, 1, 1] += 2 * mesh.control_volumes
     # print("diagonal_blocks_orig")
     # print(diagonal_blocks_orig)
 
-    #  diagonal_blocks = numpy.zeros((X.shape[0], 2, 2))
+    # diagonal_blocks = numpy.zeros((X.shape[0], 2, 2))
     # for edges, ce_ratios, ei_outer_ei in zip(
     #     mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(mesh.ei_outer_ei, 0, 1)
     # ):
@@ -342,13 +342,20 @@ def quasi_newton_update_diagonal_blocks(mesh):
     # print("diagonal_blocks")
     # print(diagonal_blocks)
     # # exit(1)
-    # print()
+    # # print()
     # print("difference")
     # diff = diagonal_blocks - diagonal_blocks_orig
     # print(diff)
     # print()
 
     # assert numpy.all(numpy.abs(diff) < 1.0e-10)
+
+    # print("interior ce ratios")
+    # print(mesh.ce_ratios_per_interior_edge)
+    # print(numpy.all(mesh.ce_ratios_per_interior_edge > 0.0))
+    # print()
+
+    diagonal_blocks = numpy.zeros((X.shape[0], 2, 2))
 
     for edges, ce_ratios, ei_outer_ei in zip(
         mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(mesh.ei_outer_ei, 0, 1)
@@ -357,34 +364,46 @@ def quasi_newton_update_diagonal_blocks(mesh):
         for i, ce in zip(edges, ce_ratios):
             # The diagonal blocks are always positive definite if the mesh is Delaunay.
             ei = mesh.node_coords[i[1]] - mesh.node_coords[i[0]]
-            m = -0.5 * ce * numpy.outer(ei, ei)
-            diagonal_blocks[i[0]] += m
-            diagonal_blocks[i[1]] += m
-            #
-            m = 0.5 * ce * (numpy.eye(2) * numpy.dot(ei, ei) - numpy.outer(ei, ei))
-            assert numpy.all(ce * numpy.linalg.eigvalsh(m) > -1.0e-12)
+            # m = -0.5 * ce * numpy.outer(ei, ei)
             # diagonal_blocks[i[0]] += m
             # diagonal_blocks[i[1]] += m
+            #
+            m = 0.5 * ce * (numpy.eye(2) * numpy.dot(ei, ei) - numpy.outer(ei, ei))
+            ev = numpy.linalg.eigvalsh(m / ce)
+            assert numpy.all(ev > -1.0e-12)
+            diagonal_blocks[i[0]] += m
+            diagonal_blocks[i[1]] += m
 
     rhs = -jac_uniform(mesh).reshape(-1, 2)
 
-    for ibn, block in zip(mesh.is_boundary_node, diagonal_blocks):
-        eigvals = numpy.linalg.eigvalsh(block)
-        assert numpy.all(eigvals > 0.0), eigvals
-    # print()
+    # set the boundary blocks to the identity
+    diagonal_blocks[mesh.is_boundary_node] = 0.0
+    diagonal_blocks[mesh.is_boundary_node, 0, 0] = 1.0
+    diagonal_blocks[mesh.is_boundary_node, 1, 1] = 1.0
+    rhs[mesh.is_boundary_node] = 0.0
 
     return numpy.linalg.solve(diagonal_blocks, rhs)
 
 
-def quasi_newton_uniform_blocks(*args, **kwargs):
+def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
     def get_new_points(mesh):
-        # do one Newton step
         # TODO need copy?
         x = mesh.node_coords.copy()
         x += quasi_newton_update_diagonal_blocks(mesh)
         return x[mesh.is_interior_node]
 
-    return runner(get_new_points, *args, **kwargs)
+    ghosted_mesh = GhostedMesh(points, cells)
+
+    runner(
+        get_new_points,
+        ghosted_mesh.mesh,
+        *args,
+        **kwargs,
+        straighten_out=lambda mesh: ghosted_mesh.straighten_out(),
+        # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
+    )
+
+    return ghosted_mesh.mesh.node_coords, ghosted_mesh.mesh.cells["nodes"]
 
 
 # def quasi_newton_update_full(mesh):

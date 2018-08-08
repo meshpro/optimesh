@@ -24,7 +24,7 @@ def test_comparison():
         #
         "cvt-uniform-lloyd": optimesh.cvt.fixed_point_uniform,
         "cvt-uniform-lloyd2": optimesh.cvt.quasi_newton_uniform2,
-        # # "cvt-uniform-qnb": optimesh.cvt.quasi_newton_uniform_blocks,
+        "cvt-uniform-qnb": optimesh.cvt.quasi_newton_uniform_blocks,
         # # "cvt-uniform-qnf": optimesh.cvt.quasi_newton_uniform_full,
         # #
         "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
