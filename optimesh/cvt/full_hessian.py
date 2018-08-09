@@ -41,51 +41,55 @@ def update(mesh, omega):
 
     i_boundary = numpy.where(mesh.is_boundary_node)[0]
 
+    ei_outer_ei = numpy.einsum(
+        "ijk, ijl->ijkl", mesh.half_edge_coords, mesh.half_edge_coords
+    )
+
     # create approximate Hessian
     row_idx = []
     col_idx = []
     vals = []
-    for edges, ce_ratios, ei_outer_ei in zip(
-        mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(mesh.ei_outer_ei, 0, 1)
-    ):
-        # m3 = -0.5 * (ce_ratios * ei_outer_ei.T).T
-        for edge, ce in zip(edges, ce_ratios):
-            # The diagonal blocks are always positive definite if the mesh is Delaunay.
-            i = edge
-            ei = mesh.node_coords[i[1]] - mesh.node_coords[i[0]]
-            ei_outer_ei = numpy.outer(ei, ei)
-            # By reducing this factor, the method can be made more robust. Not sure if
-            # necessary though; simply use the block-diagonal preconditioning for
-            # robustness, and this one here for the last steps.
-            m = -0.5 * ce * ei_outer_ei
-            # (i0, i0) block
-            row_idx += [2 * i[0] + 0, 2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 1]
-            col_idx += [2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 0, 2 * i[0] + 1]
-            vals += [m[0, 0], m[0, 1], m[1, 0], m[1, 1]]
-            # (i1, i1) block
-            row_idx += [2 * i[1] + 0, 2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 1]
-            col_idx += [2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 0, 2 * i[1] + 1]
-            vals += [m[0, 0], m[0, 1], m[1, 0], m[1, 1]]
-            # Scale the off-diagonal blocks with some factor. If omega == 1, this is the
-            # Hessian. Unfortunately, it seems that Newton domain of convergence is
-            # really small. The relaxation makes the method more stable.
-            m *= omega
-            # (i0, i1) block
-            row_idx += [2 * i[0] + 0, 2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 1]
-            col_idx += [2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 0, 2 * i[1] + 1]
-            vals += [m[0, 0], m[0, 1], m[1, 0], m[1, 1]]
-            # (i1, i0) block
-            row_idx += [2 * i[1] + 0, 2 * i[1] + 0, 2 * i[1] + 1, 2 * i[1] + 1]
-            col_idx += [2 * i[0] + 0, 2 * i[0] + 1, 2 * i[0] + 0, 2 * i[0] + 1]
-            vals += [m[0, 0], m[0, 1], m[1, 0], m[1, 1]]
+
+    M = -0.5 * ei_outer_ei * mesh.ce_ratios[..., None, None]
+    M_omega = M * omega
+    i = mesh.idx_hierarchy
+
+    for k in range(3):
+        # The diagonal blocks are always positive definite if the mesh is Delaunay.
+        # (i0, i0) block
+        row_idx += [2 * i[0, k] + 0, 2 * i[0, k] + 0, 2 * i[0, k] + 1, 2 * i[0, k] + 1]
+        col_idx += [2 * i[0, k] + 0, 2 * i[0, k] + 1, 2 * i[0, k] + 0, 2 * i[0, k] + 1]
+        vals += [M[k, :, 0, 0], M[k, :, 0, 1], M[k, :, 1, 0], M[k, :, 1, 1]]
+        # (i1, i1) block
+        row_idx += [2 * i[1, k] + 0, 2 * i[1, k] + 0, 2 * i[1, k] + 1, 2 * i[1, k] + 1]
+        col_idx += [2 * i[1, k] + 0, 2 * i[1, k] + 1, 2 * i[1, k] + 0, 2 * i[1, k] + 1]
+        vals += [M[k, :, 0, 0], M[k, :, 0, 1], M[k, :, 1, 0], M[k, :, 1, 1]]
+        # Scale the off-diagonal blocks with some factor. If omega == 1, this is the
+        # Hessian. Unfortunately, it seems that Newton domain of convergence is
+        # really small. The relaxation makes the method more robust.
+        # (i0, i1) block
+        row_idx += [2 * i[0, k] + 0, 2 * i[0, k] + 0, 2 * i[0, k] + 1, 2 * i[0, k] + 1]
+        col_idx += [2 * i[1, k] + 0, 2 * i[1, k] + 1, 2 * i[1, k] + 0, 2 * i[1, k] + 1]
+        vals += [M_omega[k, :, 0, 0], M_omega[k, :, 0, 1], M_omega[k, :, 1, 0], M_omega[k, :, 1, 1]]
+        # (i1, i0) block
+        row_idx += [2 * i[1, k] + 0, 2 * i[1, k] + 0, 2 * i[1, k] + 1, 2 * i[1, k] + 1]
+        col_idx += [2 * i[0, k] + 0, 2 * i[0, k] + 1, 2 * i[0, k] + 0, 2 * i[0, k] + 1]
+        vals += [M_omega[k, :, 0, 0], M_omega[k, :, 0, 1], M_omega[k, :, 1, 0], M_omega[k, :, 1, 1]]
 
     # add diagonal
-    for k, control_volume in enumerate(mesh.control_volumes):
-        row_idx += [2 * k, 2 * k + 1]
-        col_idx += [2 * k, 2 * k + 1]
-        vals += [2 * control_volume, 2 * control_volume]
-
     n = mesh.control_volumes.shape[0]
+    row_idx.append(2 * numpy.arange(n))
+    col_idx.append(2 * numpy.arange(n))
+    vals.append(2 * mesh.control_volumes)
+    #
+    row_idx.append(2 * numpy.arange(n) + 1)
+    col_idx.append(2 * numpy.arange(n) + 1)
+    vals.append(2 * mesh.control_volumes)
+
+    row_idx = numpy.concatenate(row_idx)
+    col_idx = numpy.concatenate(col_idx)
+    vals = numpy.concatenate(vals)
+
     matrix = scipy.sparse.coo_matrix((vals, (row_idx, col_idx)), shape=(2 * n, 2 * n))
 
     # Transform to CSR format for efficiency
