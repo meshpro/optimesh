@@ -51,10 +51,10 @@ def update(mesh, omega):
     vals = []
 
     M = -0.5 * ei_outer_ei * mesh.ce_ratios[..., None, None]
-    M_omega = M * omega
+    M2 = M * omega
     i = mesh.idx_hierarchy
 
-    for k in range(3):
+    for k in range(M.shape[0]):
         # The diagonal blocks are always positive definite if the mesh is Delaunay.
         # (i0, i0) block
         row_idx += [2 * i[0, k] + 0, 2 * i[0, k] + 0, 2 * i[0, k] + 1, 2 * i[0, k] + 1]
@@ -70,11 +70,11 @@ def update(mesh, omega):
         # (i0, i1) block
         row_idx += [2 * i[0, k] + 0, 2 * i[0, k] + 0, 2 * i[0, k] + 1, 2 * i[0, k] + 1]
         col_idx += [2 * i[1, k] + 0, 2 * i[1, k] + 1, 2 * i[1, k] + 0, 2 * i[1, k] + 1]
-        vals += [M_omega[k, :, 0, 0], M_omega[k, :, 0, 1], M_omega[k, :, 1, 0], M_omega[k, :, 1, 1]]
+        vals += [M2[k, :, 0, 0], M2[k, :, 0, 1], M2[k, :, 1, 0], M2[k, :, 1, 1]]
         # (i1, i0) block
         row_idx += [2 * i[1, k] + 0, 2 * i[1, k] + 0, 2 * i[1, k] + 1, 2 * i[1, k] + 1]
         col_idx += [2 * i[0, k] + 0, 2 * i[0, k] + 1, 2 * i[0, k] + 0, 2 * i[0, k] + 1]
-        vals += [M_omega[k, :, 0, 0], M_omega[k, :, 0, 1], M_omega[k, :, 1, 0], M_omega[k, :, 1, 1]]
+        vals += [M2[k, :, 0, 0], M2[k, :, 0, 1], M2[k, :, 1, 0], M2[k, :, 1, 1]]
 
     # add diagonal
     n = mesh.control_volumes.shape[0]
@@ -110,11 +110,8 @@ def update(mesh, omega):
     rhs[2 * i_boundary + 0] = 0.0
     rhs[2 * i_boundary + 1] = 0.0
 
-    # print("ok hi")
-    # print(numpy.sort(numpy.linalg.eigvals(matrix.toarray())))
-    # exit(1)
-
     out = scipy.sparse.linalg.spsolve(matrix, rhs)
+    # import pyamg
     # ml = pyamg.ruge_stuben_solver(matrix)
     # out = ml.solve(rhs, tol=1.0e-10)
 
