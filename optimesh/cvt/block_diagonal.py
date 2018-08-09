@@ -42,36 +42,31 @@ def quasi_newton_update_diagonal_blocks(mesh):
     assert X.shape[1] == 2
 
     # Collect the diagonal blocks.
-    # diagonal_blocks_orig = numpy.zeros((X.shape[0], 2, 2))
-
-    # # First the Lloyd part.
-    # diagonal_blocks_orig[:, 0, 0] += 2 * mesh.control_volumes
-    # diagonal_blocks_orig[:, 1, 1] += 2 * mesh.control_volumes
-
-    # diagonal_blocks = numpy.zeros((X.shape[0], 2, 2))
-    # for edges, ce_ratios, ei_outer_ei in zip(
-    #     mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(mesh.ei_outer_ei, 0, 1)
-    # ):
-    #     for i, ce in zip(edges, ce_ratios):
-    #         ei = mesh.node_coords[i[1]] - mesh.node_coords[i[0]]
-    #         m = numpy.eye(2) * 0.5 * ce * numpy.dot(ei, ei)
-    #         diagonal_blocks[i[0]] += m
-    #         diagonal_blocks[i[1]] += m
-
     diagonal_blocks = numpy.zeros((X.shape[0], 2, 2))
 
+    # First the Lloyd part.
+    diagonal_blocks[:, 0, 0] += 2 * mesh.control_volumes
+    diagonal_blocks[:, 1, 1] += 2 * mesh.control_volumes
+
+    ei_outer_ei = numpy.einsum(
+        "ijk, ijl->ijkl", mesh.half_edge_coords, mesh.half_edge_coords
+    )
+
     for edges, ce_ratios, ei_outer_ei in zip(
-        mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(mesh.ei_outer_ei, 0, 1)
+        mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(ei_outer_ei, 0, 1)
     ):
-        # m3 = -0.5 * (ce_ratios * ei_outer_ei.T).T
-        for i, ce in zip(edges, ce_ratios):
-            # The diagonal blocks are always positive definite if the mesh is Delaunay.
-            ei = mesh.node_coords[i[1]] - mesh.node_coords[i[0]]
-            # m = -0.5 * ce * numpy.outer(ei, ei)
-            # diagonal_blocks[i[0]] += m
-            # diagonal_blocks[i[1]] += m
-            #
-            m = 0.5 * ce * (numpy.eye(2) * numpy.dot(ei, ei) - numpy.outer(ei, ei))
+        m3 = -0.5 * (ce_ratios * ei_outer_ei.T).T
+        for m, i in zip(m3, edges):
+            # Without adding the control volumes above, the update would be
+            # ```
+            # m = 0.5 * ce * (numpy.eye(2) * numpy.dot(ei, ei) - numpy.outer(ei, ei))
+            # ```
+            # instead of
+            # ```
+            # m = -0.5 * ce * ei_outer_ei
+            # ```
+            # This makes clear why the diagonal blocks are always positive definite if
+            # the mesh is Delaunay.
             diagonal_blocks[i[0]] += m
             diagonal_blocks[i[1]] += m
 
