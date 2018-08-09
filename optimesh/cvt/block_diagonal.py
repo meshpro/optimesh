@@ -9,10 +9,13 @@ from ..helpers import runner
 
 
 def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
+    """Lloyd's algorithm can be though of a diagonal-only Hessian; this method
+    incorporates the diagonal blocks, too.
+    """
     def get_new_points(mesh):
         # TODO need copy?
         x = mesh.node_coords.copy()
-        x += quasi_newton_update_diagonal_blocks(mesh)
+        x += update(mesh)
         return x[mesh.is_interior_node]
 
     ghosted_mesh = GhostedMesh(points, cells)
@@ -31,10 +34,7 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
     return mesh.node_coords, mesh.cells["nodes"]
 
 
-def quasi_newton_update_diagonal_blocks(mesh):
-    """Lloyd's algorithm can be though of a diagonal-only Hessian; this method
-    incorporates the diagonal blocks, too.
-    """
+def update(mesh):
     X = mesh.node_coords
 
     # TODO remove this assertion and test
@@ -52,6 +52,9 @@ def quasi_newton_update_diagonal_blocks(mesh):
         "ijk, ijl->ijkl", mesh.half_edge_coords, mesh.half_edge_coords
     )
 
+    print(ei_outer_ei.shape)
+    print(mesh.ce_ratios.shape)
+
     for edges, ce_ratios, ei_outer_ei in zip(
         mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(ei_outer_ei, 0, 1)
     ):
@@ -59,7 +62,7 @@ def quasi_newton_update_diagonal_blocks(mesh):
         for m, i in zip(m3, edges):
             # Without adding the control volumes above, the update would be
             # ```
-            # m = 0.5 * ce * (numpy.eye(2) * numpy.dot(ei, ei) - numpy.outer(ei, ei))
+            # m = 0.5 * ce * (numpy.eye(2) * numpy.dot(ei, ei) - ei_outer_ei)
             # ```
             # instead of
             # ```

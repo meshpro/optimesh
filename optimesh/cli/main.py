@@ -164,7 +164,6 @@ def main(argv=None):
                 step_filename_format=args.step_filename_format,
             )
 
-        print(args.method)
         cells[cell_idx] = cls
 
     if X.shape[1] != 3:
