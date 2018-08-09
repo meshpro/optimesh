@@ -14,15 +14,14 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 import fastfunc
 from meshplex import MeshTri
 import numpy
-import pyamg
 import quadpy
-import scipy.sparse
+import scipy.sparse.linalg
 
 from .helpers import runner, get_new_points_volume_averaged
 
 
 # The density-preserving CPT is exactly Laplacian smoothing.
-def linear_solve_density_preserving(*args, **kwargs):
+def linear_solve_density_preserving(points, cells, *args, **kwargs):
     def get_new_points(mesh, tol=1.0e-10):
         cells = mesh.cells["nodes"].T
 
@@ -59,19 +58,23 @@ def linear_solve_density_preserving(*args, **kwargs):
         rhs = numpy.zeros((n, 2))
         rhs[mesh.is_boundary_node] = mesh.node_coords[mesh.is_boundary_node]
 
-        # out = scipy.sparse.linalg.spsolve(matrix, rhs)
-        ml = pyamg.ruge_stuben_solver(matrix)
-        # Keep an eye on multiple rhs-solves in pyamg,
-        # <https://github.com/pyamg/pyamg/issues/215>.
-        out = numpy.column_stack(
-            [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
-        )
+        out = scipy.sparse.linalg.spsolve(matrix, rhs)
+
+        # PyAMG fails on circleci.
+        # ml = pyamg.ruge_stuben_solver(matrix)
+        # # Keep an eye on multiple rhs-solves in pyamg,
+        # # <https://github.com/pyamg/pyamg/issues/215>.
+        # out = numpy.column_stack(
+        #     [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
+        # )
         return out[mesh.is_interior_node]
 
-    return runner(get_new_points, *args, **kwargs)
+    mesh = MeshTri(points, cells)
+    runner(get_new_points, mesh, *args, **kwargs)
+    return mesh.node_coords, mesh.cells["nodes"]
 
 
-def fixed_point_uniform(*args, **kwargs):
+def fixed_point_uniform(points, cells, *args, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the centroids
     (barycenters) of their adjacent cells. If a triangle cell switches
@@ -81,7 +84,9 @@ def fixed_point_uniform(*args, **kwargs):
     def get_new_points(mesh):
         return get_new_points_volume_averaged(mesh, mesh.cell_barycenters)
 
-    return runner(get_new_points, *args, **kwargs)
+    mesh = MeshTri(points, cells)
+    runner(get_new_points, mesh, *args, **kwargs)
+    return mesh.node_coords, mesh.cells["nodes"]
 
 
 def _energy_uniform_per_node(X, cells):
@@ -93,7 +98,7 @@ def _energy_uniform_per_node(X, cells):
     see Chen-Holst. This method gives the E_i and  assumes uniform density, rho(x) = 1.
     """
     dim = 2
-    mesh = MeshTri(X, cells, flat_cell_correction=None)
+    mesh = MeshTri(X, cells)
 
     star_integrals = numpy.zeros(mesh.node_coords.shape[0])
     # Python loop over the cells... slow!
@@ -129,7 +134,7 @@ def jac_uniform(X, cells):
     with b_j being the ordinary barycenter.
     """
     dim = 2
-    mesh = MeshTri(X, cells, flat_cell_correction=None)
+    mesh = MeshTri(X, cells)
 
     jac = numpy.zeros(X.shape)
     for k in range(mesh.cells["nodes"].shape[1]):
@@ -224,18 +229,20 @@ def solve_hessian_approx_uniform(X, cells, rhs):
 
     rhs[mesh.is_boundary_node] = 0.0
 
-    # out = scipy.sparse.linalg.spsolve(matrix, rhs)
-    ml = pyamg.ruge_stuben_solver(matrix)
-    # Keep an eye on multiple rhs-solves in pyamg,
-    # <https://github.com/pyamg/pyamg/issues/215>.
-    tol = 1.0e-10
-    out = numpy.column_stack(
-        [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
-    )
+    out = scipy.sparse.linalg.spsolve(matrix, rhs)
+
+    # PyAMG fails on circleci.
+    # ml = pyamg.ruge_stuben_solver(matrix)
+    # # Keep an eye on multiple rhs-solves in pyamg,
+    # # <https://github.com/pyamg/pyamg/issues/215>.
+    # tol = 1.0e-10
+    # out = numpy.column_stack(
+    #     [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
+    # )
     return out
 
 
-def quasi_newton_uniform(*args, **kwargs):
+def quasi_newton_uniform(points, cells, *args, **kwargs):
     """Like linear_solve above, but assuming rho==1. Note that the energy gradient
 
         \\partial E_i = 2/(d+1) sum_{tau_j in omega_i} (x_i - b_j) \\int_{tau_j} rho
@@ -260,4 +267,6 @@ def quasi_newton_uniform(*args, **kwargs):
         x -= solve_hessian_approx_uniform(x, cells, jac_x)
         return x[mesh.is_interior_node]
 
-    return runner(get_new_points, *args, **kwargs)
+    mesh = MeshTri(points, cells)
+    runner(get_new_points, mesh, *args, **kwargs)
+    return mesh.node_coords, mesh.cells["nodes"]

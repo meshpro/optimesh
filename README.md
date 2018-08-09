@@ -11,7 +11,7 @@ Several mesh smoothing/optimization methods with one simple interface. optimesh
 
  * is fast,
  * preserves submeshes,
- * only works for triangular meshes (for now), and
+ * only works for triangular meshes (for now; upvote [this issue](https://github.com/nschloe/optimesh/issues/17) if you're interested), and
  * supports all mesh formats that [meshio](https://github.com/nschloe/meshio) can
    handle.
 
@@ -21,7 +21,7 @@ pip install optimesh
 ```
 Example call:
 ```
-optimesh in.e out.vtk --method cvt-uniform-lloyd2 -n 50
+optimesh in.e out.vtk --method cvt-uniform-lloyd -n 50
 ```
 Output:
 ![terminal-screenshot](https://nschloe.github.io/optimesh/term-screenshot.png)
@@ -37,15 +37,19 @@ optimesh -h
 
 #### CVT (centroidal Voronoi tesselation)
 
-![cvt-uniform-lloyd](https://nschloe.github.io/optimesh/cvt-uniform-lloyd.webp) |
 ![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/cvt-uniform-lloyd2.webp) |
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
-:-------------------:|:------------------------:|:---------------------:|
-uniform-density fixed-point iteration ([Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm), `--method cvt-uniform-lloyd`) | uniform-density overrelaxed Lloyd's algorithm (factor 2, `--method cvt-uniform-lloyd2`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) |
+![cvt-uniform-qnf-09](https://nschloe.github.io/optimesh/cvt-uniform-qnf-0.9.webp) |
+:------------------------:|:---------------------:|:----:|
+uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method cvt-uniform-lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf --omega 0.9`) |
 
 Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications))
 is one of the oldest and most reliable approaches. optimesh provides classical Lloyd
 smoothing as well as several variants that provide faster convergence.
+
+The method `cvt-uniform-qnf` provides updates closest to the actual Newton updates, but
+is unstable. Set the relaxation parameter `--omega` to someting smaller than 1 to
+stabilize.
 
 
 #### CPT (centroidal patch tesselation)
@@ -83,9 +87,12 @@ optimization method. The latter typically leads to better results.
 
 ### Which method is best?
 
-From practical experiments, it seems that the CVT smoothing variants give very
-satisfactory results.  Here is a comparison of all uniform-density methods applied to
-the random circle mesh seen above:
+From practical experiments, it seems that the CVT smoothing variants, e.g.,
+```
+optimesh in.vtk out.vtk -m cvt-uniform-qnf --omega 0.9 -n 50
+```
+give very satisfactory results.  Here is a comparison of all uniform-density methods
+applied to the random circle mesh seen above:
 
 <img src="https://nschloe.github.io/optimesh/comparison.svg" width="90%">
 

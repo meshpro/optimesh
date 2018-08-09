@@ -34,14 +34,22 @@ def _get_parser():
             "cpt-uniform-qn",
             #
             "cvt-uniform-lloyd",
-            "cvt-uniform-lloyd2",
             "cvt-uniform-qnb",
+            "cvt-uniform-qnf",
             #
             "odt-dp-fp",
             "odt-uniform-fp",
             "odt-uniform-bfgs",
         ],
         help="smoothing method",
+    )
+
+    parser.add_argument(
+        "--omega",
+        metavar="OMEGA",
+        default=1.0,
+        type=float,
+        help="CVT relaxation parameter, used in cvt-uniform-lloyd and cvt-uniform-qnf (default: 1.0, no relaxation)",
     )
 
     parser.add_argument(
@@ -63,11 +71,10 @@ def _get_parser():
     )
 
     parser.add_argument(
-        "--verbosity",
-        type=int,
-        choices=[0, 1, 2],
-        help="verbosity level (default: 1)",
-        default=1,
+        "--verbose",
+        default=False,
+        action="store_true",
+        help="verbose output (default: false)",
     )
 
     parser.add_argument(
@@ -99,6 +106,20 @@ def _get_parser():
     return parser
 
 
+def prune(mesh):
+    ncells = numpy.concatenate([numpy.concatenate(c) for c in mesh.cells.values()])
+    uvertices, uidx = numpy.unique(ncells, return_inverse=True)
+    k = 0
+    for key in mesh.cells.keys():
+        n = numpy.prod(mesh.cells[key].shape)
+        mesh.cells[key] = uidx[k : k + n].reshape(mesh.cells[key].shape)
+        k += n
+    mesh.points = mesh.points[uvertices]
+    for key in mesh.point_data:
+        mesh.point_data[key] = mesh.point_data[key][uvertices]
+    return
+
+
 def main(argv=None):
     parser = _get_parser()
     args = parser.parse_args(argv)
@@ -107,6 +128,11 @@ def main(argv=None):
         parser.error("At least one of --max-num_steps or --tolerance required.")
 
     mesh = meshio.read(args.input_file)
+
+    # Remove all nodes which do not belong to the highest-order simplex. Those would
+    # lead to singular equations systems further down the line.
+    mesh.cells = {"triangle": mesh.cells["triangle"]}
+    prune(mesh)
 
     # TODO remove?
     if mesh.points.shape[1] == 3:
@@ -127,9 +153,9 @@ def main(argv=None):
         "cpt-uniform-fp": cpt.fixed_point_uniform,
         "cpt-uniform-qn": cpt.quasi_newton_uniform,
         #
-        "cvt-uniform-lloyd": cvt.fixed_point_uniform,
-        "cvt-uniform-lloyd2": cvt.quasi_newton_uniform2,
+        "cvt-uniform-lloyd": cvt.quasi_newton_uniform_lloyd,
         "cvt-uniform-qnb": cvt.quasi_newton_uniform_blocks,
+        "cvt-uniform-qnf": cvt.quasi_newton_uniform_full,
         #
         "odt-dp-fp": odt.fixed_point_density_preserving,
         "odt-uniform-fp": odt.fixed_point_uniform,
@@ -137,14 +163,26 @@ def main(argv=None):
     }[args.method]
 
     for cell_idx in cell_sets:
-        X, cls = method(
-            mesh.points,
-            cells[cell_idx],
-            args.tolerance,
-            args.max_num_steps,
-            verbosity=args.verbosity,
-            step_filename_format=args.step_filename_format,
-        )
+        if args.method in ["cvt-uniform-lloyd", "cvt-uniform-qnf"]:
+            X, cls = method(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                omega=args.omega,
+                verbose=args.verbose,
+                step_filename_format=args.step_filename_format,
+            )
+        else:
+            X, cls = method(
+                mesh.points,
+                cells[cell_idx],
+                args.tolerance,
+                args.max_num_steps,
+                verbose=args.verbose,
+                step_filename_format=args.step_filename_format,
+            )
+
         cells[cell_idx] = cls
 
     if X.shape[1] != 3:

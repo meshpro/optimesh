@@ -3,12 +3,13 @@
 from __future__ import print_function
 
 import fastfunc
+from meshplex import MeshTri
 import numpy
 
 from .helpers import runner
 
 
-def fixed_point(*args, **kwargs):
+def fixed_point(points, cells, *args, **kwargs):
     """Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
     interior vertex to the arithmetic average of its neighboring points.
     """
@@ -27,4 +28,6 @@ def fixed_point(*args, **kwargs):
         new_points = (new_points[idx].T / num_neighbors[idx]).T
         return new_points
 
-    return runner(get_new_points, *args, **kwargs)
+    mesh = MeshTri(points, cells)
+    runner(get_new_points, mesh, *args, **kwargs)
+    return mesh.node_coords, mesh.cells["nodes"]
