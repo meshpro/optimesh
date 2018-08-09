@@ -14,9 +14,8 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 import fastfunc
 from meshplex import MeshTri
 import numpy
-import pyamg
 import quadpy
-import scipy.sparse
+import scipy.sparse.linalg
 
 from .helpers import runner, get_new_points_volume_averaged
 
@@ -59,13 +58,15 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
         rhs = numpy.zeros((n, 2))
         rhs[mesh.is_boundary_node] = mesh.node_coords[mesh.is_boundary_node]
 
-        # out = scipy.sparse.linalg.spsolve(matrix, rhs)
-        ml = pyamg.ruge_stuben_solver(matrix)
-        # Keep an eye on multiple rhs-solves in pyamg,
-        # <https://github.com/pyamg/pyamg/issues/215>.
-        out = numpy.column_stack(
-            [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
-        )
+        out = scipy.sparse.linalg.spsolve(matrix, rhs)
+
+        # PyAMG fails on circleci.
+        # ml = pyamg.ruge_stuben_solver(matrix)
+        # # Keep an eye on multiple rhs-solves in pyamg,
+        # # <https://github.com/pyamg/pyamg/issues/215>.
+        # out = numpy.column_stack(
+        #     [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
+        # )
         return out[mesh.is_interior_node]
 
     mesh = MeshTri(points, cells)
@@ -228,14 +229,16 @@ def solve_hessian_approx_uniform(X, cells, rhs):
 
     rhs[mesh.is_boundary_node] = 0.0
 
-    # out = scipy.sparse.linalg.spsolve(matrix, rhs)
-    ml = pyamg.ruge_stuben_solver(matrix)
-    # Keep an eye on multiple rhs-solves in pyamg,
-    # <https://github.com/pyamg/pyamg/issues/215>.
-    tol = 1.0e-10
-    out = numpy.column_stack(
-        [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
-    )
+    out = scipy.sparse.linalg.spsolve(matrix, rhs)
+
+    # PyAMG fails on circleci.
+    # ml = pyamg.ruge_stuben_solver(matrix)
+    # # Keep an eye on multiple rhs-solves in pyamg,
+    # # <https://github.com/pyamg/pyamg/issues/215>.
+    # tol = 1.0e-10
+    # out = numpy.column_stack(
+    #     [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
+    # )
     return out
 
 
