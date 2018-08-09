@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 #
+import fastfunc
 import numpy
 
 from .ghosted_mesh import GhostedMesh
@@ -12,6 +13,7 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
     """Lloyd's algorithm can be though of a diagonal-only Hessian; this method
     incorporates the diagonal blocks, too.
     """
+
     def get_new_points(mesh):
         # TODO need copy?
         x = mesh.node_coords.copy()
@@ -52,23 +54,20 @@ def update(mesh):
         "ijk, ijl->ijkl", mesh.half_edge_coords, mesh.half_edge_coords
     )
 
-    for edges, ce_ratios, ei_outer_ei in zip(
-        mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(ei_outer_ei, 0, 1)
-    ):
-        m3 = -0.5 * (ce_ratios * ei_outer_ei.T).T
-        for m, i in zip(m3, edges):
-            # Without adding the control volumes above, the update would be
-            # ```
-            # m = 0.5 * ce * (numpy.eye(2) * numpy.dot(ei, ei) - ei_outer_ei)
-            # ```
-            # instead of
-            # ```
-            # m = -0.5 * ce * ei_outer_ei
-            # ```
-            # This makes clear why the diagonal blocks are always positive definite if
-            # the mesh is Delaunay.
-            diagonal_blocks[i[0]] += m
-            diagonal_blocks[i[1]] += m
+    # Without adding the control volumes above, the update would be
+    # ```
+    # m = 0.5 * ce * (numpy.eye(2) * numpy.dot(ei, ei) - ei_outer_ei)
+    # ```
+    # instead of
+    # ```
+    # m = -0.5 * ce * ei_outer_ei
+    # ```
+    # This makes clear why the diagonal blocks are always positive definite if the mesh
+    # is Delaunay.
+    M = -0.5 * ei_outer_ei * mesh.ce_ratios[..., None, None]
+
+    fastfunc.add.at(diagonal_blocks, mesh.idx_hierarchy[0], M)
+    fastfunc.add.at(diagonal_blocks, mesh.idx_hierarchy[1], M)
 
     rhs = -jac_uniform(mesh).reshape(-1, 2)
 
