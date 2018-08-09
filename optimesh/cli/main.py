@@ -106,6 +106,20 @@ def _get_parser():
     return parser
 
 
+def prune(mesh):
+    ncells = numpy.concatenate([numpy.concatenate(c) for c in mesh.cells.values()])
+    uvertices, uidx = numpy.unique(ncells, return_inverse=True)
+    k = 0
+    for key in mesh.cells.keys():
+        n = numpy.prod(mesh.cells[key].shape)
+        mesh.cells[key] = uidx[k : k + n].reshape(mesh.cells[key].shape)
+        k += n
+    mesh.points = mesh.points[uvertices]
+    for key in mesh.point_data:
+        mesh.point_data[key] = mesh.point_data[key][uvertices]
+    return
+
+
 def main(argv=None):
     parser = _get_parser()
     args = parser.parse_args(argv)
@@ -114,6 +128,11 @@ def main(argv=None):
         parser.error("At least one of --max-num_steps or --tolerance required.")
 
     mesh = meshio.read(args.input_file)
+
+    # Remove all nodes which do not belong to the highest-order simplex. Those would
+    # lead to singular equations systems further down the line.
+    mesh.cells = {"triangle": mesh.cells["triangle"]}
+    prune(mesh)
 
     # TODO remove?
     if mesh.points.shape[1] == 3:

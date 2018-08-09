@@ -52,9 +52,6 @@ def update(mesh):
         "ijk, ijl->ijkl", mesh.half_edge_coords, mesh.half_edge_coords
     )
 
-    print(ei_outer_ei.shape)
-    print(mesh.ce_ratios.shape)
-
     for edges, ce_ratios, ei_outer_ei in zip(
         mesh.idx_hierarchy.T, mesh.ce_ratios.T, numpy.moveaxis(ei_outer_ei, 0, 1)
     ):
