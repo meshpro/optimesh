@@ -8,23 +8,23 @@ from helpers import download_mesh
 
 
 @pytest.mark.parametrize(
-    "method",
+    "options",
     [
-        "cpt-dp",
-        "cpt-uniform-fp",
-        "cpt-uniform-qn",
+        ["--method", "cpt-dp"],
+        ["--method", "cpt-uniform-fp"],
+        ["--method", "cpt-uniform-qn", "--omega", "0.9"],
         #
-        "cvt-uniform-lloyd",
-        "cvt-uniform-lloyd2",
-        "cvt-uniform-qnb",
-        "cvt-uniform-qnf",
+        ["--method", "cvt-uniform-lloyd"],
+        ["--method", "cvt-uniform-lloyd", "--omega", "2.0"],
+        ["--method", "cvt-uniform-qnb"],
+        ["--method", "cvt-uniform-qnf"],
         #
-        "odt-dp-fp",
-        "odt-uniform-fp",
-        "odt-uniform-bfgs",
+        ["--method", "odt-dp-fp"],
+        ["--method", "odt-uniform-fp"],
+        ["--method", "odt-uniform-bfgs"],
     ],
 )
-def test_cli(method):
+def test_cli(options):
     input_file = download_mesh(
         # "circle.vtk", "614fcabc0388e1b43723ac64f8555ef52ee4ddda1466368c450741eb"
         "pacman.vtk",
@@ -32,7 +32,7 @@ def test_cli(method):
     )
     output_file = "out.vtk"
     optimesh.cli.main(
-        [input_file, output_file, "--method", method, "-t", "1.0e-5", "-n", "5"]
+        [input_file, output_file, "-t", "1.0e-5", "-n", "5"] + options
     )
     return
 

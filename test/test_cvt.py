@@ -19,7 +19,7 @@ import helpers
 def test_cvt_lloyd(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    X, cells = optimesh.cvt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbose=False)
+    X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(X, cells, 1.0e-2, 100, verbose=False)
 
     # Assert that we're dealing with the mesh we expect.
     helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
@@ -36,7 +36,7 @@ def test_cvt_lloyd(mesh, ref1, ref2, refi):
 def test_cvt_lloyd2(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    X, cells = optimesh.cvt.quasi_newton_uniform2(X, cells, 1.0e-2, 100)
+    X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(X, cells, 1.0e-2, 100, omega=2.0)
 
     # Assert that we're dealing with the mesh we expect.
     helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)

@@ -41,7 +41,7 @@ optimesh -h
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
 ![cvt-uniform-qnf-09](https://nschloe.github.io/optimesh/cvt-uniform-qnf-0.9.webp) |
 :------------------------:|:---------------------:|:----:|
-uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method cvt-uniform-lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf --omega 0.9`) |
+uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method cvt-uniform-lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf --omega 0.9`) |
 
 Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications))
 is one of the oldest and most reliable approaches. optimesh provides classical Lloyd
@@ -87,9 +87,12 @@ optimization method. The latter typically leads to better results.
 
 ### Which method is best?
 
-From practical experiments, it seems that the CVT smoothing variants give very
-satisfactory results.  Here is a comparison of all uniform-density methods applied to
-the random circle mesh seen above:
+From practical experiments, it seems that the CVT smoothing variants, e.g.,
+```
+optimesh in.vtk out.vtk -m cvt-uniform-qnf --omega 0.9 -n 50
+```
+give very satisfactory results.  Here is a comparison of all uniform-density methods
+applied to the random circle mesh seen above:
 
 <img src="https://nschloe.github.io/optimesh/comparison.svg" width="90%">
 

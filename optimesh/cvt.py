@@ -379,8 +379,8 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
         # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
     )
 
-    # mesh = ghosted_mesh.get_stats_mesh()
-    mesh = ghosted_mesh.mesh
+    mesh = ghosted_mesh.get_stats_mesh()
+    # mesh = ghosted_mesh.mesh
     return mesh.node_coords, mesh.cells["nodes"]
 
 
