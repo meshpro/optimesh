@@ -18,6 +18,10 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
         # TODO need copy?
         x = mesh.node_coords.copy()
         x += update(mesh)
+        # update ghosts
+        x[ghosted_mesh.is_ghost_point] = ghosted_mesh.reflect_ghost(
+            x[ghosted_mesh.mirrors]
+        )
         return x
 
     ghosted_mesh = GhostedMesh(points, cells)
@@ -27,7 +31,7 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
         ghosted_mesh.mesh,
         *args,
         **kwargs,
-        straighten_out=lambda mesh: ghosted_mesh.straighten_out(),
+        update_topology=lambda mesh: ghosted_mesh.update_topology(),
         # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
     )
 

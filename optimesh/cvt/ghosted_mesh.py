@@ -148,13 +148,9 @@ class GhostedMesh(object):
         cells = mesh2.cells["nodes"][: self.num_original_cells]
         return MeshTri(points, cells)
 
-    def straighten_out(self):
+    def update_topology(self):
         self.mesh.flip_until_delaunay()
         self.update_ghost_mirrors()
-        self.mesh.node_coords[self.is_ghost_point] = self.reflect_ghost(
-            self.mesh.node_coords[self.mirrors]
-        )
-        self.mesh.update_values()
         return
 
     def reflect_ghost(self, p0):

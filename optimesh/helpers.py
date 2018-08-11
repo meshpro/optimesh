@@ -48,7 +48,7 @@ def runner(
     callback=None,
     step_filename_format=None,
     uniform_density=False,
-    straighten_out=lambda mesh: mesh.flip_until_delaunay(),
+    update_topology=lambda mesh: mesh.flip_until_delaunay(),
     get_stats_mesh=lambda mesh: mesh,
 ):
     k = 0
@@ -68,8 +68,7 @@ def runner(
     if callback:
         callback(k, mesh)
 
-    straighten_out(mesh)
-
+    update_topology(mesh)
     while True:
         k += 1
 
@@ -89,7 +88,7 @@ def runner(
         # a robust smoother first (CPT) if the method crashes.
         mesh.node_coords = new_points
         mesh.update_values()
-        straighten_out(mesh)
+        update_topology(mesh)
 
         stats_mesh = get_stats_mesh(mesh)
         if verbose and not is_final:
