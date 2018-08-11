@@ -47,12 +47,14 @@ class GhostedMesh(object):
         self.num_original_cells = cells.shape[0]
         cells = numpy.concatenate([cells, *ghost_cells])
 
+        # Cache some values for the ghost reflection
+        self.p1 = points[self.ghost_mirror[1]]
+        mp2 = points[self.ghost_mirror[2]]
+        self.mirror_edge = mp2 - self.p1
+        self.beta = numpy.einsum("ij, ij->i", self.mirror_edge, self.mirror_edge)
+
         # Set ghost points
-        points[self.is_ghost_point] = _reflect_point(
-            points[self.ghost_mirror[0]],
-            points[self.ghost_mirror[1]],
-            points[self.ghost_mirror[2]],
-        )
+        points[self.is_ghost_point] = self.reflect_ghost(points[self.ghost_mirror[0]])
 
         # Create new mesh, remember the pseudo-boundary edges
         self.mesh = MeshTri(points, cells)
@@ -136,9 +138,7 @@ class GhostedMesh(object):
 
         # finally get the reflection
         pts = self.mesh.node_coords
-        mp = _reflect_point(
-            pts[mirrors], pts[self.ghost_mirror[1]], pts[self.ghost_mirror[2]]
-        )
+        mp = self.reflect_ghost(pts[mirrors])
         return mp
 
     def get_stats_mesh(self):
@@ -157,33 +157,23 @@ class GhostedMesh(object):
         self.mesh.update_values()
         return
 
+    def reflect_ghost(self, p0):
+        """This method creates the ghost point p0', namely p0 reflected along the edge
+        p1--p2, and the point q at the perpendicular intersection of the reflection.
 
-def _row_dot(a, b):
-    # https://stackoverflow.com/a/26168677/353337
-    return numpy.einsum("ij, ij->i", a, b)
+                p0
+              _/| \__
+            _/  |    \__
+           /    |       \
+          p1----|q-------p2
+           \_   |     __/
+             \_ |  __/
+               \| /
+               p0'
 
-
-def _reflect_point(p0, p1, p2):
-    """For any given triangle p0--p1--p2, this method creates the point p0',
-    namely p0 reflected along the edge p1--p2, and the point q at the
-    perpendicular intersection of the reflection.
-
-            p0
-          _/| \__
-        _/  |    \__
-       /    |       \
-      p1----|q-------p2
-       \_   |     __/
-         \_ |  __/
-           \| /
-           p0'
-
-    """
-    # TODO cache some of the entities here (the ones related to p1 and p2
-    alpha = _row_dot(p0 - p1, p2 - p1) / _row_dot(p2 - p1, p2 - p1)
-    # q: Intersection point of old and new edge
-    # q = p1 + dot(p0-p1, (p2-p1)/||p2-p1||) * (p2-p1)/||p2-p1||
-    #   = p1 + dot(p0-p1, p2-p1)/dot(p2-p1, p2-p1) * (p2-p1)
-    q = p1 + alpha[:, None] * (p2 - p1)
-    # p0' = p0 + 2*(q - p0)
-    return 2 * q - p0
+        """
+        # Instead of self.p1, one could take any point on the line p1--p2.
+        dist = self.p1 - p0
+        alpha = numpy.einsum("ij, ij->i", dist, self.mirror_edge)
+        q = dist - (alpha / self.beta)[:, None] * self.mirror_edge
+        return p0 + 2 * q
