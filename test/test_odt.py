@@ -71,4 +71,4 @@ if __name__ == "__main__":
     from meshes import circle_rotated
 
     X, cells = circle_rotated()
-    X, cells = optimesh.odt.fixed_point(X, cells, 1.0e-3, 100)
+    X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-3, 100)
