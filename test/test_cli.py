@@ -12,12 +12,12 @@ from helpers import download_mesh
     [
         ["--method", "cpt-dp"],
         ["--method", "cpt-uniform-fp"],
-        ["--method", "cpt-uniform-qn", "--omega", "0.9"],
+        ["--method", "cpt-uniform-qn"],
         #
         ["--method", "cvt-uniform-lloyd"],
         ["--method", "cvt-uniform-lloyd", "--omega", "2.0"],
         ["--method", "cvt-uniform-qnb"],
-        ["--method", "cvt-uniform-qnf"],
+        ["--method", "cvt-uniform-qnf", "--omega", "0.9"],
         #
         ["--method", "odt-dp-fp"],
         ["--method", "odt-uniform-fp"],

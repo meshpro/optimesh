@@ -77,8 +77,7 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
 def fixed_point_uniform(points, cells, *args, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the centroids
-    (barycenters) of their adjacent cells. If a triangle cell switches
-    orientation in the process, don't move quite so far.
+    (barycenters) of their adjacent cells.
     """
 
     def get_new_points(mesh):

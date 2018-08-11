@@ -13,9 +13,9 @@ def test_comparison():
     X = X[:, :2]
 
     # Do one step to avoid too crazy meshes.
-    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 1)
-    # X, cells = optimesh.odt.fixed_point_uniform(X, cells, 0.0, 1)
-    # X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 0.0, 15)
+    X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 2)
+    # X, cells = optimesh.odt.fixed_point_uniform(X, cells, 0.0, 2)
+    # X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(X, cells, 0.0, 2)
 
     # from meshplex import MeshTri
     # mesh = MeshTri(X, cells)

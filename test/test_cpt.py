@@ -80,9 +80,15 @@ def test_jac(mesh, ref1, ref2, refi):
     ],
 )
 def test_methods(method, mesh, ref1, ref2, refi):
-    X, cells = mesh()
+    X_in, cells_in = mesh()
 
-    X, cells = method(X, cells, 1.0e-12, 100)
+    # X_before = X_in.copy()
+    # cells_before = cells_in.copy()
+
+    X, cells = method(X_in, cells_in, 1.0e-12, 100)
+
+    # assert numpy.all(cells_in == cells_before)
+    # assert numpy.all(numpy.abs(X_in == X_before) < 1.0e-15)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()

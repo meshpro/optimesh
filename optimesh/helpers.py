@@ -65,11 +65,6 @@ def runner(
     straighten_out=lambda mesh: mesh.flip_until_delaunay(),
     get_stats_mesh=lambda mesh: mesh,
 ):
-    if mesh.node_coords.shape[1] == 3:
-        # create flat mesh
-        assert numpy.all(abs(mesh.node_coords[:, 2]) < 1.0e-15)
-        mesh.node_coords = mesh.node_coords[:, :2]
-
     k = 0
 
     stats_mesh = get_stats_mesh(mesh)
@@ -94,24 +89,19 @@ def runner(
 
         new_interior_points = get_new_interior_points(mesh)
 
-        original_orient = mesh.signed_cell_areas > 0.0
         original_interior_coords = mesh.node_coords[mesh.is_interior_node]
 
-        # Step unless the orientation of any cell changes.
-        alpha = 1.0
-        while True:
-            xnew = (1 - alpha) * original_interior_coords + alpha * new_interior_points
-            mesh.node_coords[mesh.is_interior_node] = xnew
-            mesh.update_values()
-            new_orient = mesh.signed_cell_areas > 0.0
-            if numpy.all(original_orient == new_orient):
-                break
-            alpha /= 2
-
+        # We previously checked here if the orientation of any cell changes and
+        # reduced the step size if it did. Computing the orientation is unnecessarily
+        # costly though and doesn't easily translate to shell meshes. Since orientation
+        # changes cannot occur, e.g., with CPT, advice the user to apply a few steps of
+        # a robust smoother first (CPT) if the method crashes.
+        mesh.node_coords[mesh.is_interior_node] = new_interior_points
+        mesh.update_values()
         straighten_out(mesh)
 
         # Abort the loop if the update is small
-        diff = mesh.node_coords[mesh.is_interior_node] - original_interior_coords
+        diff = new_interior_points - original_interior_coords
         is_final = (
             numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2)
             or k >= max_num_steps
