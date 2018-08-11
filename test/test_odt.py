@@ -5,7 +5,7 @@ import pytest
 
 import optimesh
 
-from meshes import simple1, simple2, simple3, pacman, circle
+from meshes import simple1, simple2, simple3, pacman
 
 
 @pytest.mark.parametrize(
@@ -68,5 +68,7 @@ def test_nonlinear_optimization(mesh, ref1, ref2, refi):
 
 
 if __name__ == "__main__":
-    X, cells = circle()
+    from meshes import circle_rotated
+
+    X, cells = circle_rotated()
     X, cells = optimesh.odt.fixed_point(X, cells, 1.0e-3, 100)

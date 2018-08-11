@@ -121,7 +121,7 @@ def pacman():
     return mesh.points[:, :2], mesh.cells["triangle"]
 
 
-def circle():
+def circle_gmsh():
     filename = "circle.vtk"
     if not os.path.isfile(filename):
         import pygmsh
@@ -189,3 +189,17 @@ def circle_random():
     assert numpy.sum(mesh.is_boundary_node) == n
 
     return pts, tri.simplices
+
+
+def circle_rotated():
+    pts, cells = circle_random()
+    # <https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula>
+    theta = numpy.pi / 4
+    k = numpy.array([1.0, 0.0, 0.0])
+    pts = (
+        pts * numpy.cos(theta)
+        + numpy.cross(k, pts) * numpy.sin(theta)
+        + numpy.outer(numpy.einsum("ij,j->i", pts, k), k) * (1.0 - numpy.cos(theta))
+    )
+    meshio.write_points_cells("out.vtk", pts, {"triangle": cells})
+    return pts, cells
