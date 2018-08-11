@@ -64,6 +64,8 @@ class GhostedMesh(object):
         # and opposite edges have the same index.)
         self.ghost_edge_gids = self.mesh.cells["edges"][is_ghost_cell, 0]
         self.original_edges_nodes = self.mesh.edges["nodes"][self.ghost_edge_gids]
+
+        self.update_ghost_mirrors()
         return
 
     def get_flip_ghost_edges(self):
@@ -82,13 +84,12 @@ class GhostedMesh(object):
         assert numpy.all(num_adjacent_cells == 2)
         return flip_interior_edge_idx
 
-    def reflect_ghost_points(self):
+    def update_ghost_mirrors(self):
         # The ghost mirror facet points ghost_mirror[1], ghost_mirror[2] are on the
         # boundary and never change in any way. The point that is mirrored,
         # ghost_mirror[0], however, does move and may after a facet flip even refer to
         # an entirely different point. Find out which.
-        # mirrors = numpy.empty(num_boundary_cells,_dtype=int)
-        mirrors = numpy.zeros(self.num_boundary_cells, dtype=int)
+        self.mirrors = numpy.zeros(self.num_boundary_cells, dtype=int)
 
         new_edges_nodes = self.mesh.edges["nodes"][self.ghost_edge_gids]
         has_flipped = self.original_edges_nodes[:, 0] != new_edges_nodes[:, 0]
@@ -101,7 +102,7 @@ class GhostedMesh(object):
             "applying some steps of a more robust method first."
         )
         # The first point is the one at the other end of the flipped edge.
-        mirrors[has_flipped] = new_edges_nodes[has_flipped, 0]
+        self.mirrors[has_flipped] = new_edges_nodes[has_flipped, 0]
 
         # Now let's look at the ghost points whose edge has _not_ flipped. We need to
         # find the cell on the other side and there the point opposite of the ghost
@@ -134,12 +135,8 @@ class GhostedMesh(object):
         for k in range(eq.shape[0]):
             opposite_node_id[eq[k]] = cn[eq[k], k]
         # Set in mirrors
-        mirrors[~has_flipped] = opposite_node_id
-
-        # finally get the reflection
-        pts = self.mesh.node_coords
-        mp = self.reflect_ghost(pts[mirrors])
-        return mp
+        self.mirrors[~has_flipped] = opposite_node_id
+        return
 
     def get_stats_mesh(self):
         # Make deep copy to avoid influencing the actual mesh
@@ -153,7 +150,10 @@ class GhostedMesh(object):
 
     def straighten_out(self):
         self.mesh.flip_until_delaunay()
-        self.mesh.node_coords[self.is_ghost_point] = self.reflect_ghost_points()
+        self.update_ghost_mirrors()
+        self.mesh.node_coords[self.is_ghost_point] = self.reflect_ghost(
+            self.mesh.node_coords[self.mirrors]
+        )
         self.mesh.update_values()
         return
 
