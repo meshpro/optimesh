@@ -14,7 +14,7 @@ def quasi_newton_uniform_full(points, cells, *args, omega=1.0, **kwargs):
         # TODO need copy?
         x = mesh.node_coords.copy()
         x += update(mesh, omega)
-        return x[mesh.is_interior_node]
+        return x
 
     ghosted_mesh = GhostedMesh(points, cells)
 

@@ -23,7 +23,9 @@ def quasi_newton_uniform_lloyd(points, cells, *args, omega=1.0, **kwargs):
             mesh.node_coords
             - omega / 2 * jac_uniform(mesh) / mesh.control_volumes[:, None]
         )
-        return x[mesh.is_interior_node]
+        idx = mesh.is_boundary_node
+        x[idx] = mesh.node_coords[idx]
+        return x
 
     ghosted_mesh = GhostedMesh(points, cells)
 
