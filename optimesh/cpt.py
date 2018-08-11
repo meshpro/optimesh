@@ -147,20 +147,6 @@ def jac_uniform(X, cells):
     return 2 / (dim + 1) * jac
 
 
-def _solve_hessian_approx_uniform(X, cells, rhs):
-    """This approximation reproduces the fixed point iteration.
-    """
-    dim = 2
-    mesh = MeshTri(X, cells)
-    diag = numpy.zeros(X.shape[0])
-    for i in range(3):
-        fastfunc.add.at(diag, cells[:, i], mesh.cell_volumes)
-    diag *= 2 / (dim + 1)
-    out = (rhs.T / diag).T
-    out[mesh.is_boundary_node] = 0.0
-    return out
-
-
 def solve_hessian_approx_uniform(X, cells, rhs):
     """As discussed above, the approximated Jacobian is
 

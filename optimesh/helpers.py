@@ -39,20 +39,6 @@ def print_stats(mesh, extra_cols=None):
     return
 
 
-def sit_in_plane(X, tol=1.0e-15):
-    """Checks if all points X sit in a plane.
-    """
-    orth = numpy.cross(X[1] - X[0], X[2] - X[0])
-    orth /= numpy.sqrt(numpy.dot(orth, orth))
-    return (abs(numpy.dot(X - X[0], orth)) < tol).all()
-
-
-def default_node_coords_updater(mesh, xnew):
-    mesh.node_coords[mesh.is_interior_node] = xnew
-    mesh.update_values()
-    return
-
-
 def runner(
     get_new_interior_points,
     mesh,
