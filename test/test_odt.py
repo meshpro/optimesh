@@ -69,6 +69,8 @@ def test_nonlinear_optimization(mesh, ref1, ref2, refi):
 
 if __name__ == "__main__":
     from meshes import circle_rotated
+    import meshio
 
     X, cells = circle_rotated()
     X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-3, 100)
+    meshio.write_points_cells("out.vtk", X, {"triangle": cells})

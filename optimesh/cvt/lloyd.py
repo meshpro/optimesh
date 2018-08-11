@@ -21,7 +21,12 @@ def quasi_newton_uniform_lloyd(points, cells, *args, omega=1.0, **kwargs):
     def get_new_points(mesh):
         # TODO need copy?
         x = mesh.node_coords.copy()
-        x -= omega / 2 * (jac_uniform(mesh).reshape(-1, 2).T / mesh.control_volumes).T
+        x -= (
+            omega
+            / 2
+            * jac_uniform(mesh).reshape(x.shape)
+            / mesh.control_volumes[:, None]
+        )
         return x[mesh.is_interior_node]
 
     ghosted_mesh = GhostedMesh(points, cells)

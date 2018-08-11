@@ -39,16 +39,12 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
 def update(mesh):
     X = mesh.node_coords
 
-    # TODO remove this assertion and test
-    # flat mesh
-    assert X.shape[1] == 2
-
     # Collect the diagonal blocks.
-    diagonal_blocks = numpy.zeros((X.shape[0], 2, 2))
+    diagonal_blocks = numpy.zeros((X.shape[0], X.shape[1], X.shape[1]))
 
     # First the Lloyd part.
-    diagonal_blocks[:, 0, 0] += 2 * mesh.control_volumes
-    diagonal_blocks[:, 1, 1] += 2 * mesh.control_volumes
+    for k in range(X.shape[1]):
+        diagonal_blocks[:, k, k] += 2 * mesh.control_volumes
 
     ei_outer_ei = numpy.einsum(
         "ijk, ijl->ijkl", mesh.half_edge_coords, mesh.half_edge_coords
@@ -56,7 +52,7 @@ def update(mesh):
 
     # Without adding the control volumes above, the update would be
     # ```
-    # m = 0.5 * ce * (numpy.eye(2) * numpy.dot(ei, ei) - ei_outer_ei)
+    # m = 0.5 * ce * (numpy.eye(X.shape[1]) * numpy.dot(ei, ei) - ei_outer_ei)
     # ```
     # instead of
     # ```
@@ -69,12 +65,12 @@ def update(mesh):
     fastfunc.add.at(diagonal_blocks, mesh.idx_hierarchy[0], M)
     fastfunc.add.at(diagonal_blocks, mesh.idx_hierarchy[1], M)
 
-    rhs = -jac_uniform(mesh).reshape(-1, 2)
+    rhs = -jac_uniform(mesh).reshape(X.shape)
 
     # set the boundary blocks to the identity
     diagonal_blocks[mesh.is_boundary_node] = 0.0
-    diagonal_blocks[mesh.is_boundary_node, 0, 0] = 1.0
-    diagonal_blocks[mesh.is_boundary_node, 1, 1] = 1.0
+    for k in range(X.shape[1]):
+        diagonal_blocks[mesh.is_boundary_node, k, k] = 1.0
     rhs[mesh.is_boundary_node] = 0.0
 
     return numpy.linalg.solve(diagonal_blocks, rhs)

@@ -144,10 +144,6 @@ def nonlinear_optimization_uniform(
     """
     import scipy.optimize
 
-    # TODO remove this assertion and test
-    # flat mesh
-    assert X.shape[1] == 2
-
     mesh = MeshTri(X, cells)
 
     if step_filename_format:
@@ -164,13 +160,13 @@ def nonlinear_optimization_uniform(
     print_stats(mesh, extra_cols=extra_cols)
 
     def f(x):
-        mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, 2)
+        mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, X.shape[1])
         mesh.update_values()
         return energy(mesh, uniform_density=True)
 
     # TODO put f and jac together
     def jac(x):
-        mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, 2)
+        mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, X.shape[1])
         mesh.update_values()
 
         grad = numpy.zeros(mesh.node_coords.shape)
@@ -181,12 +177,12 @@ def nonlinear_optimization_uniform(
             )
         gdim = 2
         grad *= 2 / (gdim + 1)
-        return grad[mesh.is_interior_node, :2].flatten()
+        return grad[mesh.is_interior_node].flatten()
 
     def flip_delaunay(x):
         flip_delaunay.step += 1
         # Flip the edges
-        mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, 2)
+        mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, X.shape[1])
         mesh.update_values()
         mesh.flip_until_delaunay()
 
@@ -211,7 +207,7 @@ def nonlinear_optimization_uniform(
 
     flip_delaunay.step = 0
 
-    x0 = X[mesh.is_interior_node, :2].flatten()
+    x0 = X[mesh.is_interior_node].flatten()
 
     if callback:
         callback(0, mesh)
@@ -236,7 +232,7 @@ def nonlinear_optimization_uniform(
     # Don't assert out.success; max_num_steps may be reached, that's fine.
 
     # One last edge flip
-    mesh.node_coords[mesh.is_interior_node] = out.x.reshape(-1, 2)
+    mesh.node_coords[mesh.is_interior_node] = out.x.reshape(-1, X.shape[1])
     mesh.update_values()
     mesh.flip_until_delaunay()
 
