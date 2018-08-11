@@ -47,7 +47,6 @@ def update(mesh, omega):
     # Hessian. Unfortunately, it seems that the Newton domain of convergence is small.
     # Relaxation makes the method more robust.
     M2 = M * omega
-    i = mesh.idx_hierarchy
 
     block_size = M.shape[2]
     assert block_size == M.shape[3]
@@ -55,29 +54,29 @@ def update(mesh, omega):
     for k in range(M.shape[0]):
         # The diagonal blocks are always positive definite if the mesh is Delaunay.
         # (i0, i0) block
-        for l in range(block_size):
+        for i in range(block_size):
             for j in range(block_size):
-                row_idx += [2 * i[0, k] + l]
-                col_idx += [2 * i[0, k] + j]
-                vals += [M[k, :, l, j]]
+                row_idx += [2 * mesh.idx_hierarchy[0, k] + i]
+                col_idx += [2 * mesh.idx_hierarchy[0, k] + j]
+                vals += [M[k, :, i, j]]
         # (i1, i1) block
-        for l in range(block_size):
+        for i in range(block_size):
             for j in range(block_size):
-                row_idx += [2 * i[1, k] + l]
-                col_idx += [2 * i[1, k] + j]
-                vals += [M[k, :, l, j]]
+                row_idx += [2 * mesh.idx_hierarchy[1, k] + i]
+                col_idx += [2 * mesh.idx_hierarchy[1, k] + j]
+                vals += [M[k, :, i, j]]
         # (i0, i1) block
-        for l in range(block_size):
+        for i in range(block_size):
             for j in range(block_size):
-                row_idx += [2 * i[0, k] + l]
-                col_idx += [2 * i[1, k] + j]
-                vals += [M2[k, :, l, j]]
+                row_idx += [2 * mesh.idx_hierarchy[0, k] + i]
+                col_idx += [2 * mesh.idx_hierarchy[1, k] + j]
+                vals += [M2[k, :, i, j]]
         # (i1, i0) block
-        for l in range(block_size):
+        for i in range(block_size):
             for j in range(block_size):
-                row_idx += [2 * i[1, k] + l]
-                col_idx += [2 * i[0, k] + j]
-                vals += [M2[k, :, l, j]]
+                row_idx += [2 * mesh.idx_hierarchy[1, k] + i]
+                col_idx += [2 * mesh.idx_hierarchy[0, k] + j]
+                vals += [M2[k, :, i, j]]
 
     # add diagonal
     n = mesh.control_volumes.shape[0]
@@ -108,14 +107,18 @@ def update(mesh, omega):
     for k in range(block_size):
         d[2 * i_boundary + k] = 1.0
     matrix.setdiag(d)
-
+    #
     rhs = -jac_uniform(mesh)
     for k in range(block_size):
         rhs[2 * i_boundary + k] = 0.0
 
+    eigvals = numpy.sort(numpy.linalg.eigvalsh(matrix.toarray()))
+    print(eigvals)
+    assert eigvals[0] > 1.0e-12
+
     out = scipy.sparse.linalg.spsolve(matrix, rhs)
     # import pyamg
     # ml = pyamg.ruge_stuben_solver(matrix)
-    # out = ml.solve(rhs, tol=1.0e-10)
+    # out = ml.solve(rhs, tol=1.0e-12)
 
     return out.reshape(-1, block_size)
