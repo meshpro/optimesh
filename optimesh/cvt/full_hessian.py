@@ -56,33 +56,33 @@ def update(mesh, omega):
         # (i0, i0) block
         for i in range(block_size):
             for j in range(block_size):
-                row_idx += [2 * mesh.idx_hierarchy[0, k] + i]
-                col_idx += [2 * mesh.idx_hierarchy[0, k] + j]
+                row_idx += [block_size * mesh.idx_hierarchy[0, k] + i]
+                col_idx += [block_size * mesh.idx_hierarchy[0, k] + j]
                 vals += [M[k, :, i, j]]
         # (i1, i1) block
         for i in range(block_size):
             for j in range(block_size):
-                row_idx += [2 * mesh.idx_hierarchy[1, k] + i]
-                col_idx += [2 * mesh.idx_hierarchy[1, k] + j]
+                row_idx += [block_size * mesh.idx_hierarchy[1, k] + i]
+                col_idx += [block_size * mesh.idx_hierarchy[1, k] + j]
                 vals += [M[k, :, i, j]]
         # (i0, i1) block
         for i in range(block_size):
             for j in range(block_size):
-                row_idx += [2 * mesh.idx_hierarchy[0, k] + i]
-                col_idx += [2 * mesh.idx_hierarchy[1, k] + j]
+                row_idx += [block_size * mesh.idx_hierarchy[0, k] + i]
+                col_idx += [block_size * mesh.idx_hierarchy[1, k] + j]
                 vals += [M2[k, :, i, j]]
         # (i1, i0) block
         for i in range(block_size):
             for j in range(block_size):
-                row_idx += [2 * mesh.idx_hierarchy[1, k] + i]
-                col_idx += [2 * mesh.idx_hierarchy[0, k] + j]
+                row_idx += [block_size * mesh.idx_hierarchy[1, k] + i]
+                col_idx += [block_size * mesh.idx_hierarchy[0, k] + j]
                 vals += [M2[k, :, i, j]]
 
     # add diagonal
     n = mesh.control_volumes.shape[0]
     for k in range(block_size):
-        row_idx.append(2 * numpy.arange(n) + k)
-        col_idx.append(2 * numpy.arange(n) + k)
+        row_idx.append(block_size * numpy.arange(n) + k)
+        col_idx.append(block_size * numpy.arange(n) + k)
         vals.append(2 * mesh.control_volumes)
 
     row_idx = numpy.concatenate(row_idx)
@@ -101,20 +101,17 @@ def update(mesh, omega):
     i_boundary = numpy.where(mesh.is_boundary_node)[0]
     for i in i_boundary:
         for k in range(block_size):
-            matrix.data[matrix.indptr[2 * i + k] : matrix.indptr[2 * i + k + 1]] = 0.0
+            s = block_size * i + k
+            matrix.data[matrix.indptr[s] : matrix.indptr[s + 1]] = 0.0
     # Set the diagonal and RHS.
     d = matrix.diagonal()
     for k in range(block_size):
-        d[2 * i_boundary + k] = 1.0
+        d[block_size * i_boundary + k] = 1.0
     matrix.setdiag(d)
     #
     rhs = -jac_uniform(mesh)
     for k in range(block_size):
-        rhs[2 * i_boundary + k] = 0.0
-
-    eigvals = numpy.sort(numpy.linalg.eigvalsh(matrix.toarray()))
-    print(eigvals)
-    assert eigvals[0] > 1.0e-12
+        rhs[block_size * i_boundary + k] = 0.0
 
     out = scipy.sparse.linalg.spsolve(matrix, rhs)
     # import pyamg
