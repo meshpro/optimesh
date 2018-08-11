@@ -49,9 +49,6 @@ def test_fixed_point(mesh, ref1, ref2, refi):
 def test_nonlinear_optimization(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    # TODO remove
-    X = X[:, :2]
-
     X, cells = optimesh.odt.nonlinear_optimization_uniform(X, cells, 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.

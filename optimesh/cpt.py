@@ -55,7 +55,7 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
         d[mesh.is_boundary_node] = 1.0
         matrix.setdiag(d)
 
-        rhs = numpy.zeros((n, 2))
+        rhs = numpy.zeros((n, mesh.node_coords.shape[1]))
         rhs[mesh.is_boundary_node] = mesh.node_coords[mesh.is_boundary_node]
 
         out = scipy.sparse.linalg.spsolve(matrix, rhs)

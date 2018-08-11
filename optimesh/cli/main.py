@@ -134,11 +134,6 @@ def main(argv=None):
     mesh.cells = {"triangle": mesh.cells["triangle"]}
     prune(mesh)
 
-    # TODO remove?
-    if mesh.points.shape[1] == 3:
-        assert numpy.all(numpy.abs(mesh.points[:, 2]) < 1.0e-13)
-        mesh.points = mesh.points[:, :2]
-
     if args.subdomain_field_name:
         field = mesh.cell_data["triangle"][args.subdomain_field_name]
         subdomain_idx = numpy.unique(field)
