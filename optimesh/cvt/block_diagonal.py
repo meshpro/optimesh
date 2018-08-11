@@ -65,7 +65,7 @@ def update(mesh):
     fastfunc.add.at(diagonal_blocks, mesh.idx_hierarchy[0], M)
     fastfunc.add.at(diagonal_blocks, mesh.idx_hierarchy[1], M)
 
-    rhs = -jac_uniform(mesh).reshape(X.shape)
+    rhs = -jac_uniform(mesh)
 
     # set the boundary blocks to the identity
     diagonal_blocks[mesh.is_boundary_node] = 0.0

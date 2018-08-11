@@ -5,7 +5,6 @@ import sys
 
 from meshplex import MeshTri
 import meshio
-import numpy
 
 from ..__about__ import __version__
 
@@ -34,11 +33,6 @@ def info(argv=None):
     args = parser.parse_args(argv)
 
     mesh = meshio.read(args.input_file)
-
-    # TODO remove?
-    if mesh.points.shape[1] == 3:
-        assert numpy.all(numpy.abs(mesh.points[:, 2]) < 1.0e-13)
-        mesh.points = mesh.points[:, :2]
 
     cells = mesh.cells["triangle"]
 

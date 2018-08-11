@@ -110,8 +110,8 @@ def update(mesh, omega):
     matrix.setdiag(d)
     #
     rhs = -jac_uniform(mesh)
-    for k in range(block_size):
-        rhs[block_size * i_boundary + k] = 0.0
+    rhs[i_boundary] = 0.0
+    rhs = rhs.reshape(-1)
 
     out = scipy.sparse.linalg.spsolve(matrix, rhs)
     # import pyamg
