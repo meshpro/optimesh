@@ -179,8 +179,6 @@ def _reflect_point(p0, p1, p2):
            p0'
 
     """
-    if len(p0) == 0:
-        return numpy.empty(p0.shape), numpy.empty(p0.shape)
     # TODO cache some of the entities here (the ones related to p1 and p2
     alpha = _row_dot(p0 - p1, p2 - p1) / _row_dot(p2 - p1, p2 - p1)
     # q: Intersection point of old and new edge
