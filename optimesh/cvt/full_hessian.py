@@ -13,7 +13,7 @@ def quasi_newton_uniform_full(points, cells, *args, omega=1.0, **kwargs):
     def get_new_points(mesh):
         # TODO need copy?
         x = mesh.node_coords.copy()
-        x += update(mesh, omega)
+        x += update(ghosted_mesh, omega)
         # update ghosts
         x[ghosted_mesh.is_ghost_point] = ghosted_mesh.reflect_ghost(
             x[ghosted_mesh.mirrors]
@@ -24,19 +24,20 @@ def quasi_newton_uniform_full(points, cells, *args, omega=1.0, **kwargs):
 
     runner(
         get_new_points,
-        ghosted_mesh.mesh,
+        ghosted_mesh,
         *args,
         **kwargs,
         update_topology=lambda mesh: ghosted_mesh.update_topology(),
-        get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
+        get_stats_mesh=lambda mesh: ghosted_mesh.get_unghosted_mesh(),
     )
 
-    mesh = ghosted_mesh.get_stats_mesh()
-    # mesh = ghosted_mesh.mesh
+    mesh = ghosted_mesh.get_unghosted_mesh()
     return mesh.node_coords, mesh.cells["nodes"]
 
 
-def update(mesh, omega):
+def update(ghosted_mesh, omega):
+    mesh = ghosted_mesh
+
     ei_outer_ei = numpy.einsum(
         "ijk, ijl->ijkl", mesh.half_edge_coords, mesh.half_edge_coords
     )
@@ -116,6 +117,8 @@ def update(mesh, omega):
     rhs = -jac_uniform(mesh)
     rhs[i_boundary] = 0.0
     rhs = rhs.reshape(-1)
+
+    # Apply ghost conditions
 
     out = scipy.sparse.linalg.spsolve(matrix, rhs)
     # import pyamg

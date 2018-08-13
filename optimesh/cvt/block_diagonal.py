@@ -28,15 +28,14 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
 
     runner(
         get_new_points,
-        ghosted_mesh.mesh,
+        ghosted_mesh,
         *args,
         **kwargs,
         update_topology=lambda mesh: ghosted_mesh.update_topology(),
-        # get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
+        # get_stats_mesh=lambda mesh: ghosted_mesh.get_unghosted_mesh(),
     )
 
-    mesh = ghosted_mesh.get_stats_mesh()
-    # mesh = ghosted_mesh.mesh
+    mesh = ghosted_mesh.get_unghosted_mesh()
     return mesh.node_coords, mesh.cells["nodes"]
 
 
