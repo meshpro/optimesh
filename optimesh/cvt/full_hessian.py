@@ -32,6 +32,7 @@ def quasi_newton_uniform_full(points, cells, *args, omega=1.0, **kwargs):
     )
 
     mesh = ghosted_mesh.get_unghosted_mesh()
+    # mesh = ghosted_mesh
     return mesh.node_coords, mesh.cells["nodes"]
 
 
@@ -118,7 +119,16 @@ def update(ghosted_mesh, omega):
     rhs[i_boundary] = 0.0
     rhs = rhs.reshape(-1)
 
-    # Apply ghost conditions
+    # TODO Apply ghost conditions.
+    # The ghost equation is
+    #
+    #  pg = p0 + 2 * ((p1 - p0) - <p1 - p0, p2 - p1> / <p2 - p1, p2 - p2> * (p2 - p1)
+    #
+    # where p0 is the point that is reflected, and p1, p2 form the reflexion axis. The
+    # Jacobian of the expression is
+    #
+    # d pg / d p0 = -I + 2 * (p2 - p1) (p2 - p1)^T / (p2 - p1)^T (p2 - p1)
+    #
 
     out = scipy.sparse.linalg.spsolve(matrix, rhs)
     # import pyamg
