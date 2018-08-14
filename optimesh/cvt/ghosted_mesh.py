@@ -7,7 +7,7 @@ import numpy
 from meshplex import MeshTri
 
 
-class GhostedMesh(object):
+class GhostedMesh(MeshTri):
     def __init__(self, points, cells):
         # Add ghost points and cells for boundary facets
         msh = MeshTri(points, cells)
@@ -47,26 +47,30 @@ class GhostedMesh(object):
         self.num_original_cells = cells.shape[0]
         cells = numpy.concatenate([cells, *ghost_cells])
 
+        # Cache some values for the ghost reflection
+        self.p1 = points[self.ghost_mirror[1]]
+        mp2 = points[self.ghost_mirror[2]]
+        self.mirror_edge = mp2 - self.p1
+        self.beta = numpy.einsum("ij, ij->i", self.mirror_edge, self.mirror_edge)
+
         # Set ghost points
-        points[self.is_ghost_point] = _reflect_point(
-            points[self.ghost_mirror[0]],
-            points[self.ghost_mirror[1]],
-            points[self.ghost_mirror[2]],
-        )
+        points[self.is_ghost_point] = self.reflect_ghost(points[self.ghost_mirror[0]])
 
         # Create new mesh, remember the pseudo-boundary edges
-        self.mesh = MeshTri(points, cells)
+        super(GhostedMesh, self).__init__(points, cells)
 
-        self.mesh.create_edges()
+        self.create_edges()
         # Get the first edge in the ghost cells. (The first point is the ghost point,
         # and opposite edges have the same index.)
-        self.ghost_edge_gids = self.mesh.cells["edges"][is_ghost_cell, 0]
-        self.original_edges_nodes = self.mesh.edges["nodes"][self.ghost_edge_gids]
+        self.ghost_edge_gids = self.cells["edges"][is_ghost_cell, 0]
+        self.original_edges_nodes = self.edges["nodes"][self.ghost_edge_gids]
+
+        self.update_ghost_mirrors()
         return
 
     def get_flip_ghost_edges(self):
         # unflip boundary edges
-        new_edges_nodes = self.mesh.edges["nodes"][self.ghost_edge_gids]
+        new_edges_nodes = self.edges["nodes"][self.ghost_edge_gids]
         # Either both nodes are equal or both are unequal; it's enough to check just the
         # first column.
         flip_edge_gids = self.ghost_edge_gids[
@@ -74,21 +78,20 @@ class GhostedMesh(object):
         ]
         # Assert that this is actually an interior edge in the ghosted mesh, and get the
         # index into the interior edge array of the mesh.
-        num_adjacent_cells, flip_interior_edge_idx = self.mesh.edge_gid_to_edge_list[
+        num_adjacent_cells, flip_interior_edge_idx = self.edge_gid_to_edge_list[
             flip_edge_gids
         ].T
         assert numpy.all(num_adjacent_cells == 2)
         return flip_interior_edge_idx
 
-    def reflect_ghost_points(self):
+    def update_ghost_mirrors(self):
         # The ghost mirror facet points ghost_mirror[1], ghost_mirror[2] are on the
         # boundary and never change in any way. The point that is mirrored,
         # ghost_mirror[0], however, does move and may after a facet flip even refer to
         # an entirely different point. Find out which.
-        # mirrors = numpy.empty(num_boundary_cells,_dtype=int)
-        mirrors = numpy.zeros(self.num_boundary_cells, dtype=int)
+        self.mirrors = numpy.zeros(self.num_boundary_cells, dtype=int)
 
-        new_edges_nodes = self.mesh.edges["nodes"][self.ghost_edge_gids]
+        new_edges_nodes = self.edges["nodes"][self.ghost_edge_gids]
         has_flipped = self.original_edges_nodes[:, 0] != new_edges_nodes[:, 0]
 
         # In the beginning, the ghost points are appended to the points array and hence
@@ -99,17 +102,17 @@ class GhostedMesh(object):
             "applying some steps of a more robust method first."
         )
         # The first point is the one at the other end of the flipped edge.
-        mirrors[has_flipped] = new_edges_nodes[has_flipped, 0]
+        self.mirrors[has_flipped] = new_edges_nodes[has_flipped, 0]
 
         # Now let's look at the ghost points whose edge has _not_ flipped. We need to
         # find the cell on the other side and there the point opposite of the ghost
         # edge.
-        num_adjacent_cells, interior_edge_idx = self.mesh.edge_gid_to_edge_list[
+        num_adjacent_cells, interior_edge_idx = self.edge_gid_to_edge_list[
             self.ghost_edge_gids
         ][~has_flipped].T
         assert numpy.all(num_adjacent_cells == 2)
         #
-        adj_cells = self.mesh.edges_cells[2][interior_edge_idx]
+        adj_cells = self.edges_cells[2][interior_edge_idx]
         is_first = adj_cells[:, 0] == self.ghost_cell_gids[~has_flipped]
         #
         is_second = adj_cells[:, 1] == self.ghost_cell_gids[~has_flipped]
@@ -121,29 +124,23 @@ class GhostedMesh(object):
         # Now find the cell opposite of the ghost edge in the oppisite cell.
         eq = numpy.array(
             [
-                self.mesh.cells["edges"][opposite_cell_id, k]
+                self.cells["edges"][opposite_cell_id, k]
                 == self.ghost_edge_gids[~has_flipped]
-                for k in range(self.mesh.cells["edges"].shape[1])
+                for k in range(self.cells["edges"].shape[1])
             ]
         )
         assert numpy.all(numpy.sum(eq, axis=0) == 1)
         opposite_node_id = numpy.empty(eq.shape[1], dtype=int)
-        cn = self.mesh.cells["nodes"][opposite_cell_id]
+        cn = self.cells["nodes"][opposite_cell_id]
         for k in range(eq.shape[0]):
             opposite_node_id[eq[k]] = cn[eq[k], k]
         # Set in mirrors
-        mirrors[~has_flipped] = opposite_node_id
+        self.mirrors[~has_flipped] = opposite_node_id
+        return
 
-        # finally get the reflection
-        pts = self.mesh.node_coords
-        mp = _reflect_point(
-            pts[mirrors], pts[self.ghost_mirror[1]], pts[self.ghost_mirror[2]]
-        )
-        return mp
-
-    def get_stats_mesh(self):
+    def get_unghosted_mesh(self):
         # Make deep copy to avoid influencing the actual mesh
-        mesh2 = copy.deepcopy(self.mesh)
+        mesh2 = copy.deepcopy(self)
         mesh2.flip_interior_edges(self.get_flip_ghost_edges())
         # remove ghost cells
         # TODO this is too crude; sometimes the wrong cells are cut
@@ -151,39 +148,28 @@ class GhostedMesh(object):
         cells = mesh2.cells["nodes"][: self.num_original_cells]
         return MeshTri(points, cells)
 
-    def straighten_out(self):
-        self.mesh.flip_until_delaunay()
-        self.mesh.node_coords[self.is_ghost_point] = self.reflect_ghost_points()
-        self.mesh.update_values()
+    def update_topology(self):
+        self.flip_until_delaunay()
+        self.update_ghost_mirrors()
         return
 
+    def reflect_ghost(self, p0):
+        """This method creates the ghost point p0', namely p0 reflected along the edge
+        p1--p2, and the point q at the perpendicular intersection of the reflection.
 
-def _row_dot(a, b):
-    # https://stackoverflow.com/a/26168677/353337
-    return numpy.einsum("ij, ij->i", a, b)
+                p0
+              _/| \__
+            _/  |    \__
+           /    |       \
+          p1----|q-------p2
+           \_   |     __/
+             \_ |  __/
+               \| /
+               p0'
 
-
-def _reflect_point(p0, p1, p2):
-    """For any given triangle p0--p1--p2, this method creates the point p0',
-    namely p0 reflected along the edge p1--p2, and the point q at the
-    perpendicular intersection of the reflection.
-
-            p0
-          _/| \__
-        _/  |    \__
-       /    |       \
-      p1----|q-------p2
-       \_   |     __/
-         \_ |  __/
-           \| /
-           p0'
-
-    """
-    # TODO cache some of the entities here (the ones related to p1 and p2
-    alpha = _row_dot(p0 - p1, p2 - p1) / _row_dot(p2 - p1, p2 - p1)
-    # q: Intersection point of old and new edge
-    # q = p1 + dot(p0-p1, (p2-p1)/||p2-p1||) * (p2-p1)/||p2-p1||
-    #   = p1 + dot(p0-p1, p2-p1)/dot(p2-p1, p2-p1) * (p2-p1)
-    q = p1 + alpha[:, None] * (p2 - p1)
-    # p0' = p0 + 2*(q - p0)
-    return 2 * q - p0
+        """
+        # Instead of self.p1, one could take any point on the line p1--p2.
+        dist = self.p1 - p0
+        alpha = numpy.einsum("ij, ij->i", dist, self.mirror_edge)
+        q = dist - (alpha / self.beta)[:, None] * self.mirror_edge
+        return p0 + 2 * q

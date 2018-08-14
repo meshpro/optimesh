@@ -24,8 +24,9 @@ def fixed_point(points, cells, *args, **kwargs):
         fastfunc.add.at(new_points, idx[:, 0], mesh.node_coords[idx[:, 1]])
         fastfunc.add.at(new_points, idx[:, 1], mesh.node_coords[idx[:, 0]])
 
-        idx = mesh.is_interior_node
-        new_points = (new_points[idx].T / num_neighbors[idx]).T
+        new_points /= num_neighbors[:, None]
+        idx = mesh.is_boundary_node
+        new_points[idx] = mesh.node_coords[idx]
         return new_points
 
     mesh = MeshTri(points, cells)

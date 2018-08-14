@@ -11,7 +11,7 @@ Several mesh smoothing/optimization methods with one simple interface. optimesh
 
  * is fast,
  * preserves submeshes,
- * only works for triangular meshes (for now; upvote [this issue](https://github.com/nschloe/optimesh/issues/17) if you're interested), and
+ * only works for triangular meshes (for now; upvote [this issue](https://github.com/nschloe/optimesh/issues/17) if you're interested in tetrahedral mesh smoothing), and
  * supports all mesh formats that [meshio](https://github.com/nschloe/meshio) can
    handle.
 
@@ -121,7 +121,7 @@ of `pip` to install in `$HOME`.
 
 ### Relevant publications
 
- * [Qiang Du, Vance Faber, and Max Gunzburger._Centroidal Voronoi Tessellations: Applications and Algorithms_,
+ * [Qiang Du, Vance Faber, and Max Gunzburger, _Centroidal Voronoi Tessellations: Applications and Algorithms_,
    SIAM Rev., 41(4), 1999, 637–676.](https://doi.org/10.1137/S0036144599352836)
 
  * [Yang Liu et al., _On centroidal Voronoi tessellation—Energy smoothness and fast computation_,

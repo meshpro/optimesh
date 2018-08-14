@@ -13,26 +13,32 @@ def quasi_newton_uniform_full(points, cells, *args, omega=1.0, **kwargs):
     def get_new_points(mesh):
         # TODO need copy?
         x = mesh.node_coords.copy()
-        x += update(mesh, omega)
-        return x[mesh.is_interior_node]
+        x += update(ghosted_mesh, omega)
+        # update ghosts
+        x[ghosted_mesh.is_ghost_point] = ghosted_mesh.reflect_ghost(
+            x[ghosted_mesh.mirrors]
+        )
+        return x
 
     ghosted_mesh = GhostedMesh(points, cells)
 
     runner(
         get_new_points,
-        ghosted_mesh.mesh,
+        ghosted_mesh,
         *args,
         **kwargs,
-        straighten_out=lambda mesh: ghosted_mesh.straighten_out(),
-        get_stats_mesh=lambda mesh: ghosted_mesh.get_stats_mesh(),
+        update_topology=lambda mesh: ghosted_mesh.update_topology(),
+        get_stats_mesh=lambda mesh: ghosted_mesh.get_unghosted_mesh(),
     )
 
-    mesh = ghosted_mesh.get_stats_mesh()
-    # mesh = ghosted_mesh.mesh
+    mesh = ghosted_mesh.get_unghosted_mesh()
+    # mesh = ghosted_mesh
     return mesh.node_coords, mesh.cells["nodes"]
 
 
-def update(mesh, omega):
+def update(ghosted_mesh, omega):
+    mesh = ghosted_mesh
+
     ei_outer_ei = numpy.einsum(
         "ijk, ijl->ijkl", mesh.half_edge_coords, mesh.half_edge_coords
     )
@@ -112,6 +118,17 @@ def update(mesh, omega):
     rhs = -jac_uniform(mesh)
     rhs[i_boundary] = 0.0
     rhs = rhs.reshape(-1)
+
+    # TODO Apply ghost conditions.
+    # The ghost equation is
+    #
+    #  pg = p0 + 2 * ((p1 - p0) - <p1 - p0, p2 - p1> / <p2 - p1, p2 - p2> * (p2 - p1)
+    #
+    # where p0 is the point that is reflected, and p1, p2 form the reflexion axis. The
+    # Jacobian of the expression is
+    #
+    # d pg / d p0 = -I + 2 * (p2 - p1) (p2 - p1)^T / (p2 - p1)^T (p2 - p1)
+    #
 
     out = scipy.sparse.linalg.spsolve(matrix, rhs)
     # import pyamg

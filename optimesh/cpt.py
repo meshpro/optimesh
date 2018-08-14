@@ -67,7 +67,7 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
         # out = numpy.column_stack(
         #     [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
         # )
-        return out[mesh.is_interior_node]
+        return out
 
     mesh = MeshTri(points, cells)
     runner(get_new_points, mesh, *args, **kwargs)
@@ -250,7 +250,7 @@ def quasi_newton_uniform(points, cells, *args, **kwargs):
         cells = mesh.cells["nodes"]
         jac_x = jac_uniform(x, cells)
         x -= solve_hessian_approx_uniform(x, cells, jac_x)
-        return x[mesh.is_interior_node]
+        return x
 
     mesh = MeshTri(points, cells)
     runner(get_new_points, mesh, *args, **kwargs)

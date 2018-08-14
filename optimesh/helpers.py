@@ -40,7 +40,7 @@ def print_stats(mesh, extra_cols=None):
 
 
 def runner(
-    get_new_interior_points,
+    get_new_points,
     mesh,
     tol,
     max_num_steps,
@@ -48,7 +48,7 @@ def runner(
     callback=None,
     step_filename_format=None,
     uniform_density=False,
-    straighten_out=lambda mesh: mesh.flip_until_delaunay(),
+    update_topology=lambda mesh: mesh.flip_until_delaunay(),
     get_stats_mesh=lambda mesh: mesh,
 ):
     k = 0
@@ -68,30 +68,27 @@ def runner(
     if callback:
         callback(k, mesh)
 
-    straighten_out(mesh)
-
+    update_topology(mesh)
     while True:
         k += 1
 
-        new_interior_points = get_new_interior_points(mesh)
+        new_points = get_new_points(mesh)
 
-        original_interior_coords = mesh.node_coords[mesh.is_interior_node]
+        # Abort the loop if the update is small
+        diff = new_points - mesh.node_coords
+        is_final = (
+            numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2)
+            or k >= max_num_steps
+        )
 
         # We previously checked here if the orientation of any cell changes and
         # reduced the step size if it did. Computing the orientation is unnecessarily
         # costly though and doesn't easily translate to shell meshes. Since orientation
         # changes cannot occur, e.g., with CPT, advice the user to apply a few steps of
         # a robust smoother first (CPT) if the method crashes.
-        mesh.node_coords[mesh.is_interior_node] = new_interior_points
+        mesh.node_coords = new_points
         mesh.update_values()
-        straighten_out(mesh)
-
-        # Abort the loop if the update is small
-        diff = new_interior_points - original_interior_coords
-        is_final = (
-            numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2)
-            or k >= max_num_steps
-        )
+        update_topology(mesh)
 
         stats_mesh = get_stats_mesh(mesh)
         if verbose and not is_final:
@@ -120,16 +117,17 @@ def runner(
 def get_new_points_volume_averaged(mesh, reference_points):
     scaled_rp = (reference_points.T * mesh.cell_volumes).T
 
-    weighted_rp_average = numpy.zeros(mesh.node_coords.shape)
+    new_points = numpy.zeros(mesh.node_coords.shape)
     for i in mesh.cells["nodes"].T:
-        fastfunc.add.at(weighted_rp_average, i, scaled_rp)
+        fastfunc.add.at(new_points, i, scaled_rp)
 
     omega = numpy.zeros(len(mesh.node_coords))
     for i in mesh.cells["nodes"].T:
         fastfunc.add.at(omega, i, mesh.cell_volumes)
 
-    idx = mesh.is_interior_node
-    new_points = (weighted_rp_average[idx].T / omega[idx]).T
+    new_points /= omega[:, None]
+    idx = mesh.is_boundary_node
+    new_points[idx] = mesh.node_coords[idx]
     return new_points
 
 
@@ -137,14 +135,15 @@ def get_new_points_count_averaged(mesh, reference_points):
     # Estimate the density as 1/|tau|. This leads to some simplifcations: The
     # new point is simply the average of of the reference points
     # (barycenters/cirumcenters) in the star.
-    rp_average = numpy.zeros(mesh.node_coords.shape)
+    new_points = numpy.zeros(mesh.node_coords.shape)
     for i in mesh.cells["nodes"].T:
-        fastfunc.add.at(rp_average, i, reference_points)
+        fastfunc.add.at(new_points, i, reference_points)
 
     omega = numpy.zeros(len(mesh.node_coords))
     for i in mesh.cells["nodes"].T:
         fastfunc.add.at(omega, i, numpy.ones(i.shape, dtype=float))
 
-    idx = mesh.is_interior_node
-    new_points = (rp_average[idx].T / omega[idx]).T
+    new_points /= omega[:, None]
+    idx = mesh.is_boundary_node
+    new_points[idx] = mesh.node_coords[idx]
     return new_points
