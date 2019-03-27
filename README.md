@@ -114,10 +114,9 @@ X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbosity=1)
 optimesh is [available from the Python Package
 Index](https://pypi.org/project/optimesh/), so simply do
 ```
-pip install -U optimesh
+pip3 install --upgrade --user optimesh
 ```
-to install or upgrade. Use `sudo -H` to install as root or the `--user` option
-of `pip` to install in `$HOME`.
+to install or upgrade.
 
 ### Relevant publications
 
