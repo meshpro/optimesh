@@ -1,6 +1,16 @@
 version: 2
 
 jobs:
+  lint:
+    docker:
+      - image: ubuntu:18.04
+    steps:
+      - checkout
+      - run: apt update
+      - run: apt install -y python3-pip
+      - run: pip3 install -U black flake8
+      - run: LC_ALL=C.UTF-8 black --check setup.py optimesh/ test/*.py
+      - run: flake8 setup.py optimesh/ test/*.py
   build:
     working_directory: ~/work
     docker:
@@ -8,15 +18,19 @@ jobs:
     steps:
       - run: apt update
       - run: apt install -y git python3-pip gmsh
-      - run: pip3 install -U pytest pytest-cov black flake8
+      - run: pip3 install -U pytest pytest-cov
       - checkout
       - run: pip3 install .[all]
       - run: pip3 install -r test_requirements.txt
-      # format and lint
-      - run: LC_ALL=C.UTF-8 black --check setup.py optimesh/ test/*.py
-      - run: flake8 setup.py optimesh/ test/*.py
       # The tests
       - run: cd test/ && MPLBACKEND=Agg pytest --maxfail=1 --cov optimesh
       # submit to codecov
       - run: apt install -y curl
       - run: bash <(curl -s https://codecov.io/bash)
+
+workflows:
+  version: 2
+  lint_and_build:
+    jobs:
+      - lint
+      - build

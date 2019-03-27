@@ -158,13 +158,13 @@ class GhostedMesh(MeshTri):
         p1--p2, and the point q at the perpendicular intersection of the reflection.
 
                 p0
-              _/| \__
-            _/  |    \__
-           /    |       \
+              _/| \\__
+            _/  |    \\__
+           /    |       \\
           p1----|q-------p2
-           \_   |     __/
-             \_ |  __/
-               \| /
+          \\_   |     __/
+            \\_ |  __/
+              \\| /
                p0'
 
         """

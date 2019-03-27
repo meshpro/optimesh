@@ -124,7 +124,7 @@ def main(argv=None):
     parser = _get_parser()
     args = parser.parse_args(argv)
 
-    if not (args.max_num_steps or args.tolerance):
+    if not (args.max_num_steps < math.inf or args.tolerance > 0.0):
         parser.error("At least one of --max-num_steps or --tolerance required.")
 
     mesh = meshio.read(args.input_file)
