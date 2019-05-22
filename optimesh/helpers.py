@@ -14,7 +14,7 @@ def print_stats(mesh, extra_cols=None):
         angles, bins=numpy.linspace(0.0, 180.0, num=73, endpoint=True)
     )
 
-    q = mesh.triangle_quality
+    q = mesh.cell_quality
     q_hist, q_bin_edges = numpy.histogram(
         q, bins=numpy.linspace(0.0, 1.0, num=41, endpoint=True)
     )

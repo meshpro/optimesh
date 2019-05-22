@@ -8,6 +8,7 @@ import meshio
 import numpy
 
 from ..__about__ import __version__
+from .. import laplace
 from .. import cpt
 from .. import cvt
 from .. import odt
@@ -29,6 +30,7 @@ def _get_parser():
         "-m",
         required=True,
         choices=[
+            "laplace",
             "cpt-dp",
             "cpt-uniform-fp",
             "cpt-uniform-qn",
@@ -89,6 +91,16 @@ def _get_parser():
     )
 
     parser.add_argument(
+        "--store-cell-quality",
+        "-q",
+        default=False,
+        action="store_true",
+        help=(
+            "store cell quality data in output files (default: False)"
+        ),
+    )
+
+    parser.add_argument(
         "--subdomain-field-name",
         "-s",
         metavar="SUBDOMAIN",
@@ -125,7 +137,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if not (args.max_num_steps < math.inf or args.tolerance > 0.0):
-        parser.error("At least one of --max-num_steps or --tolerance required.")
+        parser.error("At least one of --max-num-steps or --tolerance required.")
 
     mesh = meshio.read(args.input_file)
 
@@ -144,6 +156,8 @@ def main(argv=None):
     cells = mesh.cells["triangle"]
 
     method = {
+        "laplace": laplace.fixed_point,
+        #
         "cpt-dp": cpt.linear_solve_density_preserving,
         "cpt-uniform-fp": cpt.fixed_point_uniform,
         "cpt-uniform-qn": cpt.quasi_newton_uniform,
@@ -159,6 +173,7 @@ def main(argv=None):
 
     for cell_idx in cell_sets:
         if args.method in ["cvt-uniform-lloyd", "cvt-uniform-qnf"]:
+            # relaxation parameter omega
             X, cls = method(
                 mesh.points,
                 cells[cell_idx],
@@ -187,7 +202,6 @@ def main(argv=None):
         args.output_file,
         X,
         {"triangle": cells},
-        # point_data=mesh.point_data,
-        # cell_data=mesh.cell_data,
+        # cell_data={"triangle": {"quality": mesh.cell_quality}}
     )
     return

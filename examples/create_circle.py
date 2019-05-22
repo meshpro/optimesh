@@ -16,7 +16,9 @@ def random():
     # Compute the number of interior nodes such that all triangles can be somewhat
     # equilateral.
     edge_length = 2 * numpy.pi * radius / n
-    domain_area = numpy.pi - n * (radius ** 2 / 2 * (edge_length - numpy.sin(edge_length)))
+    domain_area = numpy.pi - n * (
+        radius ** 2 / 2 * (edge_length - numpy.sin(edge_length))
+    )
     cell_area = numpy.sqrt(3) / 4 * edge_length ** 2
     approximate_num_cells = domain_area / cell_area
     # Euler:
@@ -46,20 +48,10 @@ def random():
 
 def gmsh():
     import pygmsh
-
     geom = pygmsh.built_in.Geometry()
-
-    geom.add_circle(
-        [0.0, 0.0, 0.0],
-        1.0,
-        lcar=1.0e-2,
-        num_sections=4,
-        compound=True,
-    )
-
-    points, cells, _, _, _ = pygmsh.generate_mesh(geom)
-
-    meshio.write_points_cells("circle-gmsh.vtk", points, {"triangle": cells["triangle"]})
+    geom.add_circle([0.0, 0.0, 0.0], 1.0, lcar=1.0e-1, num_sections=4, compound=True)
+    mesh = pygmsh.generate_mesh(geom)
+    meshio.write("circle-gmsh.vtk", mesh)
     return
 
 

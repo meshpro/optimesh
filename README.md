@@ -11,13 +11,15 @@ Several mesh smoothing/optimization methods with one simple interface. optimesh
 
  * is fast,
  * preserves submeshes,
- * only works for triangular meshes (for now; upvote [this issue](https://github.com/nschloe/optimesh/issues/17) if you're interested in tetrahedral mesh smoothing), and
+ * only works for triangular meshes (for now; upvote [this
+   issue](https://github.com/nschloe/optimesh/issues/17) if you're interested in
+   tetrahedral mesh smoothing), and
  * supports all mesh formats that [meshio](https://github.com/nschloe/meshio) can
    handle.
 
 Install with
 ```
-pip install optimesh
+pip3 install optimesh --user
 ```
 Example call:
 ```
@@ -136,16 +138,6 @@ To run the optimesh unit tests, check out this repository and type
 ```
 pytest
 ```
-
-### Distribution
-To create a new release
-
-1. bump the `__version__` number,
-
-2. publish to PyPi and tag on GitHub:
-    ```
-    $ make publish
-    ```
 
 ### License
 

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 #
-from __future__ import print_function
-
 import fastfunc
 from meshplex import MeshTri
 import numpy

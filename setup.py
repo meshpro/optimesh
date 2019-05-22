@@ -31,7 +31,7 @@ setup(
     install_requires=[
         "asciiplotlib",
         "fastfunc",
-        "meshplex",
+        "meshplex >= 0.10.0 < 0.11.0",
         "meshio",
         "numpy",
         "quadpy",
