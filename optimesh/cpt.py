@@ -20,41 +20,47 @@ import scipy.sparse.linalg
 from .helpers import runner, get_new_points_volume_averaged
 
 
+def _build_graph_laplacian(mesh):
+    cells = mesh.cells["nodes"].T
+
+    row_idx = []
+    col_idx = []
+    val = []
+    a = numpy.ones(cells.shape[1], dtype=float)
+    for i in [[0, 1], [1, 2], [2, 0]]:
+        edges = cells[i]
+        row_idx += [edges[0], edges[1], edges[0], edges[1]]
+        col_idx += [edges[0], edges[1], edges[1], edges[0]]
+        val += [+a, +a, -a, -a]
+
+    row_idx = numpy.concatenate(row_idx)
+    col_idx = numpy.concatenate(col_idx)
+    val = numpy.concatenate(val)
+
+    n = mesh.node_coords.shape[0]
+
+    # Create CSR matrix for efficiency
+    matrix = scipy.sparse.coo_matrix((val, (row_idx, col_idx)), shape=(n, n))
+    matrix = matrix.tocsr()
+
+    # Apply Dirichlet conditions.
+    verts = numpy.where(mesh.is_boundary_node)[0]
+    # Set all Dirichlet rows to 0.
+    for i in verts:
+        matrix.data[matrix.indptr[i] : matrix.indptr[i + 1]] = 0.0
+    # Set the diagonal and RHS.
+    d = matrix.diagonal()
+    d[mesh.is_boundary_node] = 1.0
+    matrix.setdiag(d)
+    return matrix
+
+
 # The density-preserving CPT is exactly Laplacian smoothing.
 def linear_solve_density_preserving(points, cells, *args, **kwargs):
     def get_new_points(mesh, tol=1.0e-10):
-        cells = mesh.cells["nodes"].T
-
-        row_idx = []
-        col_idx = []
-        val = []
-        a = numpy.ones(cells.shape[1], dtype=float)
-        for i in [[0, 1], [1, 2], [2, 0]]:
-            edges = cells[i]
-            row_idx += [edges[0], edges[1], edges[0], edges[1]]
-            col_idx += [edges[0], edges[1], edges[1], edges[0]]
-            val += [+a, +a, -a, -a]
-
-        row_idx = numpy.concatenate(row_idx)
-        col_idx = numpy.concatenate(col_idx)
-        val = numpy.concatenate(val)
+        matrix = _build_graph_laplacian(mesh)
 
         n = mesh.node_coords.shape[0]
-
-        # Create CSR matrix for efficiency
-        matrix = scipy.sparse.coo_matrix((val, (row_idx, col_idx)), shape=(n, n))
-        matrix = matrix.tocsr()
-
-        # Apply Dirichlet conditions.
-        verts = numpy.where(mesh.is_boundary_node)[0]
-        # Set all Dirichlet rows to 0.
-        for i in verts:
-            matrix.data[matrix.indptr[i] : matrix.indptr[i + 1]] = 0.0
-        # Set the diagonal and RHS.
-        d = matrix.diagonal()
-        d[mesh.is_boundary_node] = 1.0
-        matrix.setdiag(d)
-
         rhs = numpy.zeros((n, mesh.node_coords.shape[1]))
         rhs[mesh.is_boundary_node] = mesh.node_coords[mesh.is_boundary_node]
 

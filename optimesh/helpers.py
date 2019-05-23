@@ -88,7 +88,8 @@ def runner(
         # a robust smoother first (CPT) if the method crashes.
         mesh.node_coords = new_points
         mesh.update_values()
-        update_topology(mesh)
+        num_flips = update_topology(mesh)
+        print(num_flips)
 
         stats_mesh = get_stats_mesh(mesh)
         if verbose and not is_final:

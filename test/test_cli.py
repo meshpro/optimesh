@@ -10,6 +10,8 @@ from helpers import download_mesh
 @pytest.mark.parametrize(
     "options",
     [
+        ["--method", "laplace"],
+        #
         ["--method", "cpt-dp"],
         ["--method", "cpt-uniform-fp"],
         ["--method", "cpt-uniform-qn"],

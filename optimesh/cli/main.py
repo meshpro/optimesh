@@ -95,9 +95,7 @@ def _get_parser():
         "-q",
         default=False,
         action="store_true",
-        help=(
-            "store cell quality data in output files (default: False)"
-        ),
+        help=("store cell quality data in output files (default: False)"),
     )
 
     parser.add_argument(
