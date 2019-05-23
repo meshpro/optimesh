@@ -41,7 +41,7 @@ def test_comparison():
     for i, (name, method) in enumerate(d.items()):
 
         def callback(k, mesh):
-            avg_quality[i, k] = numpy.average(mesh.triangle_quality)
+            avg_quality[i, k] = numpy.average(mesh.cell_quality)
             return
 
         X_in = X.copy()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 """
-Centroidal Patch Triangulation. Mimics the definition of Centroidal
+Centroidal Patch Tesselation. Mimics the definition of Centroidal
 Voronoi Tessellations for which the generator and centroid of each Voronoi
 region coincide. From
 
@@ -20,41 +20,36 @@ import scipy.sparse.linalg
 from .helpers import runner, get_new_points_volume_averaged
 
 
+def _build_graph_laplacian(mesh):
+    i = mesh.idx_hierarchy
+    row_idx = numpy.array([i[0], i[1], i[0], i[1]]).flat
+    col_idx = numpy.array([i[0], i[1], i[1], i[0]]).flat
+    a = numpy.ones(i.shape[1:], dtype=int)
+    val = numpy.array([+a, +a, -a, -a]).flat
+
+    # Create CSR matrix for efficiency
+    n = mesh.node_coords.shape[0]
+    matrix = scipy.sparse.coo_matrix((val, (row_idx, col_idx)), shape=(n, n))
+    matrix = matrix.tocsr()
+
+    # Apply Dirichlet conditions.
+    verts = numpy.where(mesh.is_boundary_node)[0]
+    # Set all Dirichlet rows to 0.
+    for i in verts:
+        matrix.data[matrix.indptr[i] : matrix.indptr[i + 1]] = 0.0
+    # Set the diagonal and RHS.
+    d = matrix.diagonal()
+    d[mesh.is_boundary_node] = 1.0
+    matrix.setdiag(d)
+    return matrix
+
+
 # The density-preserving CPT is exactly Laplacian smoothing.
 def linear_solve_density_preserving(points, cells, *args, **kwargs):
     def get_new_points(mesh, tol=1.0e-10):
-        cells = mesh.cells["nodes"].T
-
-        row_idx = []
-        col_idx = []
-        val = []
-        a = numpy.ones(cells.shape[1], dtype=float)
-        for i in [[0, 1], [1, 2], [2, 0]]:
-            edges = cells[i]
-            row_idx += [edges[0], edges[1], edges[0], edges[1]]
-            col_idx += [edges[0], edges[1], edges[1], edges[0]]
-            val += [+a, +a, -a, -a]
-
-        row_idx = numpy.concatenate(row_idx)
-        col_idx = numpy.concatenate(col_idx)
-        val = numpy.concatenate(val)
+        matrix = _build_graph_laplacian(mesh)
 
         n = mesh.node_coords.shape[0]
-
-        # Create CSR matrix for efficiency
-        matrix = scipy.sparse.coo_matrix((val, (row_idx, col_idx)), shape=(n, n))
-        matrix = matrix.tocsr()
-
-        # Apply Dirichlet conditions.
-        verts = numpy.where(mesh.is_boundary_node)[0]
-        # Set all Dirichlet rows to 0.
-        for i in verts:
-            matrix.data[matrix.indptr[i] : matrix.indptr[i + 1]] = 0.0
-        # Set the diagonal and RHS.
-        d = matrix.diagonal()
-        d[mesh.is_boundary_node] = 1.0
-        matrix.setdiag(d)
-
         rhs = numpy.zeros((n, mesh.node_coords.shape[1]))
         rhs[mesh.is_boundary_node] = mesh.node_coords[mesh.is_boundary_node]
 
@@ -70,7 +65,9 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
         return out
 
     mesh = MeshTri(points, cells)
-    runner(get_new_points, mesh, *args, **kwargs)
+    runner(
+        get_new_points, mesh, *args, **kwargs, method_name="exact Laplacian smoothing"
+    )
     return mesh.node_coords, mesh.cells["nodes"]
 
 
@@ -84,7 +81,13 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         return get_new_points_volume_averaged(mesh, mesh.cell_barycenters)
 
     mesh = MeshTri(points, cells)
-    runner(get_new_points, mesh, *args, **kwargs)
+    runner(
+        get_new_points,
+        mesh,
+        *args,
+        **kwargs,
+        method_name="Centroidal Patch Tesselation (CPT), uniform density, fixed-point variant"
+    )
     return mesh.node_coords, mesh.cells["nodes"]
 
 
@@ -253,5 +256,11 @@ def quasi_newton_uniform(points, cells, *args, **kwargs):
         return x
 
     mesh = MeshTri(points, cells)
-    runner(get_new_points, mesh, *args, **kwargs)
+    runner(
+        get_new_points,
+        mesh,
+        *args,
+        **kwargs,
+        method_name="Centroidal Patch Tesselation (CPT), uniform density, quasi-Newton variant"
+    )
     return mesh.node_coords, mesh.cells["nodes"]

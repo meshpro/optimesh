@@ -14,7 +14,7 @@ def print_stats(mesh, extra_cols=None):
         angles, bins=numpy.linspace(0.0, 180.0, num=73, endpoint=True)
     )
 
-    q = mesh.triangle_quality
+    q = mesh.cell_quality
     q_hist, q_bin_edges = numpy.histogram(
         q, bins=numpy.linspace(0.0, 1.0, num=41, endpoint=True)
     )
@@ -44,6 +44,7 @@ def runner(
     mesh,
     tol,
     max_num_steps,
+    method_name=None,
     verbose=False,
     callback=None,
     step_filename_format=None,
@@ -59,10 +60,9 @@ def runner(
     if step_filename_format:
         stats_mesh.save(
             step_filename_format.format(k),
-            show_centroids=False,
             show_coedges=False,
             show_axes=False,
-            nondelaunay_edge_color="k",
+            cell_quality_coloring=("viridis", 0.0, 1.0, False),
         )
 
     if callback:
@@ -81,29 +81,32 @@ def runner(
             or k >= max_num_steps
         )
 
-        # We previously checked here if the orientation of any cell changes and
-        # reduced the step size if it did. Computing the orientation is unnecessarily
-        # costly though and doesn't easily translate to shell meshes. Since orientation
-        # changes cannot occur, e.g., with CPT, advice the user to apply a few steps of
-        # a robust smoother first (CPT) if the method crashes.
+        # We previously checked here if the orientation of any cell changes and reduced
+        # the step size if it did. Computing the orientation is unnecessarily costly
+        # though and doesn't easily translate to shell meshes. Since orientation changes
+        # cannot occur, e.g., with CPT, advice the user to apply a few steps of a robust
+        # smoother first (CPT) if the method crashes.
         mesh.node_coords = new_points
         mesh.update_values()
         update_topology(mesh)
 
-        stats_mesh = get_stats_mesh(mesh)
+        if verbose or is_final or step_filename_format:
+            stats_mesh = get_stats_mesh(mesh)
         if verbose and not is_final:
             print("\nstep {}:".format(k))
             print_stats(stats_mesh)
         elif is_final:
-            print("\nFinal ({} steps):".format(k))
+            info = "{} steps".format(k)
+            if method_name is not None:
+                info += " of " + method_name
+            print("\nFinal ({}):".format(info))
             print_stats(stats_mesh)
         if step_filename_format:
             stats_mesh.save(
                 step_filename_format.format(k),
-                show_centroids=False,
                 show_coedges=False,
                 show_axes=False,
-                nondelaunay_edge_color="k",
+                cell_quality_coloring=("viridis", 0.0, 1.0, False),
             )
         if callback:
             callback(k, mesh)
@@ -132,16 +135,16 @@ def get_new_points_volume_averaged(mesh, reference_points):
 
 
 def get_new_points_count_averaged(mesh, reference_points):
-    # Estimate the density as 1/|tau|. This leads to some simplifcations: The
-    # new point is simply the average of of the reference points
-    # (barycenters/cirumcenters) in the star.
+    # Estimate the density as 1/|tau|. This leads to some simplifcations: The new point
+    # is simply the average of of the reference points (barycenters/cirumcenters) in the
+    # star.
     new_points = numpy.zeros(mesh.node_coords.shape)
     for i in mesh.cells["nodes"].T:
         fastfunc.add.at(new_points, i, reference_points)
 
-    omega = numpy.zeros(len(mesh.node_coords))
+    omega = numpy.zeros(len(mesh.node_coords), dtype=int)
     for i in mesh.cells["nodes"].T:
-        fastfunc.add.at(omega, i, numpy.ones(i.shape, dtype=float))
+        fastfunc.add.at(omega, i, numpy.ones(i.shape, dtype=int))
 
     new_points /= omega[:, None]
     idx = mesh.is_boundary_node

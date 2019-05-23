@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 #
 """
-Optimal Delaunay Triangulation.
+Optimal Delaunay Tesselation.
 
 Long Chen, Michael Holst,
-Efficient mesh optimization schemes based on Optimal Delaunay
-Triangulations,
+Efficient mesh optimization schemes based on Optimal Delaunay Triangulations,
 Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 <https://doi.org/10.1016/j.cma.2010.11.007>.
 """
@@ -88,7 +87,13 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         return get_new_points_volume_averaged(mesh, cc)
 
     mesh = MeshTri(points, cells)
-    runner(get_new_points, mesh, *args, **kwargs)
+    runner(
+        get_new_points,
+        mesh,
+        *args,
+        **kwargs,
+        method_name="Optimal Delaunay Tesselation (ODT), uniform density, fixed-point variant",
+    )
     return mesh.node_coords, mesh.cells["nodes"]
 
 
@@ -110,7 +115,13 @@ def fixed_point_density_preserving(points, cells, *args, **kwargs):
         return get_new_points_count_averaged(mesh, cc)
 
     mesh = MeshTri(points, cells)
-    runner(get_new_points, mesh, *args, **kwargs)
+    runner(
+        get_new_points,
+        mesh,
+        *args,
+        **kwargs,
+        method_name="Optimal Delaunay Tesselation (ODT), density-preserving, fixed-point variant",
+    )
     return mesh.node_coords, mesh.cells["nodes"]
 
 
@@ -123,7 +134,7 @@ def nonlinear_optimization_uniform(
     step_filename_format=None,
     callback=None,
 ):
-    """Optimal Delaunay Triangulation smoothing.
+    """Optimal Delaunay Tesselation smoothing.
 
     This method minimizes the energy
 
@@ -149,10 +160,9 @@ def nonlinear_optimization_uniform(
     if step_filename_format:
         mesh.save(
             step_filename_format.format(0),
-            show_centroids=False,
             show_coedges=False,
             show_axes=False,
-            nondelaunay_edge_color="k",
+            cell_quality_coloring=("viridis", 0.0, 1.0, False),
         )
 
     print("Before:")
@@ -189,10 +199,9 @@ def nonlinear_optimization_uniform(
         if step_filename_format:
             mesh.save(
                 step_filename_format.format(flip_delaunay.step),
-                show_centroids=False,
                 show_coedges=False,
                 show_axes=False,
-                nondelaunay_edge_color="k",
+                cell_quality_coloring=("viridis", 0.0, 1.0, False),
             )
         if verbose:
             print("\nStep {}:".format(flip_delaunay.step))
@@ -236,7 +245,11 @@ def nonlinear_optimization_uniform(
     mesh.update_values()
     mesh.flip_until_delaunay()
 
-    print("\nFinal ({} steps):".format(out.nit))
+    info = (
+        "{} steps,".format(out.nit)
+        + "Optimal Delaunay Tesselation (ODT), uniform density, BFGS variant"
+    )
+    print("\nFinal ({})".format(info))
     extra_cols = ["energy: {:.5e}".format(energy(mesh))]
     print_stats(mesh, extra_cols=extra_cols)
     print()

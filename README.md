@@ -11,13 +11,15 @@ Several mesh smoothing/optimization methods with one simple interface. optimesh
 
  * is fast,
  * preserves submeshes,
- * only works for triangular meshes (for now; upvote [this issue](https://github.com/nschloe/optimesh/issues/17) if you're interested in tetrahedral mesh smoothing), and
+ * only works for triangular meshes (for now; upvote [this
+   issue](https://github.com/nschloe/optimesh/issues/17) if you're interested in
+   tetrahedral mesh smoothing), and
  * supports all mesh formats that [meshio](https://github.com/nschloe/meshio) can
    handle.
 
 Install with
 ```
-pip install optimesh
+pip3 install optimesh --user
 ```
 Example call:
 ```
@@ -35,13 +37,20 @@ All command-line options are documented at
 optimesh -h
 ```
 
+![disk-step0](https://nschloe.github.io/optimesh/disk-step0.png)
+
+The following examples show the various algorithms at work, all starting from the same
+randomly generated disk mesh above. The cell coloring indicates quality; dark blue is
+bad, yellow is good.
+
+
 #### CVT (centroidal Voronoi tesselation)
 
-![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/cvt-uniform-lloyd2.webp) |
+![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/lloyd2.webp) |
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
 ![cvt-uniform-qnf-09](https://nschloe.github.io/optimesh/cvt-uniform-qnf-0.9.webp) |
 :------------------------:|:---------------------:|:----:|
-uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method cvt-uniform-lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf --omega 0.9`) |
+uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf --omega 0.9`) |
 
 Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications))
 is one of the oldest and most reliable approaches. optimesh provides classical Lloyd
@@ -136,16 +145,6 @@ To run the optimesh unit tests, check out this repository and type
 ```
 pytest
 ```
-
-### Distribution
-To create a new release
-
-1. bump the `__version__` number,
-
-2. publish to PyPi and tag on GitHub:
-    ```
-    $ make publish
-    ```
 
 ### License
 
