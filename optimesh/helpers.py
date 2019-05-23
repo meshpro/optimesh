@@ -132,16 +132,16 @@ def get_new_points_volume_averaged(mesh, reference_points):
 
 
 def get_new_points_count_averaged(mesh, reference_points):
-    # Estimate the density as 1/|tau|. This leads to some simplifcations: The
-    # new point is simply the average of of the reference points
-    # (barycenters/cirumcenters) in the star.
+    # Estimate the density as 1/|tau|. This leads to some simplifcations: The new point
+    # is simply the average of of the reference points (barycenters/cirumcenters) in the
+    # star.
     new_points = numpy.zeros(mesh.node_coords.shape)
     for i in mesh.cells["nodes"].T:
         fastfunc.add.at(new_points, i, reference_points)
 
-    omega = numpy.zeros(len(mesh.node_coords))
+    omega = numpy.zeros(len(mesh.node_coords), dtype=int)
     for i in mesh.cells["nodes"].T:
-        fastfunc.add.at(omega, i, numpy.ones(i.shape, dtype=float))
+        fastfunc.add.at(omega, i, numpy.ones(i.shape, dtype=int))
 
     new_points /= omega[:, None]
     idx = mesh.is_boundary_node
