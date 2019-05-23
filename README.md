@@ -37,15 +37,16 @@ All command-line options are documented at
 optimesh -h
 ```
 
-The following examples show the various algorithms at work, all starting from the same
-randomly generated disk mesh. The cell coloring indicates quality; dark blue is bad,
-yellow is good.
 ![disk-step0](https://nschloe.github.io/optimesh/disk-step0.png)
+
+The following examples show the various algorithms at work, all starting from the same
+randomly generated disk mesh above. The cell coloring indicates quality; dark blue is
+bad, yellow is good.
 
 
 #### CVT (centroidal Voronoi tesselation)
 
-![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/cvt-uniform-lloyd2.webp) |
+![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/lloyd2.webp) |
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
 ![cvt-uniform-qnf-09](https://nschloe.github.io/optimesh/cvt-uniform-qnf-0.9.webp) |
 :------------------------:|:---------------------:|:----:|
