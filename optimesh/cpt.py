@@ -21,25 +21,14 @@ from .helpers import runner, get_new_points_volume_averaged
 
 
 def _build_graph_laplacian(mesh):
-    cells = mesh.cells["nodes"].T
-
-    row_idx = []
-    col_idx = []
-    val = []
-    a = numpy.ones(cells.shape[1], dtype=float)
-    for i in [[0, 1], [1, 2], [2, 0]]:
-        edges = cells[i]
-        row_idx += [edges[0], edges[1], edges[0], edges[1]]
-        col_idx += [edges[0], edges[1], edges[1], edges[0]]
-        val += [+a, +a, -a, -a]
-
-    row_idx = numpy.concatenate(row_idx)
-    col_idx = numpy.concatenate(col_idx)
-    val = numpy.concatenate(val)
-
-    n = mesh.node_coords.shape[0]
+    i = mesh.idx_hierarchy
+    row_idx = numpy.array([i[0], i[1], i[0], i[1]]).flat
+    col_idx = numpy.array([i[0], i[1], i[1], i[0]]).flat
+    a = numpy.ones(i.shape[1:], dtype=int)
+    val = numpy.array([+a, +a, -a, -a]).flat
 
     # Create CSR matrix for efficiency
+    n = mesh.node_coords.shape[0]
     matrix = scipy.sparse.coo_matrix((val, (row_idx, col_idx)), shape=(n, n))
     matrix = matrix.tocsr()
 

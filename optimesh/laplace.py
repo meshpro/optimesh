@@ -9,7 +9,7 @@ from .helpers import runner
 
 def build_adjacency_matrix(mesh):
     i = mesh.idx_hierarchy
-    row_idx = numpy.array([i[0], i[1]]).flat
+    row_idx = i.flat
     col_idx = numpy.array([i[1], i[0]]).flat
     val = numpy.ones(i.shape, dtype=int).flat
 
