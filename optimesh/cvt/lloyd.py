@@ -33,6 +33,10 @@ def quasi_newton_uniform_lloyd(points, cells, *args, omega=1.0, **kwargs):
 
     ghosted_mesh = GhostedMesh(points, cells)
 
+    method_name = "Lloyd's algorithm"
+    if abs(omega - 1.0) > 1.0e-10:
+        method_name += ", relaxation parameter {}".format(omega)
+
     runner(
         get_new_points,
         ghosted_mesh,
@@ -40,6 +44,7 @@ def quasi_newton_uniform_lloyd(points, cells, *args, omega=1.0, **kwargs):
         **kwargs,
         update_topology=lambda mesh: ghosted_mesh.update_topology(),
         get_stats_mesh=lambda mesh: ghosted_mesh.get_unghosted_mesh(),
+        method_name=method_name,
     )
 
     mesh = ghosted_mesh.get_unghosted_mesh()

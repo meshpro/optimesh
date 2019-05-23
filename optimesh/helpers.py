@@ -44,6 +44,7 @@ def runner(
     mesh,
     tol,
     max_num_steps,
+    method_name=None,
     verbose=False,
     callback=None,
     step_filename_format=None,
@@ -59,10 +60,9 @@ def runner(
     if step_filename_format:
         stats_mesh.save(
             step_filename_format.format(k),
-            show_centroids=False,
             show_coedges=False,
             show_axes=False,
-            nondelaunay_edge_color="k",
+            cell_quality_coloring=("viridis", 0.0, 1.0, False),
         )
 
     if callback:
@@ -96,15 +96,17 @@ def runner(
             print("\nstep {}:".format(k))
             print_stats(stats_mesh)
         elif is_final:
-            print("\nFinal ({} steps):".format(k))
+            info = "{} steps".format(k)
+            if method_name is not None:
+                info += " of " + method_name
+            print("\nFinal ({}):".format(info))
             print_stats(stats_mesh)
         if step_filename_format:
             stats_mesh.save(
                 step_filename_format.format(k),
-                show_centroids=False,
                 show_coedges=False,
                 show_axes=False,
-                nondelaunay_edge_color="k",
+                cell_quality_coloring=("viridis", 0.0, 1.0, False),
             )
         if callback:
             callback(k, mesh)

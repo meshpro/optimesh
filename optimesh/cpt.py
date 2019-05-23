@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 """
-Centroidal Patch Triangulation. Mimics the definition of Centroidal
+Centroidal Patch Tesselation. Mimics the definition of Centroidal
 Voronoi Tessellations for which the generator and centroid of each Voronoi
 region coincide. From
 
@@ -65,7 +65,9 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
         return out
 
     mesh = MeshTri(points, cells)
-    runner(get_new_points, mesh, *args, **kwargs)
+    runner(
+        get_new_points, mesh, *args, **kwargs, method_name="exact Laplacian smoothing"
+    )
     return mesh.node_coords, mesh.cells["nodes"]
 
 
@@ -79,7 +81,13 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         return get_new_points_volume_averaged(mesh, mesh.cell_barycenters)
 
     mesh = MeshTri(points, cells)
-    runner(get_new_points, mesh, *args, **kwargs)
+    runner(
+        get_new_points,
+        mesh,
+        *args,
+        **kwargs,
+        method_name="Centroidal Patch Tesselation (CPT), uniform density, fixed-point variant"
+    )
     return mesh.node_coords, mesh.cells["nodes"]
 
 
@@ -248,5 +256,11 @@ def quasi_newton_uniform(points, cells, *args, **kwargs):
         return x
 
     mesh = MeshTri(points, cells)
-    runner(get_new_points, mesh, *args, **kwargs)
+    runner(
+        get_new_points,
+        mesh,
+        *args,
+        **kwargs,
+        method_name="Centroidal Patch Tesselation (CPT), uniform density, quasi-Newton variant"
+    )
     return mesh.node_coords, mesh.cells["nodes"]

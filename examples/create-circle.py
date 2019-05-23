@@ -56,5 +56,5 @@ def gmsh():
 
 
 if __name__ == "__main__":
-    # random()
+    random()
     gmsh()

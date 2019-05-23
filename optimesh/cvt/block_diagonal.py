@@ -33,6 +33,7 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
         **kwargs,
         update_topology=lambda mesh: ghosted_mesh.update_topology(),
         get_stats_mesh=lambda mesh: ghosted_mesh.get_unghosted_mesh(),
+        method_name="Centroidal Voronoi Tesselation (CVT), uniform density, block-diagonal variant"
     )
 
     mesh = ghosted_mesh.get_unghosted_mesh()

@@ -36,7 +36,8 @@ def _get_parser():
             "cpt-uniform-fp",
             "cpt-uniform-qn",
             #
-            "cvt-uniform-lloyd",
+            "lloyd",
+            "cvt-uniform-fp",
             "cvt-uniform-qnb",
             "cvt-uniform-qnf",
             #
@@ -52,7 +53,7 @@ def _get_parser():
         metavar="OMEGA",
         default=1.0,
         type=float,
-        help="CVT relaxation parameter, used in cvt-uniform-lloyd and cvt-uniform-qnf (default: 1.0, no relaxation)",
+        help="relaxation parameter, used in lloyd/cvt-uniform-fp and cvt-uniform-qnf (default: 1.0, no relaxation)",
     )
 
     parser.add_argument(
@@ -161,7 +162,8 @@ def main(argv=None):
         "cpt-uniform-fp": cpt.fixed_point_uniform,
         "cpt-uniform-qn": cpt.quasi_newton_uniform,
         #
-        "cvt-uniform-lloyd": cvt.quasi_newton_uniform_lloyd,
+        "lloyd": cvt.quasi_newton_uniform_lloyd,
+        "cvt-uniform-fp": cvt.quasi_newton_uniform_lloyd,
         "cvt-uniform-qnb": cvt.quasi_newton_uniform_blocks,
         "cvt-uniform-qnf": cvt.quasi_newton_uniform_full,
         #
@@ -171,7 +173,7 @@ def main(argv=None):
     }[args.method]
 
     for cell_idx in cell_sets:
-        if args.method in ["cvt-uniform-lloyd", "cvt-uniform-qnf"]:
+        if args.method in ["lloyd", "cvt-uniform-fp", "cvt-uniform-qnf"]:
             # relaxation parameter omega
             X, cls = method(
                 mesh.points,
@@ -202,6 +204,6 @@ def main(argv=None):
         args.output_file,
         X,
         {"triangle": cells},
-        cell_data={"triangle": {"cell_quality": q}}
+        cell_data={"triangle": {"cell_quality": q}},
     )
     return
