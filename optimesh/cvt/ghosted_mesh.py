@@ -154,8 +154,8 @@ class GhostedMesh(MeshTri):
         return
 
     def reflect_ghost(self, p0):
-        """This method creates the ghost point p0', namely p0 reflected along the edge
-        p1--p2, and the point q at the perpendicular intersection of the reflection.
+        """This method returns the ghost point p0', namely p0 reflected along the edge
+        p1--p2.
 
                 p0
               _/| \\__
@@ -171,5 +171,6 @@ class GhostedMesh(MeshTri):
         # Instead of self.p1, one could take any point on the line p1--p2.
         dist = self.p1 - p0
         alpha = numpy.einsum("ij, ij->i", dist, self.mirror_edge)
+        # q is sits at the perpendicular intersection of the reflection
         q = dist - (alpha / self.beta)[:, None] * self.mirror_edge
         return p0 + 2 * q

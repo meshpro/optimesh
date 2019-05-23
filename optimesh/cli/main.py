@@ -5,6 +5,7 @@ import math
 import sys
 
 import meshio
+import meshplex
 import numpy
 
 from ..__about__ import __version__
@@ -196,10 +197,11 @@ def main(argv=None):
     if X.shape[1] != 3:
         X = numpy.column_stack([X[:, 0], X[:, 1], numpy.zeros(X.shape[0])])
 
+    q = meshplex.MeshTri(X, cls).cell_quality
     meshio.write_points_cells(
         args.output_file,
         X,
         {"triangle": cells},
-        # cell_data={"triangle": {"quality": mesh.cell_quality}}
+        cell_data={"triangle": {"cell_quality": q}}
     )
     return

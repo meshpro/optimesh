@@ -81,16 +81,17 @@ def runner(
             or k >= max_num_steps
         )
 
-        # We previously checked here if the orientation of any cell changes and
-        # reduced the step size if it did. Computing the orientation is unnecessarily
-        # costly though and doesn't easily translate to shell meshes. Since orientation
-        # changes cannot occur, e.g., with CPT, advice the user to apply a few steps of
-        # a robust smoother first (CPT) if the method crashes.
+        # We previously checked here if the orientation of any cell changes and reduced
+        # the step size if it did. Computing the orientation is unnecessarily costly
+        # though and doesn't easily translate to shell meshes. Since orientation changes
+        # cannot occur, e.g., with CPT, advice the user to apply a few steps of a robust
+        # smoother first (CPT) if the method crashes.
         mesh.node_coords = new_points
         mesh.update_values()
         update_topology(mesh)
 
-        stats_mesh = get_stats_mesh(mesh)
+        if verbose or is_final or step_filename_format:
+            stats_mesh = get_stats_mesh(mesh)
         if verbose and not is_final:
             print("\nstep {}:".format(k))
             print_stats(stats_mesh)

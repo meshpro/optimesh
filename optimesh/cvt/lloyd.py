@@ -39,7 +39,7 @@ def quasi_newton_uniform_lloyd(points, cells, *args, omega=1.0, **kwargs):
         *args,
         **kwargs,
         update_topology=lambda mesh: ghosted_mesh.update_topology(),
-        # get_stats_mesh=lambda mesh: ghosted_mesh.get_unghosted_mesh(),
+        get_stats_mesh=lambda mesh: ghosted_mesh.get_unghosted_mesh(),
     )
 
     mesh = ghosted_mesh.get_unghosted_mesh()
