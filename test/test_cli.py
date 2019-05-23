@@ -16,8 +16,8 @@ from helpers import download_mesh
         ["--method", "cpt-uniform-fp"],
         ["--method", "cpt-uniform-qn"],
         #
-        ["--method", "cvt-uniform-lloyd"],
-        ["--method", "cvt-uniform-lloyd", "--omega", "2.0"],
+        ["--method", "lloyd"],
+        ["--method", "lloyd", "--omega", "2.0"],
         ["--method", "cvt-uniform-qnb"],
         ["--method", "cvt-uniform-qnf", "--omega", "0.9"],
         #
