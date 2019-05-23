@@ -245,7 +245,10 @@ def nonlinear_optimization_uniform(
     mesh.update_values()
     mesh.flip_until_delaunay()
 
-    info = "{} steps,".format(out.nit) + "Optimal Delaunay Tesselation (ODT), uniform density, BFGS variant"
+    info = (
+        "{} steps,".format(out.nit)
+        + "Optimal Delaunay Tesselation (ODT), uniform density, BFGS variant"
+    )
     print("\nFinal ({})".format(info))
     extra_cols = ["energy: {:.5e}".format(energy(mesh))]
     print_stats(mesh, extra_cols=extra_cols)
