@@ -5,14 +5,16 @@ from .helpers import jac_uniform
 from ..helpers import runner
 
 
-def quasi_newton_uniform_lloyd(points, cells, *args, omega=1.0, **kwargs):
-    """Relaxed Lloyd's algorithm. omega=1 leads to Lloyd's algorithm, overrelaxation
-    omega=2 gives good results. Check out
+def quasi_newton_uniform_lloyd(points, cells, *args, **kwargs):
+    """Lloyd's algorithm.
+    Check out
 
     Xiao Xiao,
     Over-Relaxation Lloyd Method For Computing Centroidal Voronoi Tessellations,
     Master's thesis,
-    <https://scholarcommons.sc.edu/etd/295/>.
+    <https://scholarcommons.sc.edu/etd/295/>
+
+    for use of the relaxation paramter. (omega=2 is suggested.)
 
     Everything above omega=2 can lead to flickering, i.e., rapidly alternating updates
     and bad meshes.
@@ -21,9 +23,13 @@ def quasi_newton_uniform_lloyd(points, cells, *args, omega=1.0, **kwargs):
     def get_new_points(mesh):
         x = (
             mesh.node_coords
-            - omega / 2 * jac_uniform(mesh) / mesh.control_volumes[:, None]
+            - kwargs["omega"] / 2 * jac_uniform(mesh) / mesh.control_volumes[:, None]
         )
-        # update boundary and ghosts
+        # x = (
+        #     mesh.node_coords
+        #     - 1.0 / 2 * jac_uniform(mesh) / mesh.control_volumes[:, None]
+        # )
+        # reset boundary and ghost points
         idx = mesh.is_boundary_node & ~ghosted_mesh.is_ghost_point
         x[idx] = mesh.node_coords[idx]
         x[ghosted_mesh.is_ghost_point] = ghosted_mesh.reflect_ghost(
@@ -34,15 +40,11 @@ def quasi_newton_uniform_lloyd(points, cells, *args, omega=1.0, **kwargs):
     ghosted_mesh = GhostedMesh(points, cells)
 
     method_name = "Lloyd's algorithm"
-    if abs(omega - 1.0) > 1.0e-10:
-        method_name += ", relaxation parameter {}".format(omega)
-
     runner(
         get_new_points,
         ghosted_mesh,
         *args,
         **kwargs,
-        update_topology=lambda mesh: ghosted_mesh.update_topology(),
         get_stats_mesh=lambda mesh: ghosted_mesh.get_unghosted_mesh(),
         method_name=method_name,
     )

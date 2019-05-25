@@ -148,8 +148,8 @@ class GhostedMesh(MeshTri):
         cells = mesh2.cells["nodes"][: self.num_original_cells]
         return MeshTri(points, cells)
 
-    def update_topology(self):
-        self.flip_until_delaunay()
+    def flip_until_delaunay(self):
+        super(GhostedMesh, self).flip_until_delaunay()
         self.update_ghost_mirrors()
         return
 

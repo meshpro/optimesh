@@ -23,7 +23,7 @@ pip3 install optimesh --user
 ```
 Example call:
 ```
-optimesh in.e out.vtk --method cvt-uniform-lloyd -n 50
+optimesh in.e out.vtk --method lloyd -n 50
 ```
 Output:
 ![terminal-screenshot](https://nschloe.github.io/optimesh/term-screenshot.png)
