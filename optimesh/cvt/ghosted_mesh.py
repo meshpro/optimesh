@@ -105,7 +105,7 @@ class GhostedMesh(MeshTri):
         self.mirrors[has_flipped] = new_edges_nodes[has_flipped, 0]
 
         # Now let's look at the ghost points whose edge has _not_ flipped. We need to
-        # find the cell on the other side and there the point opposite of the ghost
+        # find the cell on the other side and in there the point opposite of the ghost
         # edge.
         num_adjacent_cells, interior_edge_idx = self.edge_gid_to_edge_list[
             self.ghost_edge_gids
@@ -113,15 +113,14 @@ class GhostedMesh(MeshTri):
         assert numpy.all(num_adjacent_cells == 2)
         #
         adj_cells = self.edges_cells[2][interior_edge_idx]
-        is_first = adj_cells[:, 0] == self.ghost_cell_gids[~has_flipped]
-        #
-        is_second = adj_cells[:, 1] == self.ghost_cell_gids[~has_flipped]
-        assert numpy.all(numpy.logical_xor(is_first, is_second))
+        is_1st = adj_cells[:, 0] == self.ghost_cell_gids[~has_flipped]
+        is_2nd = adj_cells[:, 1] == self.ghost_cell_gids[~has_flipped]
+        assert numpy.all(numpy.logical_xor(is_1st, is_2nd))
         #
         opposite_cell_id = numpy.empty(adj_cells.shape[0], dtype=int)
-        opposite_cell_id[is_first] = adj_cells[is_first, 1]
-        opposite_cell_id[is_second] = adj_cells[is_second, 0]
-        # Now find the cell opposite of the ghost edge in the oppisite cell.
+        opposite_cell_id[is_1st] = adj_cells[is_1st, 1]
+        opposite_cell_id[is_2nd] = adj_cells[is_2nd, 0]
+        # Now find the cell opposite of the ghost edge in the opposite cell.
         eq = numpy.array(
             [
                 self.cells["edges"][opposite_cell_id, k]

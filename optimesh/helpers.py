@@ -95,7 +95,9 @@ def runner(
         mesh.node_coords += diff
         mesh.update_values()
         mesh.flip_until_delaunay()
-        mesh.write("lol{:03d}.vtk".format(k))
+        # mesh.write("lol{:03d}.vtk".format(k))
+        # if k == 24:
+        #     exit(1)
         # exit(1)
 
         if verbose or is_final or step_filename_format:
