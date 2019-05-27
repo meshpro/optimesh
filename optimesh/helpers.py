@@ -44,12 +44,12 @@ def runner(
     mesh,
     tol,
     max_num_steps,
+    omega=1.0,
     method_name=None,
     verbose=False,
     callback=None,
     step_filename_format=None,
     uniform_density=False,
-    update_topology=lambda mesh: mesh.flip_until_delaunay(),
     get_stats_mesh=lambda mesh: mesh,
 ):
     k = 0
@@ -68,46 +68,49 @@ def runner(
     if callback:
         callback(k, mesh)
 
-    update_topology(mesh)
+    mesh.flip_until_delaunay()
     while True:
         k += 1
 
         new_points = get_new_points(mesh)
+        diff = omega * (new_points - mesh.node_coords)
 
         # Abort the loop if the update is small
-        diff = new_points - mesh.node_coords
         is_final = (
             numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2)
             or k >= max_num_steps
         )
 
-        # We previously checked here if the orientation of any cell changes and reduced
+        # The code once checked here if the orientation of any cell changes and reduced
         # the step size if it did. Computing the orientation is unnecessarily costly
         # though and doesn't easily translate to shell meshes. Since orientation changes
-        # cannot occur, e.g., with CPT, advice the user to apply a few steps of a robust
-        # smoother first (CPT) if the method crashes.
-        mesh.node_coords = new_points
+        # cannot occur, e.g., with CPT, advise the user to apply a few steps of a robust
+        # smoother first (CPT) if the method crashes, or use relaxation.
+        mesh.node_coords += diff
         mesh.update_values()
-        update_topology(mesh)
+        mesh.flip_until_delaunay()
 
         if verbose or is_final or step_filename_format:
             stats_mesh = get_stats_mesh(mesh)
-        if verbose and not is_final:
-            print("\nstep {}:".format(k))
-            print_stats(stats_mesh)
-        elif is_final:
-            info = "{} steps".format(k)
-            if method_name is not None:
-                info += " of " + method_name
-            print("\nFinal ({}):".format(info))
-            print_stats(stats_mesh)
-        if step_filename_format:
-            stats_mesh.save(
-                step_filename_format.format(k),
-                show_coedges=False,
-                show_axes=False,
-                cell_quality_coloring=("viridis", 0.0, 1.0, False),
-            )
+            if verbose and not is_final:
+                print("\nstep {}:".format(k))
+                print_stats(stats_mesh)
+            elif is_final:
+                info = "{} steps".format(k)
+                if method_name is not None:
+                    if abs(omega - 1.0) > 1.0e-10:
+                        method_name += ", relaxation parameter {}".format(omega)
+                    info += " of " + method_name
+
+                print("\nFinal ({}):".format(info))
+                print_stats(stats_mesh)
+            if step_filename_format:
+                stats_mesh.save(
+                    step_filename_format.format(k),
+                    show_coedges=False,
+                    show_axes=False,
+                    cell_quality_coloring=("viridis", 0.0, 1.0, False),
+                )
         if callback:
             callback(k, mesh)
 

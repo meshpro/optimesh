@@ -27,7 +27,6 @@ def quasi_newton_uniform_full(points, cells, *args, omega=1.0, **kwargs):
         ghosted_mesh,
         *args,
         **kwargs,
-        update_topology=lambda mesh: ghosted_mesh.update_topology(),
         get_stats_mesh=lambda mesh: ghosted_mesh.get_unghosted_mesh(),
         method_name="Centroidal Voronoi Tesselation (CVT), uniform density, exact-Hessian variant"
     )

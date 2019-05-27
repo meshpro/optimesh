@@ -8,7 +8,7 @@ import meshio
 import meshplex
 import numpy
 
-from ..__about__ import __version__
+from ..__about__ import __version__, __copyright__
 from .. import laplace
 from .. import cpt
 from .. import cvt
@@ -16,7 +16,10 @@ from .. import odt
 
 
 def _get_parser():
-    parser = argparse.ArgumentParser(description="Mesh smoothing/optimization.")
+    parser = argparse.ArgumentParser(
+        description="Mesh smoothing/optimization.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
 
     parser.add_argument(
         "input_file", metavar="INPUT_FILE", type=str, help="Input mesh file"
@@ -53,7 +56,7 @@ def _get_parser():
         metavar="OMEGA",
         default=1.0,
         type=float,
-        help="relaxation parameter, used in lloyd/cvt-uniform-fp and cvt-uniform-qnf (default: 1.0, no relaxation)",
+        help="relaxation parameter (default: 1.0, no relaxation)",
     )
 
     parser.add_argument(
@@ -108,12 +111,24 @@ def _get_parser():
         help="name of the subdomain field in in the input file (default: None)",
     )
 
+    version = "\n".join(
+        [
+            "optimesh {} [Python {}.{}.{}]".format(
+                __version__,
+                sys.version_info.major,
+                sys.version_info.minor,
+                sys.version_info.micro,
+            ),
+            __copyright__,
+        ]
+    )
+
     parser.add_argument(
         "--version",
         "-v",
         help="display version information",
         action="version",
-        version="%(prog)s {}, Python {}".format(__version__, sys.version),
+        version=version,
     )
     return parser
 
@@ -173,14 +188,13 @@ def main(argv=None):
     }[args.method]
 
     for cell_idx in cell_sets:
-        if args.method in ["lloyd", "cvt-uniform-fp", "cvt-uniform-qnf"]:
+        if args.method in ["odt-uniform-bfgs"]:
             # relaxation parameter omega
             X, cls = method(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
-                omega=args.omega,
                 verbose=args.verbose,
                 step_filename_format=args.step_filename_format,
             )
@@ -190,6 +204,7 @@ def main(argv=None):
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
+                omega=args.omega,
                 verbose=args.verbose,
                 step_filename_format=args.step_filename_format,
             )
