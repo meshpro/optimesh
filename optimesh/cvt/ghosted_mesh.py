@@ -47,10 +47,9 @@ class GhostedMesh(MeshTri):
         self.num_original_cells = cells.shape[0]
         cells = numpy.concatenate([cells, *ghost_cells])
 
-        # Cache some values for the ghost reflection
+        # Cache some values for the ghost reflection; those values never change
         self.p1 = points[self.ghost_mirror[1]]
-        mp2 = points[self.ghost_mirror[2]]
-        self.mirror_edge = mp2 - self.p1
+        self.mirror_edge = points[self.ghost_mirror[2]] - self.p1
         self.beta = numpy.einsum("ij, ij->i", self.mirror_edge, self.mirror_edge)
 
         # Set ghost points
@@ -89,7 +88,7 @@ class GhostedMesh(MeshTri):
         # boundary and never change in any way. The point that is mirrored,
         # ghost_mirror[0], however, does move and may after a facet flip even refer to
         # an entirely different point. Find out which.
-        self.mirrors = numpy.zeros(self.num_boundary_cells, dtype=int)
+        ghost_mirror0 = numpy.zeros(self.num_boundary_cells, dtype=int)
 
         new_edges_nodes = self.edges["nodes"][self.ghost_edge_gids]
         has_flipped = self.original_edges_nodes[:, 0] != new_edges_nodes[:, 0]
@@ -102,7 +101,7 @@ class GhostedMesh(MeshTri):
             "applying some steps of a more robust method first."
         )
         # The first point is the one at the other end of the flipped edge.
-        self.mirrors[has_flipped] = new_edges_nodes[has_flipped, 0]
+        ghost_mirror0[has_flipped] = new_edges_nodes[has_flipped, 0]
 
         # Now let's look at the ghost points whose edge has _not_ flipped. We need to
         # find the cell on the other side and in there the point opposite of the ghost
@@ -134,7 +133,16 @@ class GhostedMesh(MeshTri):
         for k in range(eq.shape[0]):
             opposite_node_id[eq[k]] = cn[eq[k], k]
         # Set in mirrors
-        self.mirrors[~has_flipped] = opposite_node_id
+        ghost_mirror0[~has_flipped] = opposite_node_id
+
+        self.ghost_mirror[0] = ghost_mirror0
+
+        # update point values
+        x = self.node_coords
+        x[self.is_ghost_point] = self.reflect_ghost(x[self.ghost_mirror[0]])
+        # updating _all_ values is a bit overkill actually; we only need to update the
+        # values in the ghost cells
+        self.update_values()
         return
 
     def get_unghosted_mesh(self):
