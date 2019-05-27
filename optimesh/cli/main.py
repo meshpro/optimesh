@@ -56,7 +56,7 @@ def _get_parser():
         metavar="OMEGA",
         default=1.0,
         type=float,
-        help="relaxation parameter, used in lloyd/cvt-uniform-fp and cvt-uniform-qnf (default: 1.0, no relaxation)",
+        help="relaxation parameter (default: 1.0, no relaxation)",
     )
 
     parser.add_argument(
@@ -188,14 +188,13 @@ def main(argv=None):
     }[args.method]
 
     for cell_idx in cell_sets:
-        if args.method in ["lloyd", "cvt-uniform-fp", "cvt-uniform-qnf"]:
+        if args.method in ["odt-uniform-bfgs"]:
             # relaxation parameter omega
             X, cls = method(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
-                omega=args.omega,
                 verbose=args.verbose,
                 step_filename_format=args.step_filename_format,
             )
@@ -205,6 +204,7 @@ def main(argv=None):
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
+                omega=args.omega,
                 verbose=args.verbose,
                 step_filename_format=args.step_filename_format,
             )

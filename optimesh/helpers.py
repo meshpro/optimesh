@@ -72,10 +72,8 @@ def runner(
     while True:
         k += 1
 
-        # diff = get_new_points(mesh)
         new_points = get_new_points(mesh)
-        diff = new_points - mesh.node_coords
-        # diff = omega * (new_points - mesh.node_coords)
+        diff = omega * (new_points - mesh.node_coords)
 
         # Abort the loop if the update is small
         is_final = (
@@ -88,17 +86,9 @@ def runner(
         # though and doesn't easily translate to shell meshes. Since orientation changes
         # cannot occur, e.g., with CPT, advise the user to apply a few steps of a robust
         # smoother first (CPT) if the method crashes, or use relaxation.
-        # print(k, numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2))
-        # print(numpy.sum(numpy.abs(diff), axis=0))
-        # print(diff)
-        # print()
         mesh.node_coords += diff
         mesh.update_values()
         mesh.flip_until_delaunay()
-        # mesh.write("lol{:03d}.vtk".format(k))
-        # if k == 24:
-        #     exit(1)
-        # exit(1)
 
         if verbose or is_final or step_filename_format:
             stats_mesh = get_stats_mesh(mesh)
@@ -127,7 +117,6 @@ def runner(
         if is_final:
             break
 
-    # exit(1)
     return
 
 

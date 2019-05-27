@@ -136,6 +136,7 @@ class GhostedMesh(MeshTri):
         ghost_mirror0[~has_flipped] = opposite_node_id
 
         self.ghost_mirror[0] = ghost_mirror0
+        self.mirrors = ghost_mirror0  # only for backwards compatibility
 
         # update point values
         x = self.node_coords

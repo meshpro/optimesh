@@ -21,15 +21,10 @@ def quasi_newton_uniform_lloyd(points, cells, *args, **kwargs):
     """
 
     def get_new_points(mesh):
-        omega = kwargs["omega"] if "omega" in kwargs else 1.0
         x = (
             mesh.node_coords
-            - omega / 2 * jac_uniform(mesh) / mesh.control_volumes[:, None]
+            - 1.0 / 2 * jac_uniform(mesh) / mesh.control_volumes[:, None]
         )
-        # x = (
-        #     mesh.node_coords
-        #     - 1.0 / 2 * jac_uniform(mesh) / mesh.control_volumes[:, None]
-        # )
         # reset boundary and ghost points
         idx = mesh.is_boundary_node & ~ghosted_mesh.is_ghost_point
         x[idx] = mesh.node_coords[idx]
