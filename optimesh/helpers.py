@@ -39,6 +39,34 @@ def print_stats(mesh, extra_cols=None):
     return
 
 
+def stepsize_till_flat(x, v):
+    """Given triangles and directions, compute the minimum stepsize t at which the area
+    of at least one of the new triangles `x + t*v` is zero.
+    """
+    # <https://math.stackexchange.com/a/3242740/36678>
+    x1x0 = x[:, 1] - x[:, 0]
+    x2x0 = x[:, 2] - x[:, 0]
+    #
+    v1v0 = v[:, 1] - v[:, 0]
+    v2v0 = v[:, 2] - v[:, 0]
+    #
+    a = v1v0[:, 0] * v2v0[:, 1] - v1v0[:, 1] * v2v0[:, 0]
+    b = (
+        v1v0[:, 0] * x2x0[:, 1]
+        + x1x0[:, 0] * v2v0[:, 1]
+        - v1v0[:, 1] * x2x0[:, 0]
+        - x1x0[:, 1] * v2v0[:, 0]
+    )
+    c = x1x0[:, 0] * x2x0[:, 1] - x1x0[:, 1] * x2x0[:, 0]
+    #
+    alpha = b ** 2 - 4 * a * c
+    i = (alpha >= 0) & (a != 0.0)
+    sqrt_alpha = numpy.sqrt(alpha[i])
+    t0 = (-b[i] + sqrt_alpha) / (2 * a[i])
+    t1 = (-b[i] - sqrt_alpha) / (2 * a[i])
+    return min(numpy.min(t0[t0 > 0]), numpy.min(t1[t1 > 0]))
+
+
 def runner(
     get_new_points,
     mesh,
@@ -68,18 +96,25 @@ def runner(
     if callback:
         callback(k, mesh)
 
+    # mesh.write("out0.vtk")
     mesh.flip_until_delaunay()
+    # mesh.write("out1.vtk")
+
     while True:
         k += 1
 
         new_points = get_new_points(mesh)
         diff = omega * (new_points - mesh.node_coords)
 
-        # Abort the loop if the update is small
-        is_final = (
-            numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2)
-            or k >= max_num_steps
+        rho = stepsize_till_flat(
+            mesh.node_coords[mesh.cells["nodes"]], diff[mesh.cells["nodes"]]
         )
+        if rho < 1.0:
+            diff *= rho * 0.99
+
+        # print(mesh.node_coords[mesh.cells["nodes"][20]])
+        # print(mesh.node_coords[mesh.cells["nodes"][208]])
+        # print()
 
         # The code once checked here if the orientation of any cell changes and reduced
         # the step size if it did. Computing the orientation is unnecessarily costly
@@ -87,8 +122,17 @@ def runner(
         # cannot occur, e.g., with CPT, advise the user to apply a few steps of a robust
         # smoother first (CPT) if the method crashes, or use relaxation.
         mesh.node_coords += diff
+        # mesh.write("out2.vtk")
         mesh.update_values()
         mesh.flip_until_delaunay()
+        # mesh.write("out3.vtk")
+        # exit(1)
+
+        # Abort the loop if the update was small
+        is_final = (
+            numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2)
+            or k >= max_num_steps
+        )
 
         if verbose or is_final or step_filename_format:
             stats_mesh = get_stats_mesh(mesh)

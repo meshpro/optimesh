@@ -41,8 +41,8 @@ def random():
     pts = numpy.concatenate([boundary_pts, interior_pts])
 
     tri = Delaunay(pts)
-    pts = numpy.column_stack([pts[:, 0], pts[:, 1], numpy.zeros(pts.shape[0])])
-    meshio.write_points_cells("circle.vtk", pts, {"triangle": tri.simplices})
+    # pts = numpy.column_stack([pts[:, 0], pts[:, 1], numpy.zeros(pts.shape[0])])
+    meshio.write_points_cells("circle.xdmf", pts, {"triangle": tri.simplices})
     return
 
 
