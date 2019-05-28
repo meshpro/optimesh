@@ -3,6 +3,7 @@
 import numpy
 from scipy.spatial import Delaunay
 import meshio
+from meshplex import MeshTri
 
 
 def random():
@@ -30,7 +31,7 @@ def random():
     # Generate random points in circle;
     # <http://mathworld.wolfram.com/DiskPointPicking.html>.
     # Choose the seed such that the fully smoothened mesh has no random boundary points.
-    numpy.random.seed(2)
+    numpy.random.seed(0)
     r = numpy.random.rand(m)
     alpha = 2 * numpy.pi * numpy.random.rand(m)
 
@@ -42,6 +43,9 @@ def random():
 
     tri = Delaunay(pts)
     # pts = numpy.column_stack([pts[:, 0], pts[:, 1], numpy.zeros(pts.shape[0])])
+
+    mesh = MeshTri(pts, tri.simplices)
+    assert numpy.sum(mesh.is_boundary_node) == n
 
     meshio.write_points_cells("circle.xdmf", pts, {"triangle": tri.simplices})
     return
