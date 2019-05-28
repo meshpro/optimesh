@@ -109,8 +109,9 @@ def runner(
         rho = stepsize_till_flat(
             mesh.node_coords[mesh.cells["nodes"]], diff[mesh.cells["nodes"]]
         )
-        if rho < 1.0:
-            diff *= rho * 0.99
+        print(rho)
+        # if rho < 1.0:
+        #     diff *= rho * 0.99
 
         # print(mesh.node_coords[mesh.cells["nodes"][20]])
         # print(mesh.node_coords[mesh.cells["nodes"][208]])
