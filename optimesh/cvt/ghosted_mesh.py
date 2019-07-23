@@ -150,10 +150,13 @@ class GhostedMesh(MeshTri):
         # Make deep copy to avoid influencing the actual mesh
         mesh2 = copy.deepcopy(self)
         mesh2.flip_interior_edges(self.get_flip_ghost_edges())
-        # remove ghost cells
-        # TODO this is too crude; sometimes the wrong cells are cut
+
+        # remove ghost points and cells
         points = mesh2.node_coords[: self.num_original_points]
-        cells = mesh2.cells["nodes"][: self.num_original_cells]
+        has_ghost_point = numpy.any(
+            mesh2.cells["nodes"] >= self.num_original_points, axis=1
+        )
+        cells = mesh2.cells["nodes"][~has_ghost_point]
         return MeshTri(points, cells)
 
     def flip_until_delaunay(self):
