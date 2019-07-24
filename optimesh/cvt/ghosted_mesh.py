@@ -11,13 +11,13 @@ class GhostedMesh(MeshTri):
     def __init__(self, points, cells):
         # Add ghost points and cells for boundary facets
         msh = MeshTri(points, cells)
-        self.ghost_mirror = []
+        ghosts = []
         ghost_cells = []
         k = points.shape[0]
         for i in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
             bf = msh.is_boundary_facet[i[0]]
             c = msh.cells["nodes"][bf].T
-            self.ghost_mirror.append(c[i])
+            ghosts.append(c[i])
             n = c.shape[1]
             p = numpy.arange(k, k + n)
             ghost_cells.append(numpy.column_stack([p, c[i[1]], c[i[2]]]))
@@ -37,8 +37,8 @@ class GhostedMesh(MeshTri):
         )
         is_ghost_cell[cells.shape[0] :] = True
 
-        self.ghost_mirror = numpy.concatenate(self.ghost_mirror, axis=1)
-        assert self.ghost_mirror.shape[1] == self.num_boundary_cells
+        ghosts = numpy.concatenate(ghosts, axis=1)
+        assert ghosts.shape[1] == self.num_boundary_cells
 
         self.num_original_points = points.shape[0]
         points = numpy.concatenate(
@@ -48,15 +48,17 @@ class GhostedMesh(MeshTri):
         cells = numpy.concatenate([cells, *ghost_cells])
 
         # Cache some values for the ghost reflection; those values never change
-        self.p1 = points[self.ghost_mirror[1]]
-        self.mirror_edge = points[self.ghost_mirror[2]] - self.p1
+        self.p1 = points[ghosts[1]]
+        self.mirror_edge = points[ghosts[2]] - self.p1
         self.beta = numpy.einsum("ij, ij->i", self.mirror_edge, self.mirror_edge)
 
+        self.ghost_mirror = ghosts[0]
+
         # Set ghost points
-        points[self.is_ghost_point] = self.reflect_ghost(points[self.ghost_mirror[0]])
+        points[self.is_ghost_point] = self.reflect_ghost(points[self.ghost_mirror])
 
         # Create new mesh, remember the pseudo-boundary edges
-        super(GhostedMesh, self).__init__(points, cells)
+        super().__init__(points, cells)
 
         self.create_edges()
         # Get the first edge in the ghost cells. (The first point is the ghost point,
@@ -84,11 +86,10 @@ class GhostedMesh(MeshTri):
         return flip_interior_edge_idx
 
     def update_ghost_mirrors(self):
-        # The ghost mirror facet points ghost_mirror[1], ghost_mirror[2] are on the
-        # boundary and never change in any way. The point that is mirrored,
-        # ghost_mirror[0], however, does move and may after a facet flip even refer to
-        # an entirely different point. Find out which.
-        ghost_mirror0 = numpy.zeros(self.num_boundary_cells, dtype=int)
+        # The ghost mirror facet points are on the boundary and never change in any way.
+        # The point that is mirrored, ghost_mirror, however, does move and may after a
+        # facet flip even refer to an entirely different point. Find out which.
+        ghost_mirror = numpy.empty(self.num_boundary_cells, dtype=int)
 
         new_edges_nodes = self.edges["nodes"][self.ghost_edge_gids]
         has_flipped = self.original_edges_nodes[:, 0] != new_edges_nodes[:, 0]
@@ -101,7 +102,7 @@ class GhostedMesh(MeshTri):
             "applying some steps of a more robust method first."
         )
         # The first point is the one at the other end of the flipped edge.
-        ghost_mirror0[has_flipped] = new_edges_nodes[has_flipped, 0]
+        ghost_mirror[has_flipped] = new_edges_nodes[has_flipped, 0]
 
         # Now let's look at the ghost points whose edge has _not_ flipped. We need to
         # find the cell on the other side and in there the point opposite of the ghost
@@ -112,13 +113,13 @@ class GhostedMesh(MeshTri):
         assert numpy.all(num_adjacent_cells == 2)
         #
         adj_cells = self.edges_cells[2][interior_edge_idx]
-        is_1st = adj_cells[:, 0] == self.ghost_cell_gids[~has_flipped]
-        is_2nd = adj_cells[:, 1] == self.ghost_cell_gids[~has_flipped]
-        assert numpy.all(numpy.logical_xor(is_1st, is_2nd))
-        #
-        opposite_cell_id = numpy.empty(adj_cells.shape[0], dtype=int)
-        opposite_cell_id[is_1st] = adj_cells[is_1st, 1]
-        opposite_cell_id[is_2nd] = adj_cells[is_2nd, 0]
+        # find out which of the two adjacent cells contains a ghost point
+        contains_ghost = numpy.any(
+            self.is_ghost_point[self.cells["nodes"][adj_cells]], axis=-1
+        )
+        # assert that one of the two adjacent cells contains a ghost point
+        assert numpy.all(numpy.logical_xor(contains_ghost[:, 0], contains_ghost[:, 1]))
+        opposite_cell_id = adj_cells[~contains_ghost]
         # Now find the cell opposite of the ghost edge in the opposite cell.
         eq = numpy.array(
             [
@@ -133,14 +134,20 @@ class GhostedMesh(MeshTri):
         for k in range(eq.shape[0]):
             opposite_node_id[eq[k]] = cn[eq[k], k]
         # Set in mirrors
-        ghost_mirror0[~has_flipped] = opposite_node_id
+        ghost_mirror[~has_flipped] = opposite_node_id
 
-        self.ghost_mirror[0] = ghost_mirror0
-        self.mirrors = ghost_mirror0  # only for backwards compatibility
+        self.ghost_mirror = ghost_mirror
+
+        # make sure that no ghost mirror is a ghost point; that's a bug
+        assert not numpy.any(
+            self.is_ghost_point[self.ghost_mirror]
+        ), self.is_ghost_point[self.ghost_mirror]
 
         # update point values
-        x = self.node_coords
-        x[self.is_ghost_point] = self.reflect_ghost(x[self.ghost_mirror[0]])
+        self.node_coords[self.is_ghost_point] = self.reflect_ghost(
+            self.node_coords[self.ghost_mirror]
+        )
+
         # updating _all_ values is a bit overkill actually; we only need to update the
         # values in the ghost cells
         self.update_values()
@@ -160,7 +167,7 @@ class GhostedMesh(MeshTri):
         return MeshTri(points, cells)
 
     def flip_until_delaunay(self):
-        super(GhostedMesh, self).flip_until_delaunay()
+        super().flip_until_delaunay()
         self.update_ghost_mirrors()
         return
 
