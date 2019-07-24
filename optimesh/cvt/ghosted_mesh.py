@@ -86,59 +86,54 @@ class GhostedMesh(MeshTri):
         return flip_interior_edge_idx
 
     def update_ghost_mirrors(self):
-        # The ghost mirror facet points are on the boundary and never change in any way.
-        # The point that is mirrored, ghost_mirror, however, does move and may after a
-        # facet flip even refer to an entirely different point. Find out which.
-        ghost_mirror = numpy.empty(self.num_boundary_cells, dtype=int)
+        is_ghost_cell = numpy.any(self.is_ghost_point[self.cells["nodes"]], axis=1)
+        ghost_cells = self.cells["nodes"][is_ghost_cell]
 
-        new_edges_nodes = self.edges["nodes"][self.ghost_edge_gids]
-        has_flipped = self.original_edges_nodes[:, 0] != new_edges_nodes[:, 0]
+        # Check which of the ghost cells
+        is_outside_ghost_cell = numpy.all(self.is_boundary_node[ghost_cells], axis=1)
 
-        # In the beginning, the ghost points are appended to the points array and hence
-        # have higher GIDs than all other points. Since the edges["nodes"] are sorted,
-        # the second entry must be the ghost point.
-        assert numpy.all(self.is_ghost_point[new_edges_nodes[has_flipped, 1]]), (
-            "A ghost edge is flipped, but does not contain the ghost point. Try "
-            "applying some steps of a more robust method first."
-        )
-        # The first point is the one at the other end of the flipped edge.
-        ghost_mirror[has_flipped] = new_edges_nodes[has_flipped, 0]
+        # TODO If the cell is not a purely "outside ghost" cell (which are composed of
+        # two boundary nodes and a ghost node), don't update the mirror. Just make sure
+        # that the ghost_mirror is still connected to the ghost point by at least one
+        # cell.
 
-        # Now let's look at the ghost points whose edge has _not_ flipped. We need to
+        # Now let's look at the ghost points which belong to only one cell. We need to
         # find the cell on the other side and in there the point opposite of the ghost
         # edge.
-        num_adjacent_cells, interior_edge_idx = self.edge_gid_to_edge_list[
-            self.ghost_edge_gids
-        ][~has_flipped].T
-        assert numpy.all(num_adjacent_cells == 2)
-        #
-        adj_cells = self.edges_cells[2][interior_edge_idx]
-        # find out which of the two adjacent cells contains a ghost point
-        contains_ghost = numpy.any(
-            self.is_ghost_point[self.cells["nodes"][adj_cells]], axis=-1
+        # Find all cells which have exactly two boundary cells; they are the opposites.
+        is_opposite_cell = (
+            numpy.sum(self.is_boundary_node[self.cells["nodes"]], axis=1) == 2
+        ) & ~is_ghost_cell
+        assert numpy.sum(is_opposite_cell) == numpy.sum(is_outside_ghost_cell)
+        # Now we need to match the opposite cells with the ghost cells by checking which
+        # pairs have two nodes in common.
+        opposite_cells = self.cells["nodes"][is_opposite_cell]
+        edges0 = numpy.sort(
+            opposite_cells[self.is_boundary_node[opposite_cells]].reshape(-1, 2), axis=1
         )
-        # assert that one of the two adjacent cells contains a ghost point
-        assert numpy.all(numpy.logical_xor(contains_ghost[:, 0], contains_ghost[:, 1]))
-        opposite_cell_id = adj_cells[~contains_ghost]
-        # Now find the cell opposite of the ghost edge in the opposite cell.
-        eq = numpy.array(
-            [
-                self.cells["edges"][opposite_cell_id, k]
-                == self.ghost_edge_gids[~has_flipped]
-                for k in range(self.cells["edges"].shape[1])
-            ]
+        outside_ghost_cells = ghost_cells[is_outside_ghost_cell]
+        edges1 = numpy.sort(
+            outside_ghost_cells[
+                self.is_boundary_node[outside_ghost_cells]
+                & ~self.is_ghost_point[outside_ghost_cells]
+            ].reshape(-1, 2),
+            axis=1,
         )
-        assert numpy.all(numpy.sum(eq, axis=0) == 1)
-        opposite_node_id = numpy.empty(eq.shape[1], dtype=int)
-        cn = self.cells["nodes"][opposite_cell_id]
-        for k in range(eq.shape[0]):
-            opposite_node_id[eq[k]] = cn[eq[k], k]
-        # Set in mirrors
-        ghost_mirror[~has_flipped] = opposite_node_id
+        assert len(edges0) == len(edges1)
+        # For faster variants see <https://stackoverflow.com/q/57184214/353337>
+        i = [numpy.where(numpy.all(edge == edges0, axis=1))[0][0] for edge in edges1]
+        assert numpy.all(edges0[i] == edges1)
+        # Find which ghost_mirrors need updating
+        ghost_cells = ghost_cells[is_outside_ghost_cell]
+        idx = ghost_cells[self.is_ghost_point[ghost_cells]] - (
+            self.node_coords.shape[0] - self.ghost_mirror.shape[0]
+        )
+        # The ghost mirror is the non-boundary point in the opposite cell.
+        # sort the opposite cells
+        opposite_cells = opposite_cells[i]
+        self.ghost_mirror[idx] = opposite_cells[~self.is_boundary_node[opposite_cells]]
 
-        self.ghost_mirror = ghost_mirror
-
-        # make sure that no ghost mirror is a ghost point; that's a bug
+        # make sure that no ghost mirror is a ghost point; that'd be a bug
         assert not numpy.any(
             self.is_ghost_point[self.ghost_mirror]
         ), self.is_ghost_point[self.ghost_mirror]
@@ -147,7 +142,6 @@ class GhostedMesh(MeshTri):
         self.node_coords[self.is_ghost_point] = self.reflect_ghost(
             self.node_coords[self.ghost_mirror]
         )
-
         # updating _all_ values is a bit overkill actually; we only need to update the
         # values in the ghost cells
         self.update_values()
@@ -167,8 +161,21 @@ class GhostedMesh(MeshTri):
         return MeshTri(points, cells)
 
     def flip_until_delaunay(self):
+        # print()
+        # print("BB")
+        # self.show(
+        #     # show_node_numbers=True, show_cell_numbers=True
+        #     )
         super().flip_until_delaunay()
+        # print("CC")
+        # self.show(
+        #     # show_node_numbers=True, show_cell_numbers=True
+        #     )
         self.update_ghost_mirrors()
+        # print("DD")
+        # self.show(
+        #     # show_node_numbers=True, show_cell_numbers=True
+        #     )
         return
 
     def reflect_ghost(self, p0):
