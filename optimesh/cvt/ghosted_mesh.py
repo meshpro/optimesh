@@ -92,10 +92,24 @@ class GhostedMesh(MeshTri):
         # Check which of the ghost cells
         is_outside_ghost_cell = numpy.all(self.is_boundary_node[ghost_cells], axis=1)
 
-        # TODO If the cell is not a purely "outside ghost" cell (which are composed of
-        # two boundary nodes and a ghost node), don't update the mirror. Just make sure
-        # that the ghost_mirror is still connected to the ghost point by at least one
-        # cell.
+        # If the cell is not a purely "outside ghost" cell (which are composed of two
+        # boundary nodes and a ghost node), update the mirror to one of its connected
+        # nodes. The logic here simply loops over all non-outside ghost cells and
+        # updates the mirror to one of the non-boundary points in it. It is possible
+        # that the mirror gets overridden multiple times.
+        for idx in numpy.where(~is_outside_ghost_cell)[0]:
+            # Get the ghost node
+            i = self.is_ghost_point[ghost_cells[idx]]
+            assert numpy.sum(i) == 1
+            ghost_idx = ghost_cells[idx][i] - (
+                self.node_coords.shape[0] - self.ghost_mirror.shape[0]
+            )
+            # Get one non-boundary node. Perhaps we could do better here in choosing
+            # exactly which of the non-boundary nodes should be the mirror here.
+            j = ~self.is_boundary_node[ghost_cells[idx]]
+            assert numpy.any(j)
+            jj = numpy.where(j)[0][0]
+            self.ghost_mirror[ghost_idx] = ghost_cells[idx][jj]
 
         # Now let's look at the ghost points which belong to only one cell. We need to
         # find the cell on the other side and in there the point opposite of the ghost
@@ -165,17 +179,17 @@ class GhostedMesh(MeshTri):
         # print("BB")
         # self.show(
         #     # show_node_numbers=True, show_cell_numbers=True
-        #     )
+        # )
         super().flip_until_delaunay()
         # print("CC")
         # self.show(
         #     # show_node_numbers=True, show_cell_numbers=True
-        #     )
+        # )
         self.update_ghost_mirrors()
         # print("DD")
         # self.show(
         #     # show_node_numbers=True, show_cell_numbers=True
-        #     )
+        # )
         return
 
     def reflect_ghost(self, p0):
