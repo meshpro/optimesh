@@ -82,9 +82,12 @@ def runner(
 ):
     k = 0
 
+    do_print = False
+
     stats_mesh = get_stats_mesh(mesh)
-    print("\nBefore:")
-    print_stats(stats_mesh)
+    if do_print:
+        print("\nBefore:")
+        print_stats(stats_mesh)
     if step_filename_format:
         stats_mesh.save(
             step_filename_format.format(k),
@@ -106,23 +109,30 @@ def runner(
         new_points = get_new_points(mesh)
         diff = omega * (new_points - mesh.node_coords)
 
-        rho = stepsize_till_flat(
-            mesh.node_coords[mesh.cells["nodes"]], diff[mesh.cells["nodes"]]
-        )
-        print(rho)
-        # if rho < 1.0:
-        #     diff *= rho * 0.99
+        # Some methods are stable (CPT), others can break down if the mesh isn't very
+        # smooth. A break-down manifests, for example, in a step size that lets
+        # triangles become fully flat or even "overshoot". After that, anything can
+        # happen. To prevent this restrict the maximum step size to half of the minimum
+        # the incircle radius of all adjacent cells. This makes sure that triangles
+        # cannot "flip".
+        # The current implmentation is inefficient; keep an eye on
+        # <https://stackoverflow.com/q/57227273/353337> for something better.
+        max_step = 0.5 * numpy.array([
+            numpy.min(mesh.cell_inradius[numpy.any(mesh.cells["nodes"] == i, axis=1)])
+            for i in range(mesh.node_coords.shape[0])
+        ])
+        step_lengths = numpy.sqrt(numpy.einsum("ij,ij->i", diff, diff))
+        idx = step_lengths > max_step
+        diff[idx] *= max_step[idx, None] / step_lengths[idx, None]
 
-        # print(mesh.node_coords[mesh.cells["nodes"][20]])
-        # print(mesh.node_coords[mesh.cells["nodes"][208]])
-        # print()
-
-        # The code once checked here if the orientation of any cell changes and reduced
-        # the step size if it did. Computing the orientation is unnecessarily costly
-        # though and doesn't easily translate to shell meshes. Since orientation changes
-        # cannot occur, e.g., with CPT, advise the user to apply a few steps of a robust
-        # smoother first (CPT) if the method crashes, or use relaxation.
         mesh.node_coords += diff
+
+        # mesh.show(
+        #     # show_node_numbers=True,
+        #     show_cell_numbers=True,
+        #     # control_volume_centroid_color="g",
+        # )
+
         # mesh.write("out2.vtk")
         mesh.update_values()
         mesh.flip_until_delaunay()
@@ -130,8 +140,9 @@ def runner(
         # exit(1)
 
         # Abort the loop if the update was small
+        diff_norm_2 = numpy.einsum("ij,ij->i", diff, diff)
         is_final = (
-            numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2)
+            numpy.all(diff_norm_2 < tol ** 2)
             or k >= max_num_steps
         )
 
@@ -147,8 +158,9 @@ def runner(
                         method_name += ", relaxation parameter {}".format(omega)
                     info += " of " + method_name
 
-                print("\nFinal ({}):".format(info))
-                print_stats(stats_mesh)
+                if do_print:
+                    print("\nFinal ({}):".format(info))
+                    print_stats(stats_mesh)
             if step_filename_format:
                 stats_mesh.save(
                     step_filename_format.format(k),
@@ -162,7 +174,7 @@ def runner(
         if is_final:
             break
 
-    return
+    return k, numpy.max(numpy.sqrt(diff_norm_2))
 
 
 def get_new_points_volume_averaged(mesh, reference_points):
