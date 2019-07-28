@@ -11,16 +11,16 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 from __future__ import print_function
 
 import numpy
+
 import fastfunc
 import quadpy
-
 from meshplex import MeshTri
 
 from .helpers import (
-    runner,
-    get_new_points_volume_averaged,
     get_new_points_count_averaged,
+    get_new_points_volume_averaged,
     print_stats,
+    runner,
 )
 
 
@@ -52,12 +52,9 @@ def energy(mesh, uniform_density=False):
     assert dim == 2
     x = mesh.node_coords[:, :2]
     triangles = numpy.moveaxis(x[mesh.cells["nodes"]], 0, 1)
-    val = quadpy.triangle.integrate(
-        lambda x: x[0] ** 2 + x[1] ** 2,
-        triangles,
-        # Take any scheme with order 2
-        quadpy.triangle.Dunavant(2),
-    )
+    # Take any scheme with order 2
+    scheme = quadpy.triangle.dunavant_02()
+    val = scheme.integrate(lambda x: x[0] ** 2 + x[1] ** 2, triangles)
     if uniform_density:
         val = numpy.sum(val)
     else:
@@ -100,18 +97,23 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
 def fixed_point_density_preserving(points, cells, *args, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the circumcenters
-    of their adjacent cells. If a triangle cell switches orientation in the
-    process, don't move quite so far.
+    of their adjacent cells.
     """
 
     def get_new_points(mesh):
         # Get circumcenters everywhere except at cells adjacent to the boundary;
-        # barycenters there.
-        cc = mesh.cell_circumcenters
-        bc = mesh.cell_barycenters
+        # barycenters there. The reason is that points near the boundary would be
+        # "sucked" out of the domain if the boundary cell is very flat, i.e., its
+        # circumcenter is very far outside of the domain.
+        # This heuristic also applies to cells _near_ the boundary, though, and if
+        # constructed maliciously, any mesh. Hence, this method can break down. A better
+        # approach is to use barycenters for all cells which are sufficiently flat.
+        cc = mesh.cell_circumcenters.copy()
         # Find all cells with a boundary edge
-        boundary_cell_ids = mesh.edges_cells[1][:, 0]
-        cc[boundary_cell_ids] = bc[boundary_cell_ids]
+        is_boundary_cell = (
+            numpy.sum(mesh.is_boundary_node[mesh.cells["nodes"]], axis=1) == 2
+        )
+        cc[is_boundary_cell] = mesh.cell_barycenters[is_boundary_cell]
         return get_new_points_count_averaged(mesh, cc)
 
     mesh = MeshTri(points, cells)
@@ -133,6 +135,7 @@ def nonlinear_optimization_uniform(
     verbose=False,
     step_filename_format=None,
     callback=None,
+    do_print=False,
 ):
     """Optimal Delaunay Tesselation smoothing.
 
@@ -165,9 +168,10 @@ def nonlinear_optimization_uniform(
             cell_quality_coloring=("viridis", 0.0, 1.0, False),
         )
 
-    print("Before:")
-    extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-    print_stats(mesh, extra_cols=extra_cols)
+    if do_print:
+        print("Before:")
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        print_stats(mesh, extra_cols=extra_cols)
 
     def f(x):
         mesh.node_coords[mesh.is_interior_node] = x.reshape(-1, X.shape[1])
@@ -249,9 +253,10 @@ def nonlinear_optimization_uniform(
         "{} steps,".format(out.nit)
         + "Optimal Delaunay Tesselation (ODT), uniform density, BFGS variant"
     )
-    print("\nFinal ({})".format(info))
-    extra_cols = ["energy: {:.5e}".format(energy(mesh))]
-    print_stats(mesh, extra_cols=extra_cols)
-    print()
+    if do_print:
+        print("\nFinal ({})".format(info))
+        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        print_stats(mesh, extra_cols=extra_cols)
+        print()
 
     return mesh.node_coords, mesh.cells["nodes"]
