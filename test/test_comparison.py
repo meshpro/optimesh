@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy
 
 import optimesh
-
 from meshes import circle_random
 
 

@@ -2,9 +2,8 @@
 #
 
 
-def jac_uniform(mesh):
+def jac_uniform(mesh, mask):
     # create Jacobian
-    centroids = mesh.control_volume_centroids
-    X = mesh.node_coords
-    jac = 2 * (X - centroids) * mesh.control_volumes[:, None]
-    return jac
+    cv = mesh.get_control_volumes(cell_mask=mask)
+    cvc = mesh.get_control_volume_centroids(cell_mask=mask)
+    return 2 * (mesh.node_coords - cvc) * cv[:, None]

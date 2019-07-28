@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-import numpy
-import fastfunc
-
 import asciiplotlib as apl
+import numpy
+
+import fastfunc
 
 
 def print_stats(mesh, extra_cols=None):
@@ -117,34 +117,26 @@ def runner(
         # cannot "flip".
         # The current implmentation is inefficient; keep an eye on
         # <https://stackoverflow.com/q/57227273/353337> for something better.
-        max_step = 0.5 * numpy.array([
-            numpy.min(mesh.cell_inradius[numpy.any(mesh.cells["nodes"] == i, axis=1)])
-            for i in range(mesh.node_coords.shape[0])
-        ])
+        max_step = 0.5 * numpy.array(
+            [
+                numpy.min(
+                    mesh.cell_inradius[numpy.any(mesh.cells["nodes"] == i, axis=1)]
+                )
+                for i in range(mesh.node_coords.shape[0])
+            ]
+        )
         step_lengths = numpy.sqrt(numpy.einsum("ij,ij->i", diff, diff))
         idx = step_lengths > max_step
         diff[idx] *= max_step[idx, None] / step_lengths[idx, None]
 
         mesh.node_coords += diff
 
-        # mesh.show(
-        #     # show_node_numbers=True,
-        #     show_cell_numbers=True,
-        #     # control_volume_centroid_color="g",
-        # )
-
-        # mesh.write("out2.vtk")
         mesh.update_values()
         mesh.flip_until_delaunay()
-        # mesh.write("out3.vtk")
-        # exit(1)
 
         # Abort the loop if the update was small
         diff_norm_2 = numpy.einsum("ij,ij->i", diff, diff)
-        is_final = (
-            numpy.all(diff_norm_2 < tol ** 2)
-            or k >= max_num_steps
-        )
+        is_final = numpy.all(diff_norm_2 < tol ** 2) or k >= max_num_steps
 
         if verbose or is_final or step_filename_format:
             stats_mesh = get_stats_mesh(mesh)

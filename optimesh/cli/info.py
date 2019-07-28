@@ -3,11 +3,10 @@
 import argparse
 import sys
 
-from meshplex import MeshTri
 import meshio
+from meshplex import MeshTri
 
 from ..__about__ import __version__
-
 from ..helpers import print_stats
 
 

@@ -11,13 +11,14 @@ Triangulations,
 Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 <https://doi.org/10.1016/j.cma.2010.11.007>.
 """
-import fastfunc
-from meshplex import MeshTri
 import numpy
-import quadpy
 import scipy.sparse.linalg
 
-from .helpers import runner, get_new_points_volume_averaged
+import fastfunc
+import quadpy
+from meshplex import MeshTri
+
+from .helpers import get_new_points_volume_averaged, runner
 
 
 def _build_graph_laplacian(mesh):

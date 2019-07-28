@@ -175,21 +175,21 @@ class GhostedMesh(MeshTri):
         return MeshTri(points, cells)
 
     def flip_until_delaunay(self):
-        # print()
-        # print("BB")
-        # self.show(
-        #     # show_node_numbers=True, show_cell_numbers=True
-        # )
+        print()
+        print("BB")
+        self.show(
+            # show_node_numbers=True, show_cell_numbers=True
+        )
         super().flip_until_delaunay()
-        # print("CC")
-        # self.show(
-        #     # show_node_numbers=True, show_cell_numbers=True
-        # )
+        print("CC")
+        self.show(
+            # show_node_numbers=True, show_cell_numbers=True
+        )
         self.update_ghost_mirrors()
-        # print("DD")
-        # self.show(
-        #     # show_node_numbers=True, show_cell_numbers=True
-        # )
+        print("DD")
+        self.show(
+            # show_node_numbers=True, show_cell_numbers=True
+        )
         return
 
     def reflect_ghost(self, p0):

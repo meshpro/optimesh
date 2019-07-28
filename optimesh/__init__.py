@@ -2,20 +2,15 @@
 #
 from __future__ import print_function
 
+from . import cli, cpt, cvt, laplace, odt
 from .__about__ import (
-    __version__,
     __author__,
     __author_email__,
-    __website__,
-    __status__,
     __license__,
+    __status__,
+    __version__,
+    __website__,
 )
-
-from . import cli
-from . import cpt
-from . import cvt
-from . import laplace
-from . import odt
 
 __all__ = [
     "__version__",

@@ -2,13 +2,12 @@
 #
 import numpy
 from scipy.spatial import Delaunay
+
 import meshio
 from meshplex import MeshTri
 
 
-def random():
-    n = 40
-    radius = 1.0
+def create_random_circle(n, radius, seed=None):
     k = numpy.arange(n)
     boundary_pts = radius * numpy.column_stack(
         [numpy.cos(2 * numpy.pi * k / n), numpy.sin(2 * numpy.pi * k / n)]
@@ -31,7 +30,8 @@ def random():
     # Generate random points in circle;
     # <http://mathworld.wolfram.com/DiskPointPicking.html>.
     # Choose the seed such that the fully smoothened mesh has no random boundary points.
-    numpy.random.seed(0)
+    if seed is not None:
+        numpy.random.seed(seed)
     r = numpy.random.rand(m)
     alpha = 2 * numpy.pi * numpy.random.rand(m)
 
@@ -43,16 +43,21 @@ def random():
 
     tri = Delaunay(pts)
     # pts = numpy.column_stack([pts[:, 0], pts[:, 1], numpy.zeros(pts.shape[0])])
+    return pts, tri.simplices
 
-    mesh = MeshTri(pts, tri.simplices)
-    assert numpy.sum(mesh.is_boundary_node) == n
 
-    meshio.write_points_cells("circle.xdmf", pts, {"triangle": tri.simplices})
+def random():
+    n = 40
+    pts, cells = create_random_circle(n, radius=1.0, seed=0)
+    assert numpy.sum(MeshTri(pts, cells).is_boundary_node) == n
+
+    meshio.write_points_cells("circle.xdmf", pts, {"triangle": cells})
     return
 
 
 def gmsh():
     import pygmsh
+
     geom = pygmsh.built_in.Geometry()
     geom.add_circle([0.0, 0.0, 0.0], 1.0, lcar=1.0e-1, num_sections=4, compound=True)
     mesh = pygmsh.generate_mesh(geom)

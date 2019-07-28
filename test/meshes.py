@@ -2,12 +2,12 @@
 #
 import os.path
 
-from meshplex import MeshTri
-import meshio
 import numpy
 from scipy.spatial import Delaunay
 
+import meshio
 from helpers import download_mesh
+from meshplex import MeshTri
 
 
 def simple0():

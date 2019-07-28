@@ -4,8 +4,7 @@ import numpy
 import pytest
 
 import optimesh
-
-from meshes import simple1, simple2, simple3, pacman
+from meshes import pacman, simple1, simple2, simple3
 
 
 @pytest.mark.parametrize(

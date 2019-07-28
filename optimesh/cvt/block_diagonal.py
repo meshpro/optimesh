@@ -3,9 +3,10 @@
 import numpy
 
 import fastfunc
+from meshplex import MeshTri
 
 from ..helpers import runner
-from meshplex import MeshTri
+
 # from .ghosted_mesh import GhostedMesh
 from .helpers import jac_uniform
 

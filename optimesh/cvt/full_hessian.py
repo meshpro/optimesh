@@ -35,10 +35,12 @@ def update(mesh):
     # cells on the boundary.
     # There are other possible heuristics too. For example, one could restrict the
     # mask to cells at or near the boundary.
+    # TODO It seems that we would need other criteria to make it even more robust
     mask = numpy.any(mesh.ce_ratios < -0.5, axis=0)
+    # mask = numpy.zeros(mesh.ce_ratios.shape[1], dtype=bool)
 
     hec = mesh.half_edge_coords[:, ~mask]
-    ei_outer_ei = numpy.einsum("ijk, ijl->ijkl", hec, hec)
+    ei_outer_ei = numpy.einsum("...k,...l->...kl", hec, hec)
 
     # create approximate Hessian
     row_idx = []
@@ -46,12 +48,6 @@ def update(mesh):
     vals = []
 
     M = -0.5 * ei_outer_ei * mesh.ce_ratios[:, ~mask, None, None]
-
-    # Scale the off-diagonal blocks with some factor. If omega == 1, this is the
-    # Hessian. Unfortunately, it seems that the Newton domain of convergence is small.
-    # Relaxation makes the method more robust.
-    # M2 = M * omega
-    # M2 = M
 
     block_size = M.shape[2]
     assert block_size == M.shape[3]
