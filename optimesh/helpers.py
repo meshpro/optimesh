@@ -134,6 +134,8 @@ def runner(
         mesh.update_values()
         mesh.flip_until_delaunay()
 
+        # mesh.show()
+
         # Abort the loop if the update was small
         diff_norm_2 = numpy.einsum("ij,ij->i", diff, diff)
         is_final = numpy.all(diff_norm_2 < tol ** 2) or k >= max_num_steps
