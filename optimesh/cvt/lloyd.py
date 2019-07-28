@@ -45,7 +45,7 @@ def quasi_newton_uniform_lloyd(points, cells, *args, **kwargs):
     mesh = MeshTri(points, cells)
 
     method_name = "Lloyd's algorithm"
-    num_steps, max_step = runner(
+    runner(
         get_new_points,
         mesh,
         *args,
@@ -53,29 +53,5 @@ def quasi_newton_uniform_lloyd(points, cells, *args, **kwargs):
         get_stats_mesh=lambda mesh: mesh,
         method_name=method_name,
     )
-    # print(num_steps, max_step)
 
     return mesh.node_coords, mesh.cells["nodes"]
-
-
-# def fixed_point_uniform(points, cells, *args, **kwargs):
-#     """Lloyd's algorithm.
-#     """
-#     assert points.shape[1] == 2
-#
-#     def get_new_points(mesh):
-#         return mesh.control_volume_centroids[mesh.is_interior_node]
-#
-#     ghosted_mesh = GhostedMesh(points, cells)
-#
-#     runner(
-#         get_new_points,
-#         ghosted_mesh,
-#         *args,
-#         **kwargs,
-#         update_topology=lambda mesh: ghosted_mesh.update_topology(),
-#         # get_stats_mesh=lambda mesh: ghosted_mesh.get_unghosted_mesh(),
-#     )
-#
-#     mesh = ghosted_mesh.get_unghosted_mesh()
-#     return mesh.node_coords, mesh.cells["nodes"]
