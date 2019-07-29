@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 import numpy
 import pytest
 from scipy.spatial import Delaunay

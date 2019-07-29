@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-
-
 def jac_uniform(mesh, mask):
     # create Jacobian
     cv = mesh.get_control_volumes(cell_mask=mask)
