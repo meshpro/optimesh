@@ -43,13 +43,6 @@ def quasi_newton_uniform_lloyd(points, cells, *args, **kwargs):
     mesh = MeshTri(points, cells)
 
     method_name = "Lloyd's algorithm"
-    runner(
-        get_new_points,
-        mesh,
-        *args,
-        **kwargs,
-        get_stats_mesh=lambda mesh: mesh,
-        method_name=method_name,
-    )
+    runner(get_new_points, mesh, *args, **kwargs, method_name=method_name)
 
     return mesh.node_coords, mesh.cells["nodes"]

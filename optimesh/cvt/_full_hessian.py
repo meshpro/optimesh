@@ -4,7 +4,7 @@ import scipy.sparse
 from meshplex import MeshTri
 
 from ..helpers import runner
-from .helpers import jac_uniform
+from ._helpers import jac_uniform
 
 
 def quasi_newton_uniform_full(points, cells, *args, **kwargs):
@@ -21,7 +21,7 @@ def quasi_newton_uniform_full(points, cells, *args, **kwargs):
         mesh,
         *args,
         **kwargs,
-        method_name="Centroidal Voronoi Tesselation (CVT), uniform density, exact-Hessian variant"
+        method_name="Centroidal Voronoi Tesselation (CVT), uniform density, full-Hessian variant"
     )
     return mesh.node_coords, mesh.cells["nodes"]
 

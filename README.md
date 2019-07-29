@@ -1,11 +1,15 @@
-# optimesh
+<p align="center">
+  <a href="https://github.com/nschloe/optimesh"><img alt="optimesh" src="https://nschloe.github.io/optimesh/optimesh-logo.svg" width="60%"></a>
+  <p align="center">Triangular mesh optimization.</p>
+</p>
 
-[![CircleCI](https://img.shields.io/circleci/project/github/nschloe/optimesh/master.svg)](https://circleci.com/gh/nschloe/optimesh)
-[![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg)](https://codecov.io/gh/nschloe/optimesh)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-[![smooth](https://img.shields.io/badge/smooth-operator-8209ba.svg)](https://youtu.be/4TYv2PhG89A)
-[![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg)](https://pypi.org/project/optimesh)
-[![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/optimesh)
+[![CircleCI](https://img.shields.io/circleci/project/github/nschloe/optimesh/master.svg?style=flat-square)](https://circleci.com/gh/nschloe/optimesh)
+[![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg?style=flat-square)](https://codecov.io/gh/nschloe/optimesh)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/ambv/black)
+[![smooth](https://img.shields.io/badge/smooth-operator-8209ba.svg?style=flat-square)](https://youtu.be/4TYv2PhG89A)
+[![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg?style=flat-square)](https://pypi.org/project/optimesh)
+[![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/optimesh)
+[![PyPi downloads](https://img.shields.io/pypi/dd/optimesh.svg?style=flat-square)](https://pypistats.org/packages/optimesh)
 
 Several mesh smoothing/optimization methods with one simple interface. optimesh
 
@@ -23,7 +27,7 @@ pip3 install optimesh --user
 ```
 Example call:
 ```
-optimesh in.e out.vtk --method lloyd -n 50
+optimesh in.e out.vtk
 ```
 Output:
 ![terminal-screenshot](https://nschloe.github.io/optimesh/term-screenshot.png)
@@ -40,7 +44,7 @@ optimesh -h
 ![disk-step0](https://nschloe.github.io/optimesh/disk-step0.png)
 
 The following examples show the various algorithms at work, all starting from the same
-randomly generated disk mesh above. The cell coloring indicates quality; dark blue is
+randomly generated disk mesh above. The cell coloring indicates quality; dark green is
 bad, yellow is good.
 
 
@@ -50,7 +54,7 @@ bad, yellow is good.
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
 ![cvt-uniform-qnf](https://nschloe.github.io/optimesh/cvt-uniform-qnf.webp) |
 :------------------------:|:---------------------:|:----:|
-uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf`) |
+uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (default method, full Hessian, `--method cvt-uniform-qnf`) |
 
 Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications)) is one
 of the oldest and most reliable approaches. optimesh provides classical Lloyd smoothing
@@ -94,10 +98,11 @@ optimization method. The latter typically leads to better results.
 
 From practical experiments, it seems that the CVT smoothing variants, e.g.,
 ```
-optimesh in.vtk out.vtk -m cvt-uniform-qnf -n 50
+optimesh in.vtk out.vtk -m cvt-uniform-qnf
 ```
-give very satisfactory results.  Here is a comparison of all uniform-density methods
-applied to the random circle mesh seen above:
+give very satisfactory results. (This is also the default method, so you don't need to
+specify it explicitly.)  Here is a comparison of all uniform-density methods applied to
+the random circle mesh seen above:
 
 <img src="https://nschloe.github.io/optimesh/comparison.svg" width="90%">
 
@@ -111,7 +116,7 @@ All optimesh functions can also be accessed from Python directly, for example:
 ```python
 import optimesh
 
-X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbosity=1)
+X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbosity=False)
 ```
 
 ### Installation

@@ -4,8 +4,7 @@ from meshplex import MeshTri
 
 from ..helpers import runner
 
-# from .ghosted_mesh import GhostedMesh
-from .helpers import jac_uniform
+from ._helpers import jac_uniform
 
 
 def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):

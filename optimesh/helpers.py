@@ -74,18 +74,14 @@ def runner(
     callback=None,
     step_filename_format=None,
     uniform_density=False,
-    get_stats_mesh=lambda mesh: mesh,
 ):
     k = 0
 
-    do_print = False
-
-    stats_mesh = get_stats_mesh(mesh)
-    if do_print:
+    if verbose:
         print("\nBefore:")
-        print_stats(stats_mesh)
+        print_stats(mesh)
     if step_filename_format:
-        stats_mesh.save(
+        mesh.save(
             step_filename_format.format(k),
             show_coedges=False,
             show_axes=False,
@@ -139,23 +135,19 @@ def runner(
         diff_norm_2 = numpy.einsum("ij,ij->i", diff, diff)
         is_final = numpy.all(diff_norm_2 < tol ** 2) or k >= max_num_steps
 
-        if verbose or is_final or step_filename_format:
-            stats_mesh = get_stats_mesh(mesh)
-            if verbose and not is_final:
-                print("\nstep {}:".format(k))
-                print_stats(stats_mesh)
-            elif is_final:
+        if is_final or step_filename_format:
+            if is_final:
                 info = "{} steps".format(k)
                 if method_name is not None:
                     if abs(omega - 1.0) > 1.0e-10:
                         method_name += ", relaxation parameter {}".format(omega)
                     info += " of " + method_name
 
-                if do_print:
+                if verbose:
                     print("\nFinal ({}):".format(info))
-                    print_stats(stats_mesh)
+                    print_stats(mesh)
             if step_filename_format:
-                stats_mesh.save(
+                mesh.save(
                     step_filename_format.format(k),
                     show_coedges=False,
                     show_axes=False,
