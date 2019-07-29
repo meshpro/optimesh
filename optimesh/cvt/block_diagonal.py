@@ -1,6 +1,5 @@
 import numpy
 
-import fastfunc
 from meshplex import MeshTri
 
 from ..helpers import runner
@@ -46,8 +45,37 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
         # mesh is Delaunay.
         M = -0.5 * ei_outer_ei * mesh.ce_ratios[:, ~mask, None, None]
 
-        fastfunc.add.at(diagonal_blocks, mesh.idx_hierarchy[0][:, ~mask], M)
-        fastfunc.add.at(diagonal_blocks, mesh.idx_hierarchy[1][:, ~mask], M)
+        # dg = diagonal_blocks.copy()
+        # numpy.add.at(dg, mesh.idx_hierarchy[0][:, ~mask], M)
+        # numpy.add.at(dg, mesh.idx_hierarchy[1][:, ~mask], M)
+
+        n = diagonal_blocks.shape[0]
+        diagonal_blocks += numpy.array(
+            [
+                [
+                    numpy.bincount(
+                        mesh.idx_hierarchy[0][:, ~mask].reshape(-1),
+                        M[..., i, j].reshape(-1),
+                        minlength=n,
+                    )
+                    for j in range(diagonal_blocks.shape[2])
+                ]
+                for i in range(diagonal_blocks.shape[1])
+            ]
+        ).T
+        diagonal_blocks += numpy.array(
+            [
+                [
+                    numpy.bincount(
+                        mesh.idx_hierarchy[1][:, ~mask].reshape(-1),
+                        M[..., i, j].reshape(-1),
+                        minlength=n,
+                    )
+                    for j in range(diagonal_blocks.shape[2])
+                ]
+                for i in range(diagonal_blocks.shape[1])
+            ]
+        ).T
 
         rhs = -jac_uniform(mesh, mask)
 
