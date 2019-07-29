@@ -94,10 +94,11 @@ optimization method. The latter typically leads to better results.
 
 From practical experiments, it seems that the CVT smoothing variants, e.g.,
 ```
-optimesh in.vtk out.vtk -m cvt-uniform-qnf -n 50
+optimesh in.vtk out.vtk -m cvt-uniform-qnf
 ```
-give very satisfactory results.  Here is a comparison of all uniform-density methods
-applied to the random circle mesh seen above:
+give very satisfactory results. (This is also the default method, so you don't need to
+specify it explicitly.)  Here is a comparison of all uniform-density methods applied to
+the random circle mesh seen above:
 
 <img src="https://nschloe.github.io/optimesh/comparison.svg" width="90%">
 
@@ -111,7 +112,7 @@ All optimesh functions can also be accessed from Python directly, for example:
 ```python
 import optimesh
 
-X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbosity=1)
+X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbosity=False)
 ```
 
 ### Installation

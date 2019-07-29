@@ -74,16 +74,14 @@ def runner(
     callback=None,
     step_filename_format=None,
     uniform_density=False,
-    get_stats_mesh=lambda mesh: mesh,
 ):
     k = 0
 
-    stats_mesh = get_stats_mesh(mesh)
     if verbose:
         print("\nBefore:")
-        print_stats(stats_mesh)
+        print_stats(mesh)
     if step_filename_format:
-        stats_mesh.save(
+        mesh.save(
             step_filename_format.format(k),
             show_coedges=False,
             show_axes=False,
@@ -138,7 +136,6 @@ def runner(
         is_final = numpy.all(diff_norm_2 < tol ** 2) or k >= max_num_steps
 
         if is_final or step_filename_format:
-            stats_mesh = get_stats_mesh(mesh)
             if is_final:
                 info = "{} steps".format(k)
                 if method_name is not None:
@@ -148,9 +145,9 @@ def runner(
 
                 if verbose:
                     print("\nFinal ({}):".format(info))
-                    print_stats(stats_mesh)
+                    print_stats(mesh)
             if step_filename_format:
-                stats_mesh.save(
+                mesh.save(
                     step_filename_format.format(k),
                     show_coedges=False,
                     show_axes=False,
