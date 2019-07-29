@@ -6,8 +6,6 @@ Efficient mesh optimization schemes based on Optimal Delaunay Triangulations,
 Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 <https://doi.org/10.1016/j.cma.2010.11.007>.
 """
-from __future__ import print_function
-
 import numpy
 
 import fastfunc

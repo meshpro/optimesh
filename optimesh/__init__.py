@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from . import cli, cpt, cvt, laplace, odt
 from .__about__ import (
     __author__,
@@ -23,11 +21,3 @@ __all__ = [
     "laplace",
     "odt",
 ]
-
-# try:
-#     import pipdate
-# except ImportError:
-#     pass
-# else:
-#     if pipdate.needs_checking(__name__):
-#         print(pipdate.check(__name__, __version__), end='')
