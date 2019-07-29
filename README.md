@@ -48,17 +48,13 @@ bad, yellow is good.
 
 ![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/lloyd2.webp) |
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
-![cvt-uniform-qnf-09](https://nschloe.github.io/optimesh/cvt-uniform-qnf-0.9.webp) |
+![cvt-uniform-qnf](https://nschloe.github.io/optimesh/cvt-uniform-qnf.webp) |
 :------------------------:|:---------------------:|:----:|
-uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf --omega 0.9`) |
+uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf`) |
 
-Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications))
-is one of the oldest and most reliable approaches. optimesh provides classical Lloyd
-smoothing as well as several variants that provide faster convergence.
-
-The method `cvt-uniform-qnf` provides updates closest to the actual Newton updates, but
-is unstable. Set the relaxation parameter `--omega` to someting smaller than 1 to
-stabilize.
+Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications)) is one
+of the oldest and most reliable approaches. optimesh provides classical Lloyd smoothing
+as well as several variants that result in better meshes.
 
 
 #### CPT (centroidal patch tesselation)
@@ -98,7 +94,7 @@ optimization method. The latter typically leads to better results.
 
 From practical experiments, it seems that the CVT smoothing variants, e.g.,
 ```
-optimesh in.vtk out.vtk -m cvt-uniform-qnf --omega 0.9 -n 50
+optimesh in.vtk out.vtk -m cvt-uniform-qnf -n 50
 ```
 give very satisfactory results.  Here is a comparison of all uniform-density methods
 applied to the random circle mesh seen above:

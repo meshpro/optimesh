@@ -3,9 +3,8 @@
 import numpy
 import pytest
 
+from meshes import pacman, simple0, simple1, simple2, simple3
 from optimesh import cpt
-
-from meshes import simple0, simple1, simple2, simple3, pacman
 
 
 @pytest.mark.parametrize(
@@ -71,12 +70,12 @@ def test_jac(mesh, ref1, ref2, refi):
         (cpt.fixed_point_uniform, simple1, 5.0, 2.1213203435596424, 1.0),
         (cpt.fixed_point_uniform, simple2, 7.390123456790124, 2.804687217072868, 1.7),
         (cpt.fixed_point_uniform, simple3, 12.0, 3.9765648779799356, 2.0),
-        (cpt.fixed_point_uniform, pacman, 1903.6345096485093, 74.6604068632378, 5.0),
+        (cpt.fixed_point_uniform, pacman, 1901.5304112865315, 74.62452940437535, 5.0),
         #
         (cpt.quasi_newton_uniform, simple1, 5.0, 2.1213203435596424, 1.0),
         (cpt.quasi_newton_uniform, simple2, 7.390123456790124, 2.804687217072868, 1.7),
         (cpt.quasi_newton_uniform, simple3, 12.0, 3.976564877979913, 2.0),
-        (cpt.quasi_newton_uniform, pacman, 1902.1102921588854, 74.61593876126557, 5.0),
+        (cpt.quasi_newton_uniform, pacman, 1900.910794007578, 74.58866209782154, 5.0),
     ],
 )
 def test_methods(method, mesh, ref1, ref2, refi):
@@ -107,7 +106,7 @@ def test_methods(method, mesh, ref1, ref2, refi):
     "mesh, ref1, ref2, refi",
     [
         (simple1, 5.0, 2.1213203435596424, 1.0),
-        (pacman, 1861.1845672600928, 73.12639677872326, 5.0),
+        (pacman, 1864.2406342781524, 73.19722600427883, 5.0),
     ],
 )
 def test_density_preserving(mesh, ref1, ref2, refi):

@@ -2,11 +2,11 @@
 #
 from __future__ import print_function
 
-import shutil
-
 import hashlib
 import os
+import shutil
 from math import fsum
+
 import numpy
 import requests
 
@@ -31,7 +31,11 @@ def download_mesh(name, sha3):
     file_sha3 = hashlib.sha3_224(open(filename, "rb").read()).hexdigest()
 
     if file_sha3 != sha3:
-        raise RuntimeError("Checksums not matching ({} != {}).".format(file_sha3, sha3))
+        raise RuntimeError(
+            "Checksums for {} not matching ({} != {}).".format(
+                filename, file_sha3, sha3
+            )
+        )
 
     return filename
 

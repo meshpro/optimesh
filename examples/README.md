@@ -1,6 +1,6 @@
-###Instructions for generating the example APNGs
+### Instructions for generating the example APNGs
 
-* Create original Delaunay triangulation with `create_circle.py`
+* Create original Delaunay triangulation with `create-circle.py`
 
 * Run the smoothers:
   ```

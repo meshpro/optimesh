@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-import numpy
-import fastfunc
-
 import asciiplotlib as apl
+import numpy
+
+import fastfunc
 
 
 def print_stats(mesh, extra_cols=None):
@@ -39,6 +39,34 @@ def print_stats(mesh, extra_cols=None):
     return
 
 
+def stepsize_till_flat(x, v):
+    """Given triangles and directions, compute the minimum stepsize t at which the area
+    of at least one of the new triangles `x + t*v` is zero.
+    """
+    # <https://math.stackexchange.com/a/3242740/36678>
+    x1x0 = x[:, 1] - x[:, 0]
+    x2x0 = x[:, 2] - x[:, 0]
+    #
+    v1v0 = v[:, 1] - v[:, 0]
+    v2v0 = v[:, 2] - v[:, 0]
+    #
+    a = v1v0[:, 0] * v2v0[:, 1] - v1v0[:, 1] * v2v0[:, 0]
+    b = (
+        v1v0[:, 0] * x2x0[:, 1]
+        + x1x0[:, 0] * v2v0[:, 1]
+        - v1v0[:, 1] * x2x0[:, 0]
+        - x1x0[:, 1] * v2v0[:, 0]
+    )
+    c = x1x0[:, 0] * x2x0[:, 1] - x1x0[:, 1] * x2x0[:, 0]
+    #
+    alpha = b ** 2 - 4 * a * c
+    i = (alpha >= 0) & (a != 0.0)
+    sqrt_alpha = numpy.sqrt(alpha[i])
+    t0 = (-b[i] + sqrt_alpha) / (2 * a[i])
+    t1 = (-b[i] - sqrt_alpha) / (2 * a[i])
+    return min(numpy.min(t0[t0 > 0]), numpy.min(t1[t1 > 0]))
+
+
 def runner(
     get_new_points,
     mesh,
@@ -54,9 +82,12 @@ def runner(
 ):
     k = 0
 
+    do_print = False
+
     stats_mesh = get_stats_mesh(mesh)
-    print("\nBefore:")
-    print_stats(stats_mesh)
+    if do_print:
+        print("\nBefore:")
+        print_stats(stats_mesh)
     if step_filename_format:
         stats_mesh.save(
             step_filename_format.format(k),
@@ -68,27 +99,49 @@ def runner(
     if callback:
         callback(k, mesh)
 
+    # mesh.write("out0.vtk")
     mesh.flip_until_delaunay()
+    # mesh.write("out1.vtk")
+
     while True:
         k += 1
 
         new_points = get_new_points(mesh)
         diff = omega * (new_points - mesh.node_coords)
 
-        # Abort the loop if the update is small
-        is_final = (
-            numpy.all(numpy.einsum("ij,ij->i", diff, diff) < tol ** 2)
-            or k >= max_num_steps
+        # Some methods are stable (CPT), others can break down if the mesh isn't very
+        # smooth. A break-down manifests, for example, in a step size that lets
+        # triangles become fully flat or even "overshoot". After that, anything can
+        # happen. To prevent this restrict the maximum step size to half of the minimum
+        # the incircle radius of all adjacent cells. This makes sure that triangles
+        # cannot "flip".
+        # The current implmentation is inefficient; keep an eye on
+        # <https://stackoverflow.com/q/57227273/353337> for something better.
+        max_step = 0.5 * numpy.array(
+            [
+                numpy.min(
+                    mesh.cell_inradius[numpy.any(mesh.cells["nodes"] == i, axis=1)]
+                )
+                for i in range(mesh.node_coords.shape[0])
+            ]
         )
+        step_lengths = numpy.sqrt(numpy.einsum("ij,ij->i", diff, diff))
+        # alpha = numpy.min(max_step / step_lengths)
+        # alpha = numpy.min([alpha, 1.0])
+        # diff *= alpha
+        idx = step_lengths > max_step
+        diff[idx] *= max_step[idx, None] / step_lengths[idx, None]
 
-        # The code once checked here if the orientation of any cell changes and reduced
-        # the step size if it did. Computing the orientation is unnecessarily costly
-        # though and doesn't easily translate to shell meshes. Since orientation changes
-        # cannot occur, e.g., with CPT, advise the user to apply a few steps of a robust
-        # smoother first (CPT) if the method crashes, or use relaxation.
         mesh.node_coords += diff
+
         mesh.update_values()
         mesh.flip_until_delaunay()
+
+        # mesh.show()
+
+        # Abort the loop if the update was small
+        diff_norm_2 = numpy.einsum("ij,ij->i", diff, diff)
+        is_final = numpy.all(diff_norm_2 < tol ** 2) or k >= max_num_steps
 
         if verbose or is_final or step_filename_format:
             stats_mesh = get_stats_mesh(mesh)
@@ -102,8 +155,9 @@ def runner(
                         method_name += ", relaxation parameter {}".format(omega)
                     info += " of " + method_name
 
-                print("\nFinal ({}):".format(info))
-                print_stats(stats_mesh)
+                if do_print:
+                    print("\nFinal ({}):".format(info))
+                    print_stats(stats_mesh)
             if step_filename_format:
                 stats_mesh.save(
                     step_filename_format.format(k),
@@ -117,7 +171,7 @@ def runner(
         if is_final:
             break
 
-    return
+    return k, numpy.max(numpy.sqrt(diff_norm_2))
 
 
 def get_new_points_volume_averaged(mesh, reference_points):

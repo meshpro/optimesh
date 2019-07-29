@@ -4,7 +4,6 @@ import numpy
 import pytest
 
 import optimesh
-
 from meshes import circle_random
 
 

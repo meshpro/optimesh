@@ -3,7 +3,6 @@
 import pytest
 
 import optimesh
-
 from helpers import download_mesh
 
 

@@ -13,15 +13,13 @@ default:
 
 all:
 	for method in \
-	    cvt-uniform-qnb cvt-uniform-qnf cvt-uniform-qnf-0.9 \
+	    cvt-uniform-qnb cvt-uniform-qnf cvt-uniform-qnf \
 	    lloyd lloyd2 cpt-uniform-fp cpt-uniform-qn \
 	    odt-dp-fp odt-uniform-fp odt-uniform-bfgs; do \
 	  if [ "$$method" = "lloyd2" ]; then \
-	    optimesh circle.vtk out.vtk -m lloyd --omega 2 -n 50 -f "$$method-step{:03d}.png"; \
-	  elif [ "$$method" = "cvt-uniform-qnf-0.9" ]; then \
-	    optimesh circle.vtk out.vtk -m cvt-uniform-qnf --omega 0.9 -n 50 -f "$$method-step{:03d}.png"; \
+	    optimesh circle.xdmf out.vtk -m lloyd --omega 2 -n 50 -f "$$method-step{:03d}.png"; \
 	  else \
-	    optimesh circle.vtk out.vtk -m $$method -n 50 -f "$$method-step{:03d}.png"; \
+	    optimesh circle.xdmf out.vtk -m $$method -n 50 -f "$$method-step{:03d}.png"; \
 	  fi; \
 	  for file in $$method-step*.png; do \
 	    convert -trim -resize 200x200 $$file $$file; \

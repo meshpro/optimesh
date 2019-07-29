@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-import os
 import codecs
+import os
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 # https://packaging.python.org/single_source_version/
 base_dir = os.path.abspath(os.path.dirname(__file__))
@@ -31,7 +31,7 @@ setup(
     install_requires=[
         "asciiplotlib",
         "fastfunc",
-        "meshplex >= 0.10.0, < 0.11.0",
+        "meshplex >= 0.11.2, < 0.12.0",
         "meshio",
         "numpy",
         "quadpy",

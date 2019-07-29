@@ -4,15 +4,13 @@ import argparse
 import math
 import sys
 
-import meshio
-import meshplex
 import numpy
 
-from ..__about__ import __version__, __copyright__
-from .. import laplace
-from .. import cpt
-from .. import cvt
-from .. import odt
+import meshio
+import meshplex
+
+from .. import cpt, cvt, laplace, odt
+from ..__about__ import __copyright__, __version__
 
 
 def _get_parser():

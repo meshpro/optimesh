@@ -2,12 +2,12 @@
 #
 import os.path
 
-from meshplex import MeshTri
-import meshio
 import numpy
 from scipy.spatial import Delaunay
 
+import meshio
 from helpers import download_mesh
+from meshplex import MeshTri
 
 
 def simple0():
@@ -156,15 +156,15 @@ def circle_random():
         radius ** 2 / 2 * (edge_length - numpy.sin(edge_length))
     )
     cell_area = numpy.sqrt(3) / 4 * edge_length ** 2
-    approximate_num_cells = domain_area / cell_area
+    target_num_cells = domain_area / cell_area
     # Euler:
     # 2 * num_points - num_boundary_edges - 2 = num_cells
     # <=>
-    # num_interior_points ~= 0.5 * (num_cells + num_boundary_edges) + 1
-    m = int(0.5 * (approximate_num_cells + n) + 1)
+    # num_interior_points ~= 0.5 * (num_cells + num_boundary_edges) + 1 - num_boundary_points
+    m = int(0.5 * (target_num_cells + n) + 1 - n)
 
     # generate random points in circle; <http://mathworld.wolfram.com/DiskPointPicking.html>
-    numpy.random.seed(1)
+    numpy.random.seed(0)
     r = numpy.random.rand(m)
     alpha = 2 * numpy.pi * numpy.random.rand(m)
 
