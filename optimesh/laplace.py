@@ -9,6 +9,7 @@ def fixed_point(points, cells, *args, **kwargs):
     """Perform k steps of Laplacian smoothing to the mesh, i.e., moving each
     interior vertex to the arithmetic average of its neighboring points.
     """
+
     def get_new_points(mesh):
         # move interior points into average of their neighbors
 

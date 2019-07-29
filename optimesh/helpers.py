@@ -1,8 +1,6 @@
 import asciiplotlib as apl
 import numpy
 
-import fastfunc
-
 
 def print_stats(mesh, extra_cols=None):
     extra_cols = [] if extra_cols is None else extra_cols
@@ -173,15 +171,25 @@ def runner(
 
 
 def get_new_points_volume_averaged(mesh, reference_points):
-    scaled_rp = (reference_points.T * mesh.cell_volumes).T
+    scaled_rp = reference_points.T * mesh.cell_volumes
 
+    # new_points = numpy.zeros(mesh.node_coords.shape)
+    # for i in mesh.cells["nodes"].T:
+    #     numpy.add.at(new_points, i, scaled_rp)
+    # omega = numpy.zeros(len(mesh.node_coords))
+    # for i in mesh.cells["nodes"].T:
+    #     numpy.add.at(omega, i, mesh.cell_volumes)
+
+    n = mesh.node_coords.shape[0]
     new_points = numpy.zeros(mesh.node_coords.shape)
     for i in mesh.cells["nodes"].T:
-        fastfunc.add.at(new_points, i, scaled_rp)
+        new_points += numpy.array(
+            [numpy.bincount(i, vals, minlength=n) for vals in scaled_rp]
+        ).T
 
-    omega = numpy.zeros(len(mesh.node_coords))
+    omega = numpy.zeros(n)
     for i in mesh.cells["nodes"].T:
-        fastfunc.add.at(omega, i, mesh.cell_volumes)
+        omega += numpy.bincount(i, mesh.cell_volumes, minlength=n)
 
     new_points /= omega[:, None]
     idx = mesh.is_boundary_node
@@ -193,15 +201,26 @@ def get_new_points_count_averaged(mesh, reference_points):
     # Estimate the density as 1/|tau|. This leads to some simplifcations: The new point
     # is simply the average of of the reference points (barycenters/cirumcenters) in the
     # star.
+    n = mesh.node_coords.shape[0]
+
+    # new_points = numpy.zeros(mesh.node_coords.shape)
+    # for i in mesh.cells["nodes"].T:
+    #     numpy.add.at(new_points, i, reference_points)
+    # omega = numpy.zeros(n, dtype=int)
+    # for i in mesh.cells["nodes"].T:
+    #     numpy.add.at(omega, i, numpy.ones(i.shape, dtype=int))
+
     new_points = numpy.zeros(mesh.node_coords.shape)
     for i in mesh.cells["nodes"].T:
-        fastfunc.add.at(new_points, i, reference_points)
+        new_points += numpy.array(
+            [numpy.bincount(i, vals, minlength=n) for vals in reference_points.T]
+        ).T
 
-    omega = numpy.zeros(len(mesh.node_coords), dtype=int)
-    for i in mesh.cells["nodes"].T:
-        fastfunc.add.at(omega, i, numpy.ones(i.shape, dtype=int))
+    omega = numpy.bincount(mesh.cells["nodes"].reshape(-1), minlength=n)
 
     new_points /= omega[:, None]
+
+    # reset boundary nodes
     idx = mesh.is_boundary_node
     new_points[idx] = mesh.node_coords[idx]
     return new_points
