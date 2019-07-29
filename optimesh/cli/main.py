@@ -28,7 +28,6 @@ def _get_parser():
     parser.add_argument(
         "--method",
         "-m",
-        required=True,
         choices=[
             "laplace",
             "cpt-dp",
@@ -44,7 +43,8 @@ def _get_parser():
             "odt-uniform-fp",
             "odt-uniform-bfgs",
         ],
-        help="smoothing method",
+        default="cvt-uniform-qnf",
+        help="smoothing method (default: cvt-uniform-qnf)",
     )
 
     parser.add_argument(
@@ -68,9 +68,9 @@ def _get_parser():
         "--tolerance",
         "-t",
         metavar="TOL",
-        default=0.0,
+        default=1.0e-8,
         type=float,
-        help="convergence criterion (method dependent, default: 0.0)",
+        help="convergence criterion (method dependent, default: 1.0e-8)",
     )
 
     parser.add_argument(
