@@ -23,7 +23,7 @@ pip3 install optimesh --user
 ```
 Example call:
 ```
-optimesh in.e out.vtk --method lloyd -n 50
+optimesh in.e out.vtk
 ```
 Output:
 ![terminal-screenshot](https://nschloe.github.io/optimesh/term-screenshot.png)
@@ -50,7 +50,7 @@ bad, yellow is good.
 ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
 ![cvt-uniform-qnf](https://nschloe.github.io/optimesh/cvt-uniform-qnf.webp) |
 :------------------------:|:---------------------:|:----:|
-uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (full Hessian, `--method cvt-uniform-qnf`) |
+uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (default method, full Hessian, `--method cvt-uniform-qnf`) |
 
 Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications)) is one
 of the oldest and most reliable approaches. optimesh provides classical Lloyd smoothing
