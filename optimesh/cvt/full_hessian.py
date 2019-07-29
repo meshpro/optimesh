@@ -18,14 +18,13 @@ def quasi_newton_uniform_full(points, cells, *args, **kwargs):
 
     mesh = MeshTri(points, cells)
 
-    out = runner(
+    runner(
         get_new_points,
         mesh,
         *args,
         **kwargs,
         method_name="Centroidal Voronoi Tesselation (CVT), uniform density, exact-Hessian variant"
     )
-    print(out)
     return mesh.node_coords, mesh.cells["nodes"]
 
 
@@ -35,9 +34,7 @@ def update(mesh):
     # cells on the boundary.
     # There are other possible heuristics too. For example, one could restrict the
     # mask to cells at or near the boundary.
-    # TODO It seems that we would need other criteria to make it even more robust
     mask = numpy.any(mesh.ce_ratios < -0.5, axis=0)
-    # mask = numpy.zeros(mesh.ce_ratios.shape[1], dtype=bool)
 
     hec = mesh.half_edge_coords[:, ~mask]
     ei_outer_ei = numpy.einsum("...k,...l->...kl", hec, hec)
@@ -53,31 +50,41 @@ def update(mesh):
     assert block_size == M.shape[3]
 
     for k in range(M.shape[0]):
+        idx0 = mesh.idx_hierarchy[0, k, ~mask]
+        idx1 = mesh.idx_hierarchy[1, k, ~mask]
         # The diagonal blocks are always positive definite if the mesh is Delaunay.
         # (i0, i0) block
         for i in range(block_size):
             for j in range(block_size):
-                row_idx += [block_size * mesh.idx_hierarchy[0, k, ~mask] + i]
-                col_idx += [block_size * mesh.idx_hierarchy[0, k, ~mask] + j]
+                row_idx += [block_size * idx0 + i]
+                col_idx += [block_size * idx0 + j]
                 vals += [M[k, :, i, j]]
         # (i1, i1) block
         for i in range(block_size):
             for j in range(block_size):
-                row_idx += [block_size * mesh.idx_hierarchy[1, k, ~mask] + i]
-                col_idx += [block_size * mesh.idx_hierarchy[1, k, ~mask] + j]
+                row_idx += [block_size * idx1 + i]
+                col_idx += [block_size * idx1 + j]
                 vals += [M[k, :, i, j]]
-        # (i0, i1) block
-        for i in range(block_size):
-            for j in range(block_size):
-                row_idx += [block_size * mesh.idx_hierarchy[0, k, ~mask] + i]
-                col_idx += [block_size * mesh.idx_hierarchy[1, k, ~mask] + j]
-                vals += [M[k, :, i, j]]
-        # (i1, i0) block
-        for i in range(block_size):
-            for j in range(block_size):
-                row_idx += [block_size * mesh.idx_hierarchy[1, k, ~mask] + i]
-                col_idx += [block_size * mesh.idx_hierarchy[0, k, ~mask] + j]
-                vals += [M[k, :, i, j]]
+
+        # This is a cheap workaround.
+        # It turns out that this method still isn't very robust against flat cells near
+        # the boundary. The related Lloyd method and the block-diagonal method, however,
+        # are. Hence, if there is any masked cell, use the block variant for robustness.
+        # (This corresponds to eliminating all off-diagonal blocks.)
+        # TODO find a better criterion
+        if ~numpy.any(mask):
+            # (i0, i1) block
+            for i in range(block_size):
+                for j in range(block_size):
+                    row_idx += [block_size * idx0 + i]
+                    col_idx += [block_size * idx1 + j]
+                    vals += [M[k, :, i, j]]
+            # (i1, i0) block
+            for i in range(block_size):
+                for j in range(block_size):
+                    row_idx += [block_size * idx1 + i]
+                    col_idx += [block_size * idx0 + j]
+                    vals += [M[k, :, i, j]]
 
     # add diagonal
     cv = mesh.get_control_volumes(cell_mask=mask)
