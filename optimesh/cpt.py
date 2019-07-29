@@ -109,11 +109,11 @@ def _energy_uniform_per_node(X, cells):
         for idx in cell:
             xi = mesh.node_coords[idx]
             tri = mesh.node_coords[cell]
-            val = quadpy.triangle.integrate(
+            # Take any scheme with order 2
+            scheme = quadpy.triangle.dunavant_02()
+            val = scheme.integrate(
                 lambda x: numpy.einsum("ij,ij->i", x.T - xi, x.T - xi),
                 tri,
-                # Take any scheme with order 2
-                quadpy.triangle.Dunavant(2),
             )
             star_integrals[idx] += val
 
