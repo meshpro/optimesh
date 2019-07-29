@@ -160,8 +160,8 @@ def circle_random():
     # Euler:
     # 2 * num_points - num_boundary_edges - 2 = num_cells
     # <=>
-    # num_interior_points ~= 0.5 * (num_cells + num_boundary_edges) + 1 - num_boundary_nodes
-    m = int(0.5 * (target_num_cells + n) + 1) - n
+    # num_interior_points ~= 0.5 * (num_cells + num_boundary_edges) + 1 - num_boundary_points
+    m = int(0.5 * (target_num_cells + n) + 1 - n)
 
     # generate random points in circle; <http://mathworld.wolfram.com/DiskPointPicking.html>
     numpy.random.seed(0)

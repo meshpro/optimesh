@@ -126,6 +126,9 @@ def runner(
             ]
         )
         step_lengths = numpy.sqrt(numpy.einsum("ij,ij->i", diff, diff))
+        # alpha = numpy.min(max_step / step_lengths)
+        # alpha = numpy.min([alpha, 1.0])
+        # diff *= alpha
         idx = step_lengths > max_step
         diff[idx] *= max_step[idx, None] / step_lengths[idx, None]
 
