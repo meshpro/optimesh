@@ -112,8 +112,7 @@ def _energy_uniform_per_node(X, cells):
             # Take any scheme with order 2
             scheme = quadpy.triangle.dunavant_02()
             val = scheme.integrate(
-                lambda x: numpy.einsum("ij,ij->i", x.T - xi, x.T - xi),
-                tri,
+                lambda x: numpy.einsum("ij,ij->i", x.T - xi, x.T - xi), tri
             )
             star_integrals[idx] += val
 
