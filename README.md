@@ -1,4 +1,7 @@
-# optimesh
+<p align="center">
+  <a href="https://github.com/nschloe/optimesh"><img alt="optimesh" src="https://nschloe.github.io/optimesh/optimesh-logo.svg" width="60%"></a>
+  <p align="center">Triangular mesh optimization.</p>
+</p>
 
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/optimesh/master.svg?style=flat-square)](https://circleci.com/gh/nschloe/optimesh)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg?style=flat-square)](https://codecov.io/gh/nschloe/optimesh)
