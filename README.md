@@ -41,7 +41,7 @@ optimesh -h
 ![disk-step0](https://nschloe.github.io/optimesh/disk-step0.png)
 
 The following examples show the various algorithms at work, all starting from the same
-randomly generated disk mesh above. The cell coloring indicates quality; dark blue is
+randomly generated disk mesh above. The cell coloring indicates quality; dark green is
 bad, yellow is good.
 
 
