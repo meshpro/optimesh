@@ -8,7 +8,6 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 """
 import numpy
 
-import fastfunc
 import quadpy
 from meshplex import MeshTri
 
@@ -30,17 +29,20 @@ def energy(mesh, uniform_density=False):
     # E = 1/(d+1) sum_i ||x_i||^2 |omega_i| - int_Omega_i ||x||^2
     dim = mesh.cells["nodes"].shape[1] - 1
 
-    star_volume = numpy.zeros(mesh.node_coords.shape[0])
+    n = mesh.node_coords.shape[0]
+    star_volume = numpy.zeros(n)
     for i in range(3):
         idx = mesh.cells["nodes"][:, i]
         if uniform_density:
             # rho = 1,
             # int_{star} phi_i * rho = 1/(d+1) sum_{triangles in star} |triangle|
-            fastfunc.add.at(star_volume, idx, mesh.cell_volumes)
+            # numpy.add.at(star_volume, idx, mesh.cell_volumes)
+            star_volume += numpy.bincount(idx, mesh.cell_volumes, minlength=n)
         else:
             # rho = 1 / tau_j,
             # int_{star} phi_i * rho = 1/(d+1) |num triangles in star|
-            fastfunc.add.at(star_volume, idx, numpy.ones(idx.shape, dtype=float))
+            # numpy.add.at(star_volume, idx, numpy.ones(idx.shape, dtype=float))
+            star_volume += numpy.bincount(idx, numpy.ones(idx.shape), minlength=n)
     x2 = numpy.einsum("ij,ij->i", mesh.node_coords, mesh.node_coords)
     out = 1 / (dim + 1) * numpy.dot(star_volume, x2)
 
@@ -180,11 +182,14 @@ def nonlinear_optimization_uniform(
         mesh.update_values()
 
         grad = numpy.zeros(mesh.node_coords.shape)
+        n = grad.shape[0]
         cc = mesh.cell_circumcenters
         for mcn in mesh.cells["nodes"].T:
-            fastfunc.add.at(
-                grad, mcn, ((mesh.node_coords[mcn] - cc).T * mesh.cell_volumes).T
-            )
+            vals = (mesh.node_coords[mcn] - cc).T * mesh.cell_volumes
+            # numpy.add.at(grad, mcn, vals)
+            grad += numpy.array(
+                [numpy.bincount(mcn, val, minlength=n) for val in vals]
+            ).T
         gdim = 2
         grad *= 2 / (gdim + 1)
         return grad[mesh.is_interior_node].flatten()

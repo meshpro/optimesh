@@ -12,7 +12,6 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 import numpy
 import scipy.sparse.linalg
 
-import fastfunc
 import quadpy
 from meshplex import MeshTri
 
@@ -139,11 +138,11 @@ def jac_uniform(X, cells):
     jac = numpy.zeros(X.shape)
     for k in range(mesh.cells["nodes"].shape[1]):
         i = mesh.cells["nodes"][:, k]
-        fastfunc.add.at(
-            jac,
-            i,
-            ((mesh.node_coords[i] - mesh.cell_barycenters).T * mesh.cell_volumes).T,
-        )
+        vals = (mesh.node_coords[i] - mesh.cell_barycenters).T * mesh.cell_volumes
+        # numpy.add.at(jac, i, vals)
+        jac += numpy.array(
+            [numpy.bincount(i, val, minlength=jac.shape[0]) for val in vals]
+        ).T
 
     return 2 / (dim + 1) * jac
 
