@@ -1,11 +1,12 @@
 # optimesh
 
-[![CircleCI](https://img.shields.io/circleci/project/github/nschloe/optimesh/master.svg)](https://circleci.com/gh/nschloe/optimesh)
-[![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg)](https://codecov.io/gh/nschloe/optimesh)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-[![smooth](https://img.shields.io/badge/smooth-operator-8209ba.svg)](https://youtu.be/4TYv2PhG89A)
-[![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg)](https://pypi.org/project/optimesh)
-[![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/optimesh)
+[![CircleCI](https://img.shields.io/circleci/project/github/nschloe/optimesh/master.svg?style=flat-square)](https://circleci.com/gh/nschloe/optimesh)
+[![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg?style=flat-square)](https://codecov.io/gh/nschloe/optimesh)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/ambv/black)
+[![smooth](https://img.shields.io/badge/smooth-operator-8209ba.svg?style=flat-square)](https://youtu.be/4TYv2PhG89A)
+[![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg?style=flat-square)](https://pypi.org/project/optimesh)
+[![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/optimesh)
+[![PyPi downloads](https://img.shields.io/pypi/dd/optimesh.svg?style=flat-square)](https://pypistats.org/packages/optimesh)
 
 Several mesh smoothing/optimization methods with one simple interface. optimesh
 
