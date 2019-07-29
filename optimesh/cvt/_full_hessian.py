@@ -4,7 +4,7 @@ import scipy.sparse
 from meshplex import MeshTri
 
 from ..helpers import runner
-from .helpers import jac_uniform
+from ._helpers import jac_uniform
 
 
 def quasi_newton_uniform_full(points, cells, *args, **kwargs):
