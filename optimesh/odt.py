@@ -133,7 +133,6 @@ def nonlinear_optimization_uniform(
     verbose=False,
     step_filename_format=None,
     callback=None,
-    do_print=False,
 ):
     """Optimal Delaunay Tesselation smoothing.
 
@@ -166,7 +165,7 @@ def nonlinear_optimization_uniform(
             cell_quality_coloring=("viridis", 0.0, 1.0, False),
         )
 
-    if do_print:
+    if verbose:
         print("Before:")
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(mesh, extra_cols=extra_cols)
@@ -208,9 +207,6 @@ def nonlinear_optimization_uniform(
                 show_axes=False,
                 cell_quality_coloring=("viridis", 0.0, 1.0, False),
             )
-        if verbose:
-            print("\nStep {}:".format(flip_delaunay.step))
-            print_stats(mesh, extra_cols=["energy: {}".format(f(x))])
 
         if callback:
             callback(flip_delaunay.step, mesh)
@@ -254,7 +250,7 @@ def nonlinear_optimization_uniform(
         "{} steps,".format(out.nit)
         + "Optimal Delaunay Tesselation (ODT), uniform density, BFGS variant"
     )
-    if do_print:
+    if verbose:
         print("\nFinal ({})".format(info))
         extra_cols = ["energy: {:.5e}".format(energy(mesh))]
         print_stats(mesh, extra_cols=extra_cols)

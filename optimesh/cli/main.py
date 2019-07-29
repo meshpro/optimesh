@@ -68,16 +68,16 @@ def _get_parser():
         "--tolerance",
         "-t",
         metavar="TOL",
-        default=1.0e-8,
+        default=1.0e-10,
         type=float,
         help="convergence criterion (method dependent, default: 1.0e-8)",
     )
 
     parser.add_argument(
-        "--verbose",
+        "--quiet",
         default=False,
         action="store_true",
-        help="verbose output (default: false)",
+        help="don't produce any output (default: false)",
     )
 
     parser.add_argument(
@@ -185,13 +185,13 @@ def main(argv=None):
 
     for cell_idx in cell_sets:
         if args.method in ["odt-uniform-bfgs"]:
-            # relaxation parameter omega
+            # no relaxation parameter omega
             X, cls = method(
                 mesh.points,
                 cells[cell_idx],
                 args.tolerance,
                 args.max_num_steps,
-                verbose=args.verbose,
+                verbose=~args.quiet,
                 step_filename_format=args.step_filename_format,
             )
         else:
@@ -201,7 +201,7 @@ def main(argv=None):
                 args.tolerance,
                 args.max_num_steps,
                 omega=args.omega,
-                verbose=args.verbose,
+                verbose=~args.quiet,
                 step_filename_format=args.step_filename_format,
             )
 
