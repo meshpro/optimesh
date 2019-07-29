@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 """
 Centroidal Patch Tesselation. Mimics the definition of Centroidal
 Voronoi Tessellations for which the generator and centroid of each Voronoi

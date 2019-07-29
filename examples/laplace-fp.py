@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 """
 Generate animation for fixed-point Laplace. Not included as a command-line option as the
 lienar solve is much more efficient.

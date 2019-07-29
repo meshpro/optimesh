@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 from __future__ import print_function
 
 from .block_diagonal import quasi_newton_uniform_blocks
