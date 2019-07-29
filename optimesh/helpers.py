@@ -107,16 +107,15 @@ def runner(
         # happen. To prevent this restrict the maximum step size to half of the minimum
         # the incircle radius of all adjacent cells. This makes sure that triangles
         # cannot "flip".
-        # The current implmentation is inefficient; keep an eye on
-        # <https://stackoverflow.com/q/57227273/353337> for something better.
-        max_step = 0.5 * numpy.array(
-            [
-                numpy.min(
-                    mesh.cell_inradius[numpy.any(mesh.cells["nodes"] == i, axis=1)]
-                )
-                for i in range(mesh.node_coords.shape[0])
-            ]
+        # <https://stackoverflow.com/a/57261082/353337>
+        max_step = numpy.full(mesh.node_coords.shape[0], numpy.inf)
+        numpy.minimum.at(
+            max_step,
+            mesh.cells["nodes"].reshape(-1),
+            numpy.repeat(mesh.cell_inradius, 3),
         )
+        max_step *= 0.5
+
         step_lengths = numpy.sqrt(numpy.einsum("ij,ij->i", diff, diff))
         # alpha = numpy.min(max_step / step_lengths)
         # alpha = numpy.min([alpha, 1.0])
