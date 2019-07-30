@@ -207,9 +207,6 @@ def main(argv=None):
 
         cells[cell_idx] = cls
 
-    if X.shape[1] != 3:
-        X = numpy.column_stack([X[:, 0], X[:, 1], numpy.zeros(X.shape[0])])
-
     q = meshplex.MeshTri(X, cls).cell_quality
     meshio.write_points_cells(
         args.output_file,
