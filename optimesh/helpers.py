@@ -35,32 +35,32 @@ def print_stats(mesh, extra_cols=None):
     return
 
 
-def stepsize_till_flat(x, v):
-    """Given triangles and directions, compute the minimum stepsize t at which the area
-    of at least one of the new triangles `x + t*v` is zero.
-    """
-    # <https://math.stackexchange.com/a/3242740/36678>
-    x1x0 = x[:, 1] - x[:, 0]
-    x2x0 = x[:, 2] - x[:, 0]
-    #
-    v1v0 = v[:, 1] - v[:, 0]
-    v2v0 = v[:, 2] - v[:, 0]
-    #
-    a = v1v0[:, 0] * v2v0[:, 1] - v1v0[:, 1] * v2v0[:, 0]
-    b = (
-        v1v0[:, 0] * x2x0[:, 1]
-        + x1x0[:, 0] * v2v0[:, 1]
-        - v1v0[:, 1] * x2x0[:, 0]
-        - x1x0[:, 1] * v2v0[:, 0]
-    )
-    c = x1x0[:, 0] * x2x0[:, 1] - x1x0[:, 1] * x2x0[:, 0]
-    #
-    alpha = b ** 2 - 4 * a * c
-    i = (alpha >= 0) & (a != 0.0)
-    sqrt_alpha = numpy.sqrt(alpha[i])
-    t0 = (-b[i] + sqrt_alpha) / (2 * a[i])
-    t1 = (-b[i] - sqrt_alpha) / (2 * a[i])
-    return min(numpy.min(t0[t0 > 0]), numpy.min(t1[t1 > 0]))
+# def stepsize_till_flat(x, v):
+#     """Given triangles and directions, compute the minimum stepsize t at which the area
+#     of at least one of the new triangles `x + t*v` is zero.
+#     """
+#     # <https://math.stackexchange.com/a/3242740/36678>
+#     x1x0 = x[:, 1] - x[:, 0]
+#     x2x0 = x[:, 2] - x[:, 0]
+#     #
+#     v1v0 = v[:, 1] - v[:, 0]
+#     v2v0 = v[:, 2] - v[:, 0]
+#     #
+#     a = v1v0[:, 0] * v2v0[:, 1] - v1v0[:, 1] * v2v0[:, 0]
+#     b = (
+#         v1v0[:, 0] * x2x0[:, 1]
+#         + x1x0[:, 0] * v2v0[:, 1]
+#         - v1v0[:, 1] * x2x0[:, 0]
+#         - x1x0[:, 1] * v2v0[:, 0]
+#     )
+#     c = x1x0[:, 0] * x2x0[:, 1] - x1x0[:, 1] * x2x0[:, 0]
+#     #
+#     alpha = b ** 2 - 4 * a * c
+#     i = (alpha >= 0) & (a != 0.0)
+#     sqrt_alpha = numpy.sqrt(alpha[i])
+#     t0 = (-b[i] + sqrt_alpha) / (2 * a[i])
+#     t1 = (-b[i] - sqrt_alpha) / (2 * a[i])
+#     return min(numpy.min(t0[t0 > 0]), numpy.min(t1[t1 > 0]))
 
 
 def runner(
