@@ -37,8 +37,7 @@ jobs:
         pip install .[all]
     - name: Test with pytest
       run: |
-        pip install -r test_requirements.txt
         pip install pytest pytest-cov
-        cd test/ && pytest --cov meshio
+        cd test/ && pytest --cov optimesh
     # - name: Submit to codecov
     #   run: bash <(curl -s https://codecov.io/bash)
