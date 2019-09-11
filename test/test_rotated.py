@@ -52,7 +52,8 @@ def test_rotated(method):
     X2 = _rotate(X2, -theta, k)
 
     assert numpy.all(cells_ref == cells2)
-    assert numpy.all(numpy.abs(X_ref - X2) < 1.0e-13)
+    print(numpy.max(numpy.abs(X_ref - X2)))
+    assert numpy.all(numpy.abs(X_ref - X2) < 1.0e-12)
     return
 
 
