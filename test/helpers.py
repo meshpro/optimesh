@@ -1,39 +1,6 @@
-import hashlib
-import os
-import shutil
 from math import fsum
 
 import numpy
-import requests
-
-
-# The tests files are located on sourceforge.
-def download_mesh(name, sha3):
-    filename = os.path.join("/tmp", name)
-    if not os.path.exists(filename):
-        print("Downloading {}...".format(name))
-        url = "https://github.com/nschloe/meshzoo/raw/gh-pages/"
-        r = requests.get(url + name, stream=True)
-        if not r.ok:
-            raise RuntimeError(
-                "Download error ({}, return code {}).".format(r.url, r.status_code)
-            )
-        # save the mesh in /tmp
-        with open(filename, "wb") as f:
-            r.raw.decode_content = True
-            shutil.copyfileobj(r.raw, f)
-
-    # check MD5
-    file_sha3 = hashlib.sha3_224(open(filename, "rb").read()).hexdigest()
-
-    if file_sha3 != sha3:
-        raise RuntimeError(
-            "Checksums for {} not matching ({} != {}).".format(
-                filename, file_sha3, sha3
-            )
-        )
-
-    return filename
 
 
 def near_equal(a, b, tol):

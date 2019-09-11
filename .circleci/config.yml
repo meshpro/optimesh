@@ -17,9 +17,11 @@ jobs:
       - image: ubuntu:18.04
     steps:
       - run: apt update
-      - run: apt install -y git python3-pip gmsh
+      - run: apt install -y git python3-pip gmsh git-lfs
       - run: pip3 install -U pytest pytest-cov
       - checkout
+      - run: git lfs pull
+      #
       - run: pip3 install .[all]
       - run: pip3 install -r test_requirements.txt
       # The tests

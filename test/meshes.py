@@ -4,7 +4,6 @@ import numpy
 from scipy.spatial import Delaunay
 
 import meshio
-from helpers import download_mesh
 from meshplex import MeshTri
 
 
@@ -105,10 +104,8 @@ def simple3():
 
 
 def pacman():
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    mesh = meshio.read(os.path.join(this_dir, "meshes", "pacman.vtk"))
     return mesh.points[:, :2], mesh.cells["triangle"]
 
 

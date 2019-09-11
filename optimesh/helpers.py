@@ -1,5 +1,6 @@
-import asciiplotlib as apl
 import numpy
+
+import asciiplotlib as apl
 
 
 def print_stats(mesh, extra_cols=None):
