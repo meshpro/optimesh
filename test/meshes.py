@@ -4,7 +4,6 @@ import numpy
 from scipy.spatial import Delaunay
 
 import meshio
-from helpers import download_mesh
 from meshplex import MeshTri
 
 
@@ -105,38 +104,16 @@ def simple3():
 
 
 def pacman():
-    filename = download_mesh(
-        "pacman.vtk", "19a0c0466a4714b057b88e339ab5bd57020a04cdf1d564c86dc4add6"
-    )
-    mesh = meshio.read(filename)
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    mesh = meshio.read(os.path.join(this_dir, "meshes", "pacman.vtk"))
     return mesh.points[:, :2], mesh.cells["triangle"]
 
 
 def circle_gmsh():
-    filename = "circle.vtk"
-    if not os.path.isfile(filename):
-        import pygmsh
-
-        geom = pygmsh.built_in.Geometry()
-        geom.add_circle(
-            [0.0, 0.0, 0.0],
-            1.0,
-            5.0e-3,
-            # 1.0e-2,
-            num_sections=4,
-            # If compound==False, the section borders have to be points of the
-            # discretization. If using a compound circle, they don't; gmsh can
-            # choose by itself where to point the circle points.
-            compound=True,
-        )
-        X, cells, _, _, _ = pygmsh.generate_mesh(
-            geom, fast_conversion=True, remove_faces=True
-        )
-        meshio.write_points_cells(filename, X, cells)
-
-    mesh = meshio.read(filename)
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    mesh = meshio.read(os.path.join(this_dir, "meshes", "circle-gmsh.vtk"))
     c = mesh.cells["triangle"].astype(numpy.int)
-    return mesh.points, c
+    return mesh.points[:, :2], c
 
 
 def circle_random():
