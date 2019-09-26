@@ -3,30 +3,30 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: ubuntu:18.04
+      - image: circleci/python:3
     steps:
       - checkout
-      - run: apt update
-      - run: apt install -y python3-pip
-      - run: pip3 install -U black flake8
-      - run: LC_ALL=C.UTF-8 black --check .
+      - run: pip3 install -U black flake8 --user
+      - run: black --check .
       - run: flake8 .
   build:
     working_directory: ~/work
     docker:
-      - image: ubuntu:18.04
+      - image: circleci/python:3
     steps:
-      - run: apt update
-      - run: apt install -y git python3-pip gmsh git-lfs
-      - run: pip3 install -U pytest pytest-cov
+      - run: sudo apt install -y gmsh git-lfs
+      - run: pip3 install -U pytest pytest-cov --user
       - checkout
       - run: git lfs pull
       #
-      - run: pip3 install .[all]
+      - run: pip3 install .[all] --user
       # The tests
-      - run: cd test/ && MPLBACKEND=Agg pytest --maxfail=1 --cov optimesh
+      - run: 
+          command: pytest --maxfail=1 --cov optimesh
+          working_directory: test/
+          environment:
+            MPLBACKEND: Agg
       # submit to codecov
-      - run: apt install -y curl
       - run: bash <(curl -s https://codecov.io/bash)
 
 workflows:

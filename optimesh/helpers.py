@@ -1,6 +1,6 @@
 import numpy
 
-import asciiplotlib as apl
+import termplotlib as tpl
 
 
 def print_stats(mesh, extra_cols=None):
@@ -16,7 +16,7 @@ def print_stats(mesh, extra_cols=None):
         q, bins=numpy.linspace(0.0, 1.0, num=41, endpoint=True)
     )
 
-    grid = apl.subplot_grid(
+    grid = tpl.subplot_grid(
         (1, 4 + len(extra_cols)), column_widths=None, border_style=None
     )
     grid[0, 0].hist(angles_hist, angles_bin_edges, grid=[24], bar_width=1, strip=True)
