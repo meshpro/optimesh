@@ -27,11 +27,11 @@ setup(
     license=about["__license__"],
     platforms="any",
     install_requires=[
-        "asciiplotlib",
-        "meshplex >= 0.11.2, < 0.12.0",
         "meshio",
+        "meshplex >= 0.11.2, < 0.12.0",
         "numpy",
         "quadpy",
+        "termplotlib",
     ],
     python_requires=">=3",
     extras_require={"all": ["matplotlib"], "png": ["matplotlib"]},
