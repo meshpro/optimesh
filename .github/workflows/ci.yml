@@ -27,10 +27,8 @@ jobs:
       with:
         python-version: "3.x"
     - uses: actions/checkout@v1
-    - name: Git LFS
-      run: |
-        sudo apt-get install -y git-lfs
-        git lfs pull
+      with:
+        lfs: true
     - name: Install package
       run: |
         pip install --upgrade pip
