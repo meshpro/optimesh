@@ -15,7 +15,7 @@ Several mesh smoothing/optimization methods with one simple interface. optimesh
 
  * is fast,
  * preserves submeshes,
- * only works for triangular meshes (for now; upvote [this
+ * only works for triangular meshes, flat and on a surface, (for now; upvote [this
    issue](https://github.com/nschloe/optimesh/issues/17) if you're interested in
    tetrahedral mesh smoothing), and
  * supports all mesh formats that [meshio](https://github.com/nschloe/meshio) can
@@ -92,6 +92,47 @@ compute.
 
 Implemented once classically as a fixed-point iteration, once as a nonlinear
 optimization method. The latter typically leads to better results.
+
+
+### Surface mesh smoothing
+
+optimesh also supports optimization of triangular meshes on surfaces which are defined
+implicitly by a level set function (e.g., spheres). You'll need to specify the function
+and its gradient, so you'll have to do it in Python:
+```python
+import meshzoo
+import optimesh
+
+points, cells = meshzoo.tetra_sphere(20)
+
+class Sphere:
+    def f(self, x):
+        return 1.0 - (x[0] ** 2 + x[1] ** 2 + x[2] ** 2)
+
+    def grad(self, x):
+        return -2 * x
+
+# You can use all methods in optimesh:
+# points, cells = optimesh.cpt.fixed_point_uniform(
+# points, cells = optimesh.odt.fixed_point_uniform(
+points, cells = optimesh.cvt.quasi_newton_uniform_full(
+    points, cells, 1.0e-2, 100, verbose=False,
+    implicit_surface=Sphere(),
+    # step_filename_format="out{:03d}.vtk"
+)
+```
+This code first generates a mediocre mesh on a sphere using
+[meshzoo](https://github.com/nschloe/meshzoo/),
+
+![tetra-sphere](https://nschloe.github.io/optimesh/tetra-sphere.png)
+
+and then optimizes. Some results:
+
+![odt-dp-fp](https://nschloe.github.io/optimesh/sphere-cpt.webp) |
+![odt-uniform-fp](https://nschloe.github.io/optimesh/sphere-odt.webp) |
+![odt-uniform-bfgs](https://nschloe.github.io/optimesh/sphere-cvt.webp) |
+:------------:|:----------:|:---------------------------------:|
+CPT | ODT | CVT (full Hessian) |
 
 
 ### Which method is best?
