@@ -14,12 +14,12 @@ jobs:
     docker:
       - image: circleci/python:3
     steps:
-      - run: sudo apt install -y gmsh git-lfs
-      - run: pip3 install -U pytest pytest-cov --user
+      - run: sudo apt install -y gmsh git-lfs python3-numpy python3-matplotlib python3-scipy
+      - run: python3 -m pip install -U pytest pytest-cov --user
       - checkout
       - run: git lfs pull
       #
-      - run: pip3 install .[all] --user
+      - run: python3 -m pip install .[all] --user
       # The tests
       - run: 
           command: pytest --maxfail=1 --cov optimesh
