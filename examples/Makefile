@@ -1,5 +1,3 @@
-
-
 default:
 	@echo "make all?"
 

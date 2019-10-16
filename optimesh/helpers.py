@@ -75,6 +75,8 @@ def runner(
     callback=None,
     step_filename_format=None,
     uniform_density=False,
+    implicit_surface=None,
+    implicit_surface_tol=1.0e-10,
 ):
     k = 0
 
@@ -105,7 +107,7 @@ def runner(
         # Some methods are stable (CPT), others can break down if the mesh isn't very
         # smooth. A break-down manifests, for example, in a step size that lets
         # triangles become fully flat or even "overshoot". After that, anything can
-        # happen. To prevent this restrict the maximum step size to half of the minimum
+        # happen. To prevent this, restrict the maximum step size to half of the minimum
         # the incircle radius of all adjacent cells. This makes sure that triangles
         # cannot "flip".
         # <https://stackoverflow.com/a/57261082/353337>
@@ -125,6 +127,19 @@ def runner(
         diff[idx] *= max_step[idx, None] / step_lengths[idx, None]
 
         mesh.node_coords += diff
+
+        # project all points back to the surface
+        if implicit_surface is not None:
+            fval = implicit_surface.f(mesh.node_coords.T)
+            while numpy.any(numpy.abs(fval) > implicit_surface_tol):
+                grad = implicit_surface.grad(mesh.node_coords.T)
+                grad_dot_grad = numpy.einsum("ij,ij->j", grad, grad)
+                # The step is chosen in the direction of the gradient with a step size
+                # such that, if the function was linear, the boundary (fval=0) would be
+                # hit in one step.
+                mesh.node_coords -= (grad * (fval / grad_dot_grad)).T
+                # compute new value
+                fval = implicit_surface.f(mesh.node_coords.T)
 
         mesh.update_values()
         mesh.flip_until_delaunay()

@@ -116,7 +116,7 @@ All optimesh functions can also be accessed from Python directly, for example:
 ```python
 import optimesh
 
-X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbosity=False)
+X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbose=False)
 ```
 
 ### Installation
