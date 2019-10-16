@@ -124,7 +124,7 @@ points, cells = optimesh.cvt.quasi_newton_uniform_full(
 This code first generates a mediocre mesh on a sphere using
 [meshzoo](https://github.com/nschloe/meshzoo/),
 
-![tetra-sphere](https://nschloe.github.io/optimesh/tetra-sphere.png)
+<img src="https://nschloe.github.io/optimesh/tetra-sphere.png" width="30%">
 
 and then optimizes. Some results:
 
