@@ -3,7 +3,7 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: circleci/python:3
+      - image: circleci/python:3.7
     steps:
       - checkout
       - run: pip3 install -U black flake8 --user
@@ -12,9 +12,9 @@ jobs:
   build:
     working_directory: ~/work
     docker:
-      - image: circleci/python:3
+      - image: circleci/python:3.7
     steps:
-      - run: sudo apt install -y gmsh git-lfs python3-numpy python3-matplotlib python3-scipy
+      - run: sudo apt install -y gmsh git-lfs
       - run: python3 -m pip install -U pytest pytest-cov --user
       - checkout
       - run: git lfs pull
