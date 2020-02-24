@@ -23,7 +23,7 @@ Several mesh smoothing/optimization methods with one simple interface. optimesh
 
 Install with
 ```
-pip3 install optimesh --user
+pip install optimesh
 ```
 Example call:
 ```
@@ -165,9 +165,9 @@ X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbose=False
 optimesh is [available from the Python Package
 Index](https://pypi.org/project/optimesh/), so simply do
 ```
-pip3 install --upgrade --user optimesh
+pip install optimesh
 ```
-to install or upgrade.
+to install.
 
 ### Relevant publications
 

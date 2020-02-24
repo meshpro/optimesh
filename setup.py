@@ -27,8 +27,8 @@ setup(
     license=about["__license__"],
     platforms="any",
     install_requires=[
-        "meshio",
-        "meshplex >= 0.11.2, < 0.12.0",
+        "meshio < 4",
+        "meshplex < 0.13.0",
         "numpy",
         "quadpy",
         "termplotlib",
