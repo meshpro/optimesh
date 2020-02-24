@@ -6,9 +6,10 @@ default:
 tag:
 	# Make sure we're on the master branch
 	@if [ "$(shell git rev-parse --abbrev-ref HEAD)" != "master" ]; then exit 1; fi
-	@echo "Tagging v$(VERSION)..."
-	git tag v$(VERSION)
-	git push --tags
+	# @echo "Tagging v$(VERSION)..."
+	# git tag v$(VERSION)
+	# git push --tags
+	curl -H "Authorization: token `cat $(HOME)/.github-access-token`" -d '{"tag_name": "v$(VERSION)"}' https://api.github.com/repos/nschloe/optimesh/releases
 
 upload: setup.py
 	@if [ "$(shell git rev-parse --abbrev-ref HEAD)" != "master" ]; then exit 1; fi
@@ -17,7 +18,7 @@ upload: setup.py
 	python3 setup.py bdist_wheel
 	twine upload dist/*
 
-publish: tag upload
+publish: upload tag
 
 clean:
 	@find . | grep -E "(__pycache__|\.pyc|\.pyo$\)" | xargs rm -rf
@@ -32,4 +33,4 @@ black:
 
 lint:
 	black --check .
-	flake8 setup.py optimesh/ test/*.py
+	flake8 .
