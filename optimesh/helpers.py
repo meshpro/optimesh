@@ -1,4 +1,5 @@
 import numpy
+
 import termplotlib as tpl
 
 
