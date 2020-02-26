@@ -8,7 +8,7 @@ import meshio
 import meshplex
 
 from .. import cpt, cvt, laplace, odt
-from ..__about__ import __copyright__, __version__
+from ..__about__ import __version__
 
 
 def _get_parser():
@@ -115,7 +115,7 @@ def _get_parser():
                 sys.version_info.minor,
                 sys.version_info.micro,
             ),
-            __copyright__,
+            "Copyright (C) 2018-2020 Nico Schlömer <nico.schloemer@gmail.com>"
         ]
     )
 
