@@ -31,7 +31,6 @@ def test_fixed_point(mesh, ref1, ref2, refi):
     assert abs(norm1 - ref1) < tol * ref1
     assert abs(norm2 - ref2) < tol * ref2
     assert abs(normi - refi) < tol * refi
-    return
 
 
 @pytest.mark.parametrize(
@@ -58,7 +57,6 @@ def test_nonlinear_optimization(mesh, ref1, ref2, refi):
     assert abs(norm1 - ref1) < tol * ref1
     assert abs(norm2 - ref2) < tol * ref2
     assert abs(normi - refi) < tol * refi
-    return
 
 
 if __name__ == "__main__":

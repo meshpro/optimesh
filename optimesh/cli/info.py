@@ -31,14 +31,12 @@ def info(argv=None):
 
     mesh = meshio.read(args.input_file)
 
-    cells = mesh.cells["triangle"]
+    cells = mesh.get_cells_type("triangle")
 
     print("Number of points: {}".format(mesh.points.shape[0]))
     print("Number of elements:")
-    for key, value in mesh.cells.items():
-        print("  {}: {}".format(key, value.shape[0]))
+    for cell_type, value in mesh.cells:
+        print("  {}: {}".format(cell_type, value.shape[0]))
 
     mesh = MeshTri(mesh.points, cells)
     print_stats(mesh)
-
-    return

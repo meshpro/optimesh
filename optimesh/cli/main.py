@@ -140,7 +140,6 @@ def prune(mesh):
     mesh.points = mesh.points[uvertices]
     for key in mesh.point_data:
         mesh.point_data[key] = mesh.point_data[key][uvertices]
-    return
 
 
 def main(argv=None):
@@ -154,7 +153,7 @@ def main(argv=None):
 
     # Remove all nodes which do not belong to the highest-order simplex. Those would
     # lead to singular equations systems further down the line.
-    mesh.cells = {"triangle": mesh.cells["triangle"]}
+    mesh.cells = [("triangle", mesh.get_cells_type("triangle"))]
     prune(mesh)
 
     if args.subdomain_field_name:
@@ -163,8 +162,6 @@ def main(argv=None):
         cell_sets = [idx == field for idx in subdomain_idx]
     else:
         cell_sets = [numpy.ones(mesh.cells["triangle"].shape[0], dtype=bool)]
-
-    cells = mesh.cells["triangle"]
 
     method = {
         "laplace": laplace.fixed_point,
@@ -182,6 +179,8 @@ def main(argv=None):
         "odt-uniform-fp": odt.fixed_point_uniform,
         "odt-uniform-bfgs": odt.nonlinear_optimization_uniform,
     }[args.method]
+
+    cells = mesh.get_cells_type("triangle")
 
     for cell_idx in cell_sets:
         if args.method in ["odt-uniform-bfgs"]:
@@ -211,7 +210,6 @@ def main(argv=None):
     meshio.write_points_cells(
         args.output_file,
         X,
-        {"triangle": cells},
-        cell_data={"triangle": {"cell_quality": q}},
+        [("triangle", cells)],
+        cell_data={"cell_quality": [q]},
     )
-    return
