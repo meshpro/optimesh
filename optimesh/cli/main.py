@@ -115,7 +115,7 @@ def _get_parser():
                 sys.version_info.minor,
                 sys.version_info.micro,
             ),
-            "Copyright (C) 2018-2020 Nico Schlömer <nico.schloemer@gmail.com>"
+            "Copyright (C) 2018-2020 Nico Schlömer <nico.schloemer@gmail.com>",
         ]
     )
 
