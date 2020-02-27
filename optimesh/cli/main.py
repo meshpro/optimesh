@@ -130,12 +130,12 @@ def _get_parser():
 
 
 def prune(mesh):
-    ncells = numpy.concatenate([numpy.concatenate(c) for c in mesh.cells.values()])
+    ncells = numpy.concatenate([numpy.concatenate(data) for _, data in mesh.cells])
     uvertices, uidx = numpy.unique(ncells, return_inverse=True)
     k = 0
-    for key in mesh.cells.keys():
-        n = numpy.prod(mesh.cells[key].shape)
-        mesh.cells[key] = uidx[k : k + n].reshape(mesh.cells[key].shape)
+    for cell_type, data in mesh.cells:
+        n = numpy.prod(data.shape)
+        data[:] = uidx[k : k + n].reshape(data.shape)
         k += n
     mesh.points = mesh.points[uvertices]
     for key in mesh.point_data:
@@ -153,7 +153,7 @@ def main(argv=None):
 
     # Remove all nodes which do not belong to the highest-order simplex. Those would
     # lead to singular equations systems further down the line.
-    mesh.cells = [("triangle", mesh.get_cells_type("triangle"))]
+    mesh.cells = [meshio.CellBlock("triangle", mesh.get_cells_type("triangle"))]
     prune(mesh)
 
     if args.subdomain_field_name:
@@ -161,7 +161,7 @@ def main(argv=None):
         subdomain_idx = numpy.unique(field)
         cell_sets = [idx == field for idx in subdomain_idx]
     else:
-        cell_sets = [numpy.ones(mesh.cells["triangle"].shape[0], dtype=bool)]
+        cell_sets = [numpy.ones(mesh.get_cells_type("triangle").shape[0], dtype=bool)]
 
     method = {
         "laplace": laplace.fixed_point,
