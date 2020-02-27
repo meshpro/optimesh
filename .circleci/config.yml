@@ -15,17 +15,11 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - run: sudo apt install -y gmsh git-lfs
-      - run: python3 -m pip install -U pytest pytest-cov --user
+      - run: python3 -m pip install tox --user
       - checkout
       - run: git lfs pull
-      #
-      - run: python3 -m pip install .[all] --user
       # The tests
-      - run: 
-          command: pytest --cov optimesh
-          working_directory: test/
-          environment:
-            MPLBACKEND: Agg
+      - run: tox
       # submit to codecov
       - run: bash <(curl -s https://codecov.io/bash)
 
