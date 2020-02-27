@@ -22,7 +22,7 @@ jobs:
       - run: python3 -m pip install .[all] --user
       # The tests
       - run: 
-          command: pytest --maxfail=1 --cov optimesh
+          command: pytest --cov optimesh
           working_directory: test/
           environment:
             MPLBACKEND: Agg

@@ -33,7 +33,6 @@ def print_stats(mesh, extra_cols=None):
         grid[0, 4 + k].aprint(col)
 
     grid.show()
-    return
 
 
 # def stepsize_till_flat(x, v):

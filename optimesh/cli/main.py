@@ -8,7 +8,7 @@ import meshio
 import meshplex
 
 from .. import cpt, cvt, laplace, odt
-from ..__about__ import __copyright__, __version__
+from ..__about__ import __version__
 
 
 def _get_parser():
@@ -115,7 +115,7 @@ def _get_parser():
                 sys.version_info.minor,
                 sys.version_info.micro,
             ),
-            __copyright__,
+            "Copyright (C) 2018-2020 Nico Schlömer <nico.schloemer@gmail.com>",
         ]
     )
 
@@ -130,17 +130,16 @@ def _get_parser():
 
 
 def prune(mesh):
-    ncells = numpy.concatenate([numpy.concatenate(c) for c in mesh.cells.values()])
+    ncells = numpy.concatenate([numpy.concatenate(data) for _, data in mesh.cells])
     uvertices, uidx = numpy.unique(ncells, return_inverse=True)
     k = 0
-    for key in mesh.cells.keys():
-        n = numpy.prod(mesh.cells[key].shape)
-        mesh.cells[key] = uidx[k : k + n].reshape(mesh.cells[key].shape)
+    for cell_type, data in mesh.cells:
+        n = numpy.prod(data.shape)
+        data[:] = uidx[k : k + n].reshape(data.shape)
         k += n
     mesh.points = mesh.points[uvertices]
     for key in mesh.point_data:
         mesh.point_data[key] = mesh.point_data[key][uvertices]
-    return
 
 
 def main(argv=None):
@@ -154,7 +153,7 @@ def main(argv=None):
 
     # Remove all nodes which do not belong to the highest-order simplex. Those would
     # lead to singular equations systems further down the line.
-    mesh.cells = {"triangle": mesh.cells["triangle"]}
+    mesh.cells = [meshio.CellBlock("triangle", mesh.get_cells_type("triangle"))]
     prune(mesh)
 
     if args.subdomain_field_name:
@@ -162,9 +161,7 @@ def main(argv=None):
         subdomain_idx = numpy.unique(field)
         cell_sets = [idx == field for idx in subdomain_idx]
     else:
-        cell_sets = [numpy.ones(mesh.cells["triangle"].shape[0], dtype=bool)]
-
-    cells = mesh.cells["triangle"]
+        cell_sets = [numpy.ones(mesh.get_cells_type("triangle").shape[0], dtype=bool)]
 
     method = {
         "laplace": laplace.fixed_point,
@@ -182,6 +179,8 @@ def main(argv=None):
         "odt-uniform-fp": odt.fixed_point_uniform,
         "odt-uniform-bfgs": odt.nonlinear_optimization_uniform,
     }[args.method]
+
+    cells = mesh.get_cells_type("triangle")
 
     for cell_idx in cell_sets:
         if args.method in ["odt-uniform-bfgs"]:
@@ -209,9 +208,5 @@ def main(argv=None):
 
     q = meshplex.MeshTri(X, cls).cell_quality
     meshio.write_points_cells(
-        args.output_file,
-        X,
-        {"triangle": cells},
-        cell_data={"triangle": {"cell_quality": q}},
+        args.output_file, X, [("triangle", cells)], cell_data={"cell_quality": [q]},
     )
-    return

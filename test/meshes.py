@@ -106,7 +106,7 @@ def simple3():
 def pacman():
     this_dir = os.path.dirname(os.path.realpath(__file__))
     mesh = meshio.read(os.path.join(this_dir, "meshes", "pacman.vtk"))
-    return mesh.points[:, :2], mesh.cells["triangle"]
+    return mesh.points[:, :2], mesh.get_cells_type("triangle")
 
 
 def circle_gmsh():
