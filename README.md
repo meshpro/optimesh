@@ -160,7 +160,7 @@ being 1.)
 <img src="https://nschloe.github.io/optimesh/gmsh-optimesh.png" width="80%"> |
 <img src="https://nschloe.github.io/optimesh/dmsh.png" width="80%"> |
 :------------------------:|:---------------------:|:----:|
-Gmsh mesh | Gmsh mesh after optimesh | dmsh mesh |
+Gmsh mesh | Gmsh mesh after optimesh | [dmsh](//github.com/nschloe/dmsh) mesh |
 
 Let us compare the properties of the Poisson problem (*Δu = f* with Dirichlet boundary
 conditions) when solved on different meshes of the unit circle. The first mesh is the
@@ -179,9 +179,9 @@ average cell quality | condition number of the Poisson matrix | number of CG ste
 Quite clearly, the dmsh generator produces the highest-quality meshes (left).
 The condition number of the corresponding Poisson matrices is lowest for the high
 quality meshes (middle); one would hence suspect faster convergence with Krylov methods.
-Indeed, most CG iterations are necessary on the Gmsh mesh. After optimesh, one saves
+Indeed, most CG iterations are necessary on the Gmsh mesh (right). After optimesh, one saves
 between 10 and 20 percent of iterations/computing time. The dmsh mesh cuts the number of
-iterations in _half_ (right).
+iterations in _half_.
 
 
 
