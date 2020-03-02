@@ -1,66 +1,120 @@
-import numpy
+import numpy as np
 from scipy.spatial import Delaunay
 
-import meshio
-from meshplex import MeshTri
 
-
-def create_random_circle(n, radius, seed=None):
-    k = numpy.arange(n)
-    boundary_pts = radius * numpy.column_stack(
-        [numpy.cos(2 * numpy.pi * k / n), numpy.sin(2 * numpy.pi * k / n)]
-    )
-
-    # Compute the number of interior nodes such that all triangles can be somewhat
-    # equilateral.
-    edge_length = 2 * numpy.pi * radius / n
-    domain_area = numpy.pi - n * (
-        radius ** 2 / 2 * (edge_length - numpy.sin(edge_length))
-    )
-    cell_area = numpy.sqrt(3) / 4 * edge_length ** 2
-    target_num_cells = domain_area / cell_area
+def _compute_num_boundary_points(total_num_points):
+    # The number of boundary points, the total number of points, and the number of cells
+    # are connected by two equations (the second of which is approximate).
+    #
     # Euler:
     # 2 * num_points - num_boundary_edges - 2 = num_cells
-    # <=>
-    # num_interior_points ~= 0.5 * (num_cells + num_boundary_edges) + 1 - num_boundary_points
-    m = int(0.5 * (target_num_cells + n) + 1 - n)
+    #
+    # edge_length = 2 * np.pi / num_boundary_points
+    # tri_area = np.sqrt(3) / 4 * edge_length ** 2
+    # num_cells = int(np.pi / tri_area)
+    #
+    # num_boundary_points = num_boundary_edges
+    #
+    # Hence:
+    # 2 * num_points =
+    # num_boundary_points + 2 + np.pi / (np.sqrt(3) / 4 * (2 * np.pi / num_boundary_points) ** 2)
+    #
+    # We need to solve
+    #
+    # + num_boundary_points ** 2
+    # + (sqrt(3) * pi) * num_boundary_points
+    # + (2 - 2 * num_points) * (sqrt(3) * pi)
+    # = 0
+    #
+    # for the number of boundary points.
+    sqrt3_pi = np.sqrt(3) * np.pi
+    num_boundary_points = -sqrt3_pi / 2 + np.sqrt(
+        3 / 4 * np.pi ** 2 - (2 - 2 * total_num_points) * sqrt3_pi
+    )
+    return num_boundary_points
+
+
+def create_random_circle(num_boundary_points, num_interior_points, radius):
+    n = num_boundary_points
+    k = 2 * np.pi * np.arange(n) / n
+    boundary_pts = radius * np.array([np.cos(k), np.sin(k)])
+
+    # # Compute the number of interior nodes such that all triangles can be somewhat
+    # # equilateral.
+    # edge_length = 2 * np.pi * radius / n
+    # domain_area = np.pi - n * (
+    #     radius ** 2 / 2 * (edge_length - np.sin(edge_length))
+    # )
+    # cell_area = np.sqrt(3) / 4 * edge_length ** 2
+    # target_num_cells = domain_area / cell_area
+    # # Euler:
+    # # 2 * num_points - num_boundary_edges - 2 = num_cells
+    # # <=>
+    # # num_interior_points ~= 0.5 * (num_cells + num_boundary_edges) + 1 - num_boundary_points
+    # m = int(0.5 * (target_num_cells + n) + 1 - n)
 
     # Generate random points in circle;
     # <http://mathworld.wolfram.com/DiskPointPicking.html>.
-    # Choose the seed such that the fully smoothened mesh has no random boundary points.
-    if seed is not None:
-        numpy.random.seed(seed)
-    r = numpy.random.rand(m)
-    alpha = 2 * numpy.pi * numpy.random.rand(m)
+    seed = 0
+    while True:
+        np.random.seed(seed)
+        r = np.random.rand(num_interior_points)
+        alpha = 2 * np.pi * np.random.rand(num_interior_points)
+        interior_pts = np.sqrt(r) * np.array([np.cos(alpha), np.sin(alpha)])
+        # Check if no interior point will be on the boundary
+        is_any_outside = False
+        for k in range(n):
+            v = boundary_pts[:, k] - boundary_pts[:, k - 1]
+            q = (interior_pts.T - boundary_pts[:, k - 1]).T
+            is_any_outside = np.any(v[0] * q[1] <= v[1] * q[0])
+            if is_any_outside:
+                break
 
-    interior_pts = numpy.column_stack(
-        [numpy.sqrt(r) * numpy.cos(alpha), numpy.sqrt(r) * numpy.sin(alpha)]
-    )
+        if not is_any_outside:
+            break
 
-    pts = numpy.concatenate([boundary_pts, interior_pts])
+        seed += 1
+
+    pts = np.concatenate([boundary_pts.T, interior_pts.T])
 
     tri = Delaunay(pts)
-    # pts = numpy.column_stack([pts[:, 0], pts[:, 1], numpy.zeros(pts.shape[0])])
+    # pts = np.column_stack([pts[:, 0], pts[:, 1], np.zeros(pts.shape[0])])
     return pts, tri.simplices
 
 
-def random():
-    n = 40
-    pts, cells = create_random_circle(n, radius=1.0, seed=0)
-    assert numpy.sum(MeshTri(pts, cells).is_boundary_node) == n
+def random(num_points):
+    num_boundary_points = int(_compute_num_boundary_points(num_points))
+    num_interior_points = num_points - num_boundary_points
+    pts, cells = create_random_circle(
+        num_boundary_points, num_interior_points, radius=1.0
+    )
+    # import matplotlib.pyplot as plt
+    # plt.plot(pts[:, 0], pts[:, 1], ".")
+    # plt.axis("equal")
+    # plt.show()
+    # exit(1)
+    return pts, cells
 
-    meshio.write_points_cells("circle.xdmf", pts, {"triangle": cells})
-    return
 
-
-def gmsh():
+def gmsh(num_points):
     import pygmsh
 
     geom = pygmsh.built_in.Geometry()
-    geom.add_circle([0.0, 0.0, 0.0], 1.0, lcar=1.0e-1, num_sections=4, compound=True)
-    mesh = pygmsh.generate_mesh(geom)
-    meshio.write("circle-gmsh.vtk", mesh)
-    return
+    target_edge_length = 2 * np.pi / _compute_num_boundary_points(num_points)
+    geom.add_circle(
+        [0.0, 0.0, 0.0], 1.0, lcar=target_edge_length, num_sections=4, compound=True
+    )
+    mesh = pygmsh.generate_mesh(geom, remove_lower_dim_cells=True, verbose=False)
+    return mesh.points[:, :2], mesh.cells[0].data
+
+
+def dmsh(num_points):
+    import dmsh
+
+    target_edge_length = 2 * np.pi / _compute_num_boundary_points(num_points)
+    geo = dmsh.Circle([0.0, 0.0], 1.0)
+    X, cells = dmsh.generate(geo, target_edge_length)
+    return X, cells
 
 
 if __name__ == "__main__":

@@ -6,3 +6,8 @@ example/
 *.egg-info/
 .cache/
 .pytest_cache/
+coverage.xml
+*.vtk
+.coverage
+.eggs
+.tox
