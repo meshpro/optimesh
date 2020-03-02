@@ -44,9 +44,9 @@ optimesh -h
 
 ### Why optimize?
 
-![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/gmsh.png) |
-![cvt-uniform-qnb](https://nschloe.github.io/optimesh/gmsh-optimesh.png) |
-![cvt-uniform-qnf](https://nschloe.github.io/optimesh/dmsh.png) |
+<img src="https://nschloe.github.io/optimesh/gmsh.png" width="80%"> |
+<img src="https://nschloe.github.io/optimesh/gmsh-optimesh.png" width="80%"> |
+<img src="https://nschloe.github.io/optimesh/dmsh.png" width="80%"> |
 :------------------------:|:---------------------:|:----:|
 Gmsh mesh | Gmsh mesh after optimesh | dmsh mesh |
 
@@ -58,9 +58,9 @@ optimesh, the third a very high-quality [dmsh](https://github.com/nschloe/dmsh) 
 We consider meshings of the circle with an increasing number of points:
 
 
-![cvt-uniform-qnf](https://nschloe.github.io/optimesh/gmsh-quality.svg) |
-![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/gmsh-cond.svg) |
-![cvt-uniform-qnb](https://nschloe.github.io/optimesh/gmsh-cg.svg) |
+![gmsh-quality](https://nschloe.github.io/optimesh/gmsh-quality.svg) |
+![gmsh-cond](https://nschloe.github.io/optimesh/gmsh-cond.svg) |
+![gmsh-cg](https://nschloe.github.io/optimesh/gmsh-cg.svg) |
 :------------------------:|:---------------------:|:----:|
 average cell quality | condition number of the Poisson matrix | number of CG steps for Poisson problem |
 
