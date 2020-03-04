@@ -59,7 +59,7 @@ def energy(mesh, uniform_density=False):
     return out - val
 
 
-def fixed_point_uniform(points, cells, *args, boundary=None, **kwargs):
+def fixed_point_uniform(points, cells, *args, boundary_step=None, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the circumcenters
     of their adjacent cells. (Except on boundary cells; use barycenters there.)
@@ -74,14 +74,14 @@ def fixed_point_uniform(points, cells, *args, boundary=None, **kwargs):
         boundary_cell_ids = mesh.edges_cells[1][:, 0]
         cc[boundary_cell_ids] = bc[boundary_cell_ids]
         X = get_new_points_averaged(mesh, cc, mesh.cell_volumes)
-        if boundary is None:
+        if boundary_step is None:
             # Reset boundary points to their original positions.
             idx = mesh.is_boundary_node
             X[idx] = mesh.node_coords[idx]
         else:
             # Move all boundary nodes back to the boundary.
             idx = mesh.is_boundary_node
-            X[idx] = boundary.boundary_step(X[idx].T).T
+            X[idx] = boundary_step(X[idx].T).T
         return X
 
     mesh = MeshTri(points, cells)
@@ -95,7 +95,7 @@ def fixed_point_uniform(points, cells, *args, boundary=None, **kwargs):
     return mesh.node_coords, mesh.cells["nodes"]
 
 
-def fixed_point_density_preserving(points, cells, *args, boundary=None, **kwargs):
+def fixed_point_density_preserving(points, cells, *args, boundary_step=None, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the circumcenters
     of their adjacent cells.
@@ -123,7 +123,7 @@ def fixed_point_density_preserving(points, cells, *args, boundary=None, **kwargs
         else:
             # Move all boundary nodes back to the boundary.
             idx = mesh.is_boundary_node
-            X[idx] = boundary.boundary_step(X[idx].T).T
+            X[idx] = boundary_step(X[idx].T).T
         return X
 
     mesh = MeshTri(points, cells)

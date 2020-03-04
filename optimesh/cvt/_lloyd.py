@@ -5,7 +5,7 @@ from meshplex import MeshTri
 from ..helpers import runner
 
 
-def quasi_newton_uniform_lloyd(points, cells, *args, boundary=None, **kwargs):
+def quasi_newton_uniform_lloyd(points, cells, *args, boundary_step=None, **kwargs):
     """Lloyd's algorithm.
     Check out
 
@@ -37,22 +37,15 @@ def quasi_newton_uniform_lloyd(points, cells, *args, boundary=None, **kwargs):
         idx = numpy.any(numpy.isnan(X), axis=1)
         X[idx] = mesh.node_coords[idx]
 
-        if boundary is None:
+        if boundary_step is None:
             # Reset boundary points to their original positions.
             idx = mesh.is_boundary_node
             X[idx] = mesh.node_coords[idx]
         else:
             # Move all boundary nodes back to the boundary.
-            # import meshplex
-
-            # mesh = meshplex.MeshTri(X, cells)
-            # mesh.show()
-
             idx = mesh.is_boundary_node
-            X[idx] = boundary.boundary_step(X[idx].T).T
+            X[idx] = boundary_step(X[idx].T).T
 
-            # mesh = meshplex.MeshTri(X, cells)
-            # mesh.show()
         return X
 
     mesh = MeshTri(points, cells)

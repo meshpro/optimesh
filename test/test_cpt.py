@@ -125,21 +125,20 @@ def test_density_preserving(mesh, ref1, ref2, refi):
 
 
 def test_circle():
-    class Circle:
-        def __init__(self):
-            self.x0 = [0.0, 0.0]
-            self.r = 1.0
-
-        def boundary_step(self, x):
-            # simply project onto the circle
-            y = (x.T - self.x0).T
-            r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
-            return ((y / r * self.r).T + self.x0).T
+    def boundary_step(x):
+        x0 = [0.0, 0.0]
+        r = 1.0
+        # simply project onto the circle
+        y = (x.T - x0).T
+        r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
+        return ((y / r * r).T + x0).T
 
     from meshes import circle_random2
 
     X, cells = circle_random2(150, 1.0)
-    X, cells = cpt.fixed_point_uniform(X, cells, 1.0e-3, 100, boundary=Circle())
+    X, cells = cpt.fixed_point_uniform(
+        X, cells, 1.0e-3, 100, boundary_step=boundary_step
+    )
 
 
 if __name__ == "__main__":
