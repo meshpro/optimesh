@@ -60,6 +60,37 @@ def test_cvt_qnb(mesh, ref1, ref2, refi):
     return
 
 
+def test_cvt_qnb_boundary(n=10):
+    X, cells = create_random_circle(n=n, radius=1.0)
+
+    class Circle:
+        def __init__(self):
+            self.x0 = [0.0, 0.0]
+            self.r = 1.0
+
+        def boundary_step(self, x):
+            # simply project onto the circle
+            y = (x.T - self.x0).T
+            r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
+            return ((y / r * self.r).T + self.x0).T
+
+    X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(
+        X, cells, 1.0e-2, 100, boundary=Circle()
+    )
+    # X, cells = optimesh.cvt.quasi_newton_uniform_blocks(
+    #     X, cells, 1.0e-2, 100, boundary=Circle()
+    # )
+
+    import meshplex
+
+    mesh = meshplex.MeshTri(X, cells)
+    mesh.show()
+
+    # Assert that we're dealing with the mesh we expect.
+    # helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
+    return
+
+
 @pytest.mark.parametrize(
     "mesh, ref1, ref2, refi",
     [
@@ -69,15 +100,19 @@ def test_cvt_qnb(mesh, ref1, ref2, refi):
 )
 def test_cvt_qnf(mesh, ref1, ref2, refi):
     X, cells = mesh()
-
     X, cells = optimesh.cvt.quasi_newton_uniform_full(X, cells, 1.0e-2, 100, omega=0.9)
+
+    import meshplex
+
+    mesh = meshplex.MeshTri(X, cells)
+    mesh.show()
 
     # Assert that we're dealing with the mesh we expect.
     helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
     return
 
 
-def create_random_circle(n, radius, seed=None):
+def create_random_circle(n, radius, seed=0):
     k = numpy.arange(n)
     boundary_pts = radius * numpy.column_stack(
         [numpy.cos(2 * numpy.pi * k / n), numpy.sin(2 * numpy.pi * k / n)]
@@ -132,5 +167,4 @@ def test_for_breakdown(seed):
 
 
 if __name__ == "__main__":
-    test_cvt_lloyd(pacman, 1939.1198108068188, 75.94965207932323, 5.0)
-    # test_cvt_lloyd(simple1, 4.985355657854027, 2.1179164560036154, 1.0)
+    test_cvt_qnb_boundary(50)

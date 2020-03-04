@@ -59,10 +59,28 @@ def test_nonlinear_optimization(mesh, ref1, ref2, refi):
     assert abs(normi - refi) < tol * refi
 
 
-if __name__ == "__main__":
-    from meshes import circle_rotated
-    import meshio
+def test_circle():
+    class Circle:
+        def __init__(self):
+            self.x0 = [0.0, 0.0]
+            self.r = 1.0
 
-    X, cells = circle_rotated()
-    X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-3, 100)
-    meshio.write_points_cells("out.vtk", X, {"triangle": cells})
+        def boundary_step(self, x):
+            # simply project onto the circle
+            y = (x.T - self.x0).T
+            r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
+            return ((y / r * self.r).T + self.x0).T
+
+    from meshes import circle_gmsh2
+
+    # ODT can't handle the random circle; some cells too flat near the boundary lead to
+    # a breakdown.
+    # X, cells = circle_random2(150, 1.0, seed=1)
+    X, cells = circle_gmsh2(100)
+    X, cells = optimesh.odt.fixed_point_uniform(
+        X, cells, 1.0e-3, 100, boundary=Circle()
+    )
+
+
+if __name__ == "__main__":
+    test_circle()

@@ -11,11 +11,7 @@ import numpy
 import quadpy
 from meshplex import MeshTri
 
-from .helpers import (
-    get_new_points_averaged,
-    print_stats,
-    runner,
-)
+from .helpers import get_new_points_averaged, print_stats, runner
 
 
 def energy(mesh, uniform_density=False):
@@ -63,11 +59,10 @@ def energy(mesh, uniform_density=False):
     return out - val
 
 
-def fixed_point_uniform(points, cells, *args, **kwargs):
+def fixed_point_uniform(points, cells, *args, boundary=None, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the circumcenters
-    of their adjacent cells. If a triangle cell switches orientation in the
-    process, don't move quite so far.
+    of their adjacent cells. (Except on boundary cells; use barycenters there.)
     """
 
     def get_new_points(mesh):
@@ -78,7 +73,16 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         # Find all cells with a boundary edge
         boundary_cell_ids = mesh.edges_cells[1][:, 0]
         cc[boundary_cell_ids] = bc[boundary_cell_ids]
-        return get_new_points_averaged(mesh, cc, mesh.cell_volumes)
+        X = get_new_points_averaged(mesh, cc, mesh.cell_volumes)
+        if boundary is None:
+            # Reset boundary points to their original positions.
+            idx = mesh.is_boundary_node
+            X[idx] = mesh.node_coords[idx]
+        else:
+            # Move all boundary nodes back to the boundary.
+            idx = mesh.is_boundary_node
+            X[idx] = boundary.boundary_step(X[idx].T).T
+        return X
 
     mesh = MeshTri(points, cells)
     runner(
@@ -91,7 +95,7 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
     return mesh.node_coords, mesh.cells["nodes"]
 
 
-def fixed_point_density_preserving(points, cells, *args, **kwargs):
+def fixed_point_density_preserving(points, cells, *args, boundary=None, **kwargs):
     """Idea:
     Move interior mesh points into the weighted averages of the circumcenters
     of their adjacent cells.
@@ -102,16 +106,25 @@ def fixed_point_density_preserving(points, cells, *args, **kwargs):
         # barycenters there. The reason is that points near the boundary would be
         # "sucked" out of the domain if the boundary cell is very flat, i.e., its
         # circumcenter is very far outside of the domain.
-        # This heuristic also applies to cells _near_ the boundary, though, and if
+        # This heuristic also applies to cells _near_ the boundary though, and, if
         # constructed maliciously, any mesh. Hence, this method can break down. A better
-        # approach is to use barycenters for all cells which are sufficiently flat.
+        # approach is to use barycenters for all cells which are rather flat.
         cc = mesh.cell_circumcenters.copy()
         # Find all cells with a boundary edge
         is_boundary_cell = (
             numpy.sum(mesh.is_boundary_node[mesh.cells["nodes"]], axis=1) == 2
         )
         cc[is_boundary_cell] = mesh.cell_barycenters[is_boundary_cell]
-        return get_new_points_averaged(mesh, cc)
+        X = get_new_points_averaged(mesh, cc)
+        if boundary is None:
+            # Reset boundary points to their original positions.
+            idx = mesh.is_boundary_node
+            X[idx] = mesh.node_coords[idx]
+        else:
+            # Move all boundary nodes back to the boundary.
+            idx = mesh.is_boundary_node
+            X[idx] = boundary.boundary_step(X[idx].T).T
+        return X
 
     mesh = MeshTri(points, cells)
     runner(

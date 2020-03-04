@@ -1,11 +1,12 @@
+import time
+
 import matplotlib.pyplot as plt
 import numpy
-import time
 import scipy.sparse
 from dolfin import (
     Constant,
     DirichletBC,
-    Function,  # mpi_comm_world,
+    Function,
     FunctionSpace,
     KrylovSolver,
     Mesh,
@@ -114,14 +115,17 @@ mesh = meshplex.MeshTri(pts, cells)
 mesh.save("out1.png", **kwargs)
 #
 pts, cells = create_circle.dmsh(num_points)
-# pts, cells = optimesh.cvt.quasi_newton_uniform_blocks(
-#     pts, cells, tol=1.0e-6, max_num_steps=numpy.inf
-# )
+pts, cells = optimesh.cvt.quasi_newton_uniform_blocks(
+    pts, cells, tol=1.0e-6, max_num_steps=numpy.inf
+)
 # pts, cells = optimesh.cvt.quasi_newton_uniform_full(
 #     pts, cells, tol=1.0e-4, max_num_steps=100
 # )
 mesh = meshplex.MeshTri(pts, cells)
+mesh.show(**kwargs)
 mesh.save("out2.png", **kwargs)
+
+exit(1)
 
 
 data = {

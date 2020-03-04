@@ -69,14 +69,23 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
     return mesh.node_coords, mesh.cells["nodes"]
 
 
-def fixed_point_uniform(points, cells, *args, **kwargs):
+def fixed_point_uniform(points, cells, *args, boundary=None, **kwargs):
     """Idea:
-    Move interior mesh points into the weighted averages of the centroids
-    (barycenters) of their adjacent cells.
+    Move interior mesh points into the weighted averages of the centroids (barycenters)
+    of their adjacent cells.
     """
 
     def get_new_points(mesh):
-        return get_new_points_averaged(mesh, mesh.cell_barycenters, mesh.cell_volumes)
+        X = get_new_points_averaged(mesh, mesh.cell_barycenters, mesh.cell_volumes)
+        if boundary is None:
+            # Reset boundary points to their original positions.
+            idx = mesh.is_boundary_node
+            X[idx] = mesh.node_coords[idx]
+        else:
+            # Move all boundary nodes back to the boundary.
+            idx = mesh.is_boundary_node
+            X[idx] = boundary.boundary_step(X[idx].T).T
+        return X
 
     mesh = MeshTri(points, cells)
     runner(

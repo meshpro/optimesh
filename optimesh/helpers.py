@@ -141,10 +141,9 @@ def runner(
                 fval = implicit_surface.f(mesh.node_coords.T)
 
         mesh.update_values()
-        mesh.show(control_volume_centroid_color="C1")
         mesh.flip_until_delaunay()
-
-        # mesh.show()
+        # mesh.show(control_volume_centroid_color="C1")
+        mesh.show()
 
         # Abort the loop if the update was small
         diff_norm_2 = numpy.einsum("ij,ij->i", diff, diff)
@@ -209,8 +208,4 @@ def get_new_points_averaged(mesh, reference_points, weights=None):
             omega += numpy.bincount(i, weights, minlength=n)
 
     new_points /= omega[:, None]
-
-    # reset boundary points
-    idx = mesh.is_boundary_node
-    new_points[idx] = mesh.node_coords[idx]
     return new_points
