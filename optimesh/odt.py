@@ -12,8 +12,7 @@ import quadpy
 from meshplex import MeshTri
 
 from .helpers import (
-    get_new_points_count_averaged,
-    get_new_points_volume_averaged,
+    get_new_points_averaged,
     print_stats,
     runner,
 )
@@ -79,7 +78,7 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
         # Find all cells with a boundary edge
         boundary_cell_ids = mesh.edges_cells[1][:, 0]
         cc[boundary_cell_ids] = bc[boundary_cell_ids]
-        return get_new_points_volume_averaged(mesh, cc)
+        return get_new_points_averaged(mesh, cc, mesh.cell_volumes)
 
     mesh = MeshTri(points, cells)
     runner(
@@ -112,7 +111,7 @@ def fixed_point_density_preserving(points, cells, *args, **kwargs):
             numpy.sum(mesh.is_boundary_node[mesh.cells["nodes"]], axis=1) == 2
         )
         cc[is_boundary_cell] = mesh.cell_barycenters[is_boundary_cell]
-        return get_new_points_count_averaged(mesh, cc)
+        return get_new_points_averaged(mesh, cc)
 
     mesh = MeshTri(points, cells)
     runner(

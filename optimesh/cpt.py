@@ -15,7 +15,7 @@ import scipy.sparse.linalg
 import quadpy
 from meshplex import MeshTri
 
-from .helpers import get_new_points_volume_averaged, runner
+from .helpers import get_new_points_averaged, runner
 
 
 def _build_graph_laplacian(mesh):
@@ -76,7 +76,7 @@ def fixed_point_uniform(points, cells, *args, **kwargs):
     """
 
     def get_new_points(mesh):
-        return get_new_points_volume_averaged(mesh, mesh.cell_barycenters)
+        return get_new_points_averaged(mesh, mesh.cell_barycenters, mesh.cell_volumes)
 
     mesh = MeshTri(points, cells)
     runner(
