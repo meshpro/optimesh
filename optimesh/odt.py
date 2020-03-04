@@ -116,7 +116,7 @@ def fixed_point_density_preserving(points, cells, *args, boundary_step=None, **k
         )
         cc[is_boundary_cell] = mesh.cell_barycenters[is_boundary_cell]
         X = get_new_points_averaged(mesh, cc)
-        if boundary is None:
+        if boundary_step is None:
             # Reset boundary points to their original positions.
             idx = mesh.is_boundary_node
             X[idx] = mesh.node_coords[idx]
