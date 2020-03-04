@@ -63,19 +63,16 @@ def test_cvt_qnb(mesh, ref1, ref2, refi):
 def test_cvt_qnb_boundary(n=10):
     X, cells = create_random_circle(n=n, radius=1.0)
 
-    class Circle:
-        def __init__(self):
-            self.x0 = [0.0, 0.0]
-            self.r = 1.0
-
-        def boundary_step(self, x):
-            # simply project onto the circle
-            y = (x.T - self.x0).T
-            r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
-            return ((y / r * self.r).T + self.x0).T
+    def boundary_step(x):
+        x0 = [0.0, 0.0]
+        r = 1.0
+        # simply project onto the circle
+        y = (x.T - x0).T
+        r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
+        return ((y / r * r).T + x0).T
 
     X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(
-        X, cells, 1.0e-2, 100, boundary=Circle()
+        X, cells, 1.0e-2, 100, boundary_step=boundary_step
     )
     # X, cells = optimesh.cvt.quasi_newton_uniform_blocks(
     #     X, cells, 1.0e-2, 100, boundary=Circle()

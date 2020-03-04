@@ -60,7 +60,7 @@ def test_nonlinear_optimization(mesh, ref1, ref2, refi):
 
 
 def test_circle():
-    def boundary_step(self, x):
+    def boundary_step(x):
         x0 = [0.0, 0.0]
         r = 1.0
         # simply project onto the circle
