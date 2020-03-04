@@ -106,6 +106,13 @@ def update(mesh):
     rhs = -jac_uniform(mesh, mask)
 
     # Apply Dirichlet conditions.
+    # Ideally, we'd allow the boundary nodes to move, too, and move them back to the
+    # boundary in a second step. Since the points are coupled, however, the interior
+    # points would move to different places as well.
+    #
+    # Instead of hard Dirichlet conditions, we would have to insert conditions for the
+    # points to move along the surface. Before this is implemented, just use Dirichlet.
+    #
     # Set all Dirichlet rows to 0. When using a cell mask, it can happen that some nodes
     # don't get any contribution at all because they are adjacent only to masked cells.
     # Reset those, too.
@@ -121,11 +128,14 @@ def update(mesh):
         d[block_size * i_reset + k] = 1.0
     matrix.setdiag(d)
     rhs[i_reset] = 0.0
-    rhs = rhs.reshape(-1)
 
-    out = scipy.sparse.linalg.spsolve(matrix, rhs)
+    out = scipy.sparse.linalg.spsolve(matrix, rhs.reshape(-1))
     # import pyamg
     # ml = pyamg.ruge_stuben_solver(matrix)
     # out = ml.solve(rhs, tol=1.0e-12)
+    dX = out.reshape(-1, block_size)
 
-    return out.reshape(-1, block_size)
+    # idx = numpy.any(numpy.isnan(rhs), axis=1) | mesh.is_boundary_node
+    # dX[idx] = 0.0
+
+    return dX

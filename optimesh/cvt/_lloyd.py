@@ -5,7 +5,7 @@ from meshplex import MeshTri
 from ..helpers import runner
 
 
-def quasi_newton_uniform_lloyd(points, cells, *args, **kwargs):
+def quasi_newton_uniform_lloyd(points, cells, *args, boundary_step=None, **kwargs):
     """Lloyd's algorithm.
     Check out
 
@@ -29,16 +29,24 @@ def quasi_newton_uniform_lloyd(points, cells, *args, **kwargs):
         # mask to cells at or near the boundary.
         mask = numpy.any(mesh.ce_ratios < -0.5, axis=0)
 
-        x = mesh.get_control_volume_centroids(cell_mask=mask)
-        # reset boundary points
-        idx = mesh.is_boundary_node
-        x[idx] = mesh.node_coords[idx]
+        X = mesh.get_control_volume_centroids(cell_mask=mask)
+
         # When using a cell mask, it can happen that some nodes don't get any
         # contribution at all because they are adjacent only to masked cells. Reset
         # those, too.
-        idx = numpy.any(numpy.isnan(x), axis=1)
-        x[idx] = mesh.node_coords[idx]
-        return x
+        idx = numpy.any(numpy.isnan(X), axis=1)
+        X[idx] = mesh.node_coords[idx]
+
+        if boundary_step is None:
+            # Reset boundary points to their original positions.
+            idx = mesh.is_boundary_node
+            X[idx] = mesh.node_coords[idx]
+        else:
+            # Move all boundary nodes back to the boundary.
+            idx = mesh.is_boundary_node
+            X[idx] = boundary_step(X[idx].T).T
+
+        return X
 
     mesh = MeshTri(points, cells)
 

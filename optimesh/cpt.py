@@ -15,7 +15,7 @@ import scipy.sparse.linalg
 import quadpy
 from meshplex import MeshTri
 
-from .helpers import get_new_points_volume_averaged, runner
+from .helpers import get_new_points_averaged, runner
 
 
 def _build_graph_laplacian(mesh):
@@ -69,14 +69,23 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
     return mesh.node_coords, mesh.cells["nodes"]
 
 
-def fixed_point_uniform(points, cells, *args, **kwargs):
+def fixed_point_uniform(points, cells, *args, boundary_step=None, **kwargs):
     """Idea:
-    Move interior mesh points into the weighted averages of the centroids
-    (barycenters) of their adjacent cells.
+    Move interior mesh points into the weighted averages of the centroids (barycenters)
+    of their adjacent cells.
     """
 
     def get_new_points(mesh):
-        return get_new_points_volume_averaged(mesh, mesh.cell_barycenters)
+        X = get_new_points_averaged(mesh, mesh.cell_barycenters, mesh.cell_volumes)
+        if boundary_step is None:
+            # Reset boundary points to their original positions.
+            idx = mesh.is_boundary_node
+            X[idx] = mesh.node_coords[idx]
+        else:
+            # Move all boundary nodes back to the boundary.
+            idx = mesh.is_boundary_node
+            X[idx] = boundary_step(X[idx].T).T
+        return X
 
     mesh = MeshTri(points, cells)
     runner(

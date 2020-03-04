@@ -108,12 +108,25 @@ def gmsh(num_points):
     return mesh.points[:, :2], mesh.cells[0].data
 
 
-def dmsh(num_points):
+def dmsh(target_num_points):
     import dmsh
 
-    target_edge_length = 2 * np.pi / _compute_num_boundary_points(num_points)
+    print("target num points", target_num_points)
+
+    est_num_boundary_nodes = _compute_num_boundary_points(target_num_points)
+    est_num_boundary_nodes = 100
+    target_edge_length = 2 * np.pi / est_num_boundary_nodes
+    print(target_edge_length)
+    print("est num boundary", est_num_boundary_nodes)
     geo = dmsh.Circle([0.0, 0.0], 1.0)
     X, cells = dmsh.generate(geo, target_edge_length)
+    print("num points", X.shape[0])
+
+    import meshplex
+
+    mesh = meshplex.MeshTri(X, cells)
+    print("num boundary points", sum(mesh.is_boundary_node))
+    # exit(1)
     return X, cells
 
 

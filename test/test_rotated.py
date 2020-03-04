@@ -30,7 +30,8 @@ def _rotate(X, theta, k):
     ],
 )
 def test_rotated(method):
-    X, cells = circle_random()
+    X, cells = circle_random(40, 1.0)
+    X = numpy.column_stack([X, numpy.zeros(X.shape[0])])
 
     # Apply a robust method first to avoid too crazy meshes.
     X, cells = optimesh.cpt.fixed_point_uniform(X, cells, 0.0, 2)

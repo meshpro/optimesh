@@ -6,7 +6,7 @@ from ..helpers import runner
 from ._helpers import jac_uniform
 
 
-def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
+def quasi_newton_uniform_blocks(points, cells, *args, boundary_step=None, **kwargs):
     """Lloyd's algorithm can be though of a diagonal-only Hessian; this method
     incorporates the diagonal blocks, too. It's almost as cheap but performs better.
     """
@@ -77,16 +77,25 @@ def quasi_newton_uniform_blocks(points, cells, *args, **kwargs):
 
         rhs = -jac_uniform(mesh, mask)
 
-        # Set the boundary blocks to the identity. When using a cell mask, it can
-        # happen that some nodes don't get any contribution at all because they are
-        # adjacent only to masked cells. Reset those, too.
-        idx = numpy.any(numpy.isnan(rhs), axis=1) | mesh.is_boundary_node
+        # When using a cell mask, it can happen that some nodes don't get any
+        # contribution at all because they are adjacent only to masked cells.
+        idx = numpy.any(numpy.isnan(rhs), axis=1)
         diagonal_blocks[idx] = 0.0
         for k in range(X.shape[1]):
             diagonal_blocks[idx, k, k] = 1.0
         rhs[idx] = 0.0
 
         X += numpy.linalg.solve(diagonal_blocks, rhs)
+
+        if boundary_step is None:
+            # Reset boundary points to their original positions.
+            idx = mesh.is_boundary_node
+            X[idx] = mesh.node_coords[idx]
+        else:
+            # Move all boundary nodes back to the boundary.
+            idx = mesh.is_boundary_node
+            X[idx] = boundary_step(X[idx].T).T
+
         return X
 
     mesh = MeshTri(points, cells)

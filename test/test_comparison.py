@@ -6,8 +6,7 @@ from meshes import circle_random
 
 
 def test_comparison():
-    X, cells = circle_random()
-    X = X[:, :2]
+    X, cells = circle_random(40, 1.0)
 
     # Do a few steps of a robust method to avoid too crazy meshes.
     tol = 0.0
