@@ -148,16 +148,20 @@ def _compute_num_boundary_points(total_num_points):
     return num_boundary_points
 
 
-def circle_gmsh2(num_points):
-    import pygmsh
+def circle_gmsh2():
+    # import pygmsh
+    # geom = pygmsh.built_in.Geometry()
+    # target_edge_length = 2 * numpy.pi / _compute_num_boundary_points(num_points)
+    # geom.add_circle(
+    #     [0.0, 0.0, 0.0], 1.0, lcar=target_edge_length, num_sections=4, compound=True
+    # )
+    # mesh = pygmsh.generate_mesh(geom, remove_lower_dim_cells=True, verbose=False)
+    # mesh.write("out.vtk")
 
-    geom = pygmsh.built_in.Geometry()
-    target_edge_length = 2 * numpy.pi / _compute_num_boundary_points(num_points)
-    geom.add_circle(
-        [0.0, 0.0, 0.0], 1.0, lcar=target_edge_length, num_sections=4, compound=True
-    )
-    mesh = pygmsh.generate_mesh(geom, remove_lower_dim_cells=True, verbose=False)
-    return mesh.points[:, :2], mesh.get_cells_type("triangle")
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+    mesh = meshio.read(os.path.join(this_dir, "meshes", "circle-small.vtk"))
+    c = mesh.get_cells_type("triangle")
+    return mesh.points[:, :2], c
 
 
 def circle_random(n, radius):

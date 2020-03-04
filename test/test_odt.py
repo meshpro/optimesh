@@ -73,7 +73,7 @@ def test_circle():
     # ODT can't handle the random circle; some cells too flat near the boundary lead to
     # a breakdown.
     # X, cells = circle_random2(150, 1.0, seed=1)
-    X, cells = circle_gmsh2(100)
+    X, cells = circle_gmsh2()
     X, cells = optimesh.odt.fixed_point_uniform(
         X, cells, 1.0e-3, 100, boundary_step=boundary_step
     )
