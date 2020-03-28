@@ -53,9 +53,7 @@ bad, yellow is good.
 
 #### CVT (centroidal Voronoi tesselation)
 
-![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/lloyd2.webp) |
-![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) |
-![cvt-uniform-qnf](https://nschloe.github.io/optimesh/cvt-uniform-qnf.webp) |
+![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/lloyd2.webp) | ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) | ![cvt-uniform-qnf](https://nschloe.github.io/optimesh/cvt-uniform-qnf.webp) |
 :------------------------:|:---------------------:|:----:|
 uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (default method, full Hessian, `--method cvt-uniform-qnf`) |
 
@@ -66,9 +64,7 @@ as well as several variants that result in better meshes.
 
 #### CPT (centroidal patch tesselation)
 
-![cpt-cp](https://nschloe.github.io/optimesh/cpt-dp.png) |
-![cpt-uniform-fp](https://nschloe.github.io/optimesh/cpt-uniform-fp.webp) |
-![cpt-uniform-qn](https://nschloe.github.io/optimesh/cpt-uniform-qn.webp) |
+![cpt-cp](https://nschloe.github.io/optimesh/cpt-dp.png) | ![cpt-uniform-fp](https://nschloe.github.io/optimesh/cpt-uniform-fp.webp) | ![cpt-uniform-qn](https://nschloe.github.io/optimesh/cpt-uniform-qn.webp) |
 :-----------------------------------------------------------------------:|:-----------------------------------------------------------------:|:--------------------------------------------------------:|
 density-preserving linear solve ([Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing), `--method cpt-dp`) | uniform-density fixed-point iteration (`--method cpt-uniform-fp`) | uniform-density quasi-Newton (`--method cpt-uniform-qn`) |
 
@@ -83,9 +79,7 @@ as a quasi-Newton method. The latter typically converges faster.
 
 #### ODT (optimal Delaunay tesselation)
 
-![odt-dp-fp](https://nschloe.github.io/optimesh/odt-dp-fp.webp) |
-![odt-uniform-fp](https://nschloe.github.io/optimesh/odt-uniform-fp.webp) |
-![odt-uniform-bfgs](https://nschloe.github.io/optimesh/odt-uniform-bfgs.webp) |
+![odt-dp-fp](https://nschloe.github.io/optimesh/odt-dp-fp.webp) | ![odt-uniform-fp](https://nschloe.github.io/optimesh/odt-uniform-fp.webp) | ![odt-uniform-bfgs](https://nschloe.github.io/optimesh/odt-uniform-bfgs.webp) |
 :--------------------------------------------------------------:|:-----------------------------------------------------------------:|:------------------------------------------------------------------:|
 density-preserving fixed-point iteration (`--method odt-dp-fp`) | uniform-density fixed-point iteration (`--method odt-uniform-fp`) | uniform-density BFGS (`--method odt-uniform-bfgs`) |
 
@@ -131,9 +125,7 @@ This code first generates a mediocre mesh on a sphere using
 
 and then optimizes. Some results:
 
-![odt-dp-fp](https://nschloe.github.io/optimesh/sphere-cpt.webp) |
-![odt-uniform-fp](https://nschloe.github.io/optimesh/sphere-odt.webp) |
-![odt-uniform-bfgs](https://nschloe.github.io/optimesh/sphere-cvt.webp) |
+![odt-dp-fp](https://nschloe.github.io/optimesh/sphere-cpt.webp) | ![odt-uniform-fp](https://nschloe.github.io/optimesh/sphere-odt.webp) | ![odt-uniform-bfgs](https://nschloe.github.io/optimesh/sphere-cvt.webp) |
 :------------:|:----------:|:---------------------------------:|
 CPT | ODT | CVT (full Hessian) |
 
@@ -156,9 +148,7 @@ being 1.)
 
 ### Why optimize?
 
-<img src="https://nschloe.github.io/optimesh/gmsh.png" width="80%"> |
-<img src="https://nschloe.github.io/optimesh/gmsh-optimesh.png" width="80%"> |
-<img src="https://nschloe.github.io/optimesh/dmsh.png" width="80%"> |
+<img src="https://nschloe.github.io/optimesh/gmsh.png" width="80%"> | <img src="https://nschloe.github.io/optimesh/gmsh-optimesh.png" width="80%"> | <img src="https://nschloe.github.io/optimesh/dmsh.png" width="80%"> |
 :------------------------:|:---------------------:|:----:|
 Gmsh mesh | Gmsh mesh after optimesh | [dmsh](//github.com/nschloe/dmsh) mesh |
 
@@ -170,9 +160,7 @@ optimesh, the third a very high-quality [dmsh](https://github.com/nschloe/dmsh) 
 We consider meshings of the circle with an increasing number of points:
 
 
-![gmsh-quality](https://nschloe.github.io/optimesh/gmsh-quality.svg) |
-![gmsh-cond](https://nschloe.github.io/optimesh/gmsh-cond.svg) |
-![gmsh-cg](https://nschloe.github.io/optimesh/gmsh-cg.svg) |
+![gmsh-quality](https://nschloe.github.io/optimesh/gmsh-quality.svg) | ![gmsh-cond](https://nschloe.github.io/optimesh/gmsh-cond.svg) | ![gmsh-cg](https://nschloe.github.io/optimesh/gmsh-cg.svg) |
 :------------------------:|:---------------------:|:----:|
 average cell quality | condition number of the Poisson matrix | number of CG steps for Poisson problem |
 
