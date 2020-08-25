@@ -1,8 +1,8 @@
 import numpy
 import pytest
+from meshes import pacman, simple1
 
 import optimesh
-from meshes import pacman, simple1
 
 
 @pytest.mark.parametrize(

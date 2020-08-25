@@ -7,7 +7,6 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 <https://doi.org/10.1016/j.cma.2010.11.007>.
 """
 import numpy
-
 import quadpy
 from meshplex import MeshTri
 

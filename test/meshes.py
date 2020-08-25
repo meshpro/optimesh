@@ -1,10 +1,9 @@
 import os.path
 
-import numpy
-from scipy.spatial import Delaunay
-
 import meshio
+import numpy
 from meshplex import MeshTri
+from scipy.spatial import Delaunay
 
 
 def simple0():

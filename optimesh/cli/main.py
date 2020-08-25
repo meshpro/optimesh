@@ -2,10 +2,9 @@ import argparse
 import math
 import sys
 
-import numpy
-
 import meshio
 import meshplex
+import numpy
 
 from .. import cpt, cvt, laplace, odt
 from ..__about__ import __version__

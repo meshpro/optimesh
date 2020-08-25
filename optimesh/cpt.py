@@ -10,9 +10,8 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 <https://doi.org/10.1016/j.cma.2010.11.007>.
 """
 import numpy
-import scipy.sparse.linalg
-
 import quadpy
+import scipy.sparse.linalg
 from meshplex import MeshTri
 
 from .helpers import get_new_points_averaged, runner

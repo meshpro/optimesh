@@ -1,6 +1,9 @@
 import time
 
+import create_circle
 import matplotlib.pyplot as plt
+import meshio
+import meshplex
 import numpy
 import scipy.sparse
 from dolfin import (
@@ -20,9 +23,6 @@ from dolfin import (
     inner,
 )
 
-import create_circle
-import meshio
-import meshplex
 import optimesh
 
 
