@@ -177,6 +177,7 @@ iterations in _half_.
 ### Access from Python
 
 All optimesh functions can also be accessed from Python directly, for example:
+<!--exdown-skip-->
 ```python
 import optimesh
 
