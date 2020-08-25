@@ -1,10 +1,10 @@
+import helpers
 import numpy
 import pytest
+from meshes import pacman, simple1
 from scipy.spatial import Delaunay
 
-import helpers
 import optimesh
-from meshes import pacman, simple1
 
 
 @pytest.mark.parametrize(
@@ -56,8 +56,7 @@ def test_cvt_qnb(mesh, ref1, ref2, refi):
     X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 1.0e-2, 100)
 
     # Assert that we're dealing with the mesh we expect.
-    helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
-    return
+    helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-10)
 
 
 def test_cvt_qnb_boundary(n=10):

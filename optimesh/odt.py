@@ -7,7 +7,6 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 <https://doi.org/10.1016/j.cma.2010.11.007>.
 """
 import numpy
-
 import quadpy
 from meshplex import MeshTri
 
@@ -45,8 +44,8 @@ def energy(mesh, uniform_density=False):
     assert dim == 2
     x = mesh.node_coords[:, :2]
     triangles = numpy.moveaxis(x[mesh.cells["nodes"]], 0, 1)
-    # Take any scheme with order 2
-    scheme = quadpy.triangle.dunavant_02()
+    # Get a scheme with order 2
+    scheme = quadpy.t2.get_good_scheme(2)
     val = scheme.integrate(lambda x: x[0] ** 2 + x[1] ** 2, triangles)
     if uniform_density:
         val = numpy.sum(val)

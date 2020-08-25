@@ -1,6 +1,5 @@
 import numpy
 import scipy.sparse
-
 from meshplex import MeshTri
 
 from ..helpers import runner

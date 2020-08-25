@@ -1,7 +1,7 @@
 import numpy
 import pytest
-
 from meshes import pacman, simple0, simple1, simple2, simple3
+
 from optimesh import cpt
 
 
@@ -33,7 +33,7 @@ def test_simple1_jac():
         f1 = cpt._energy_uniform_per_node(x1, cells)
         f0 = cpt._energy_uniform_per_node(x0, cells)
         dE = (f1 - f0) / (2 * eps)
-        assert abs(dE[4] - jac[4, j]) < 1.0e-10
+        assert abs(dE[4] - jac[4, j]) < 1.0e-9
 
     return
 

@@ -3,6 +3,7 @@ Generate animation for fixed-point Laplace. Not included as a command-line optio
 lienar solve is much more efficient.
 """
 import meshio
+
 import optimesh
 
 mesh = meshio.read("circle.vtk")

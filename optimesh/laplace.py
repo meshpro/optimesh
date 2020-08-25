@@ -1,5 +1,4 @@
 import numpy
-
 from meshplex import MeshTri
 
 from .helpers import runner
