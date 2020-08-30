@@ -3,14 +3,15 @@
   <p align="center">Triangular mesh optimization.</p>
 </p>
 
-[![CircleCI](https://img.shields.io/circleci/project/github/nschloe/optimesh/master.svg?style=flat-square)](https://circleci.com/gh/nschloe/optimesh)
-[![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg?style=flat-square)](https://codecov.io/gh/nschloe/optimesh)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
-[![smooth](https://img.shields.io/badge/smooth-operator-8209ba.svg?style=flat-square)](https://youtu.be/4TYv2PhG89A)
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/optimesh.svg?style=flat-square)](https://pypi.org/pypi/optimesh/)
 [![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg?style=flat-square)](https://pypi.org/project/optimesh)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/optimesh.svg?style=flat-square)](https://pypi.org/pypi/optimesh/)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/optimesh)
 [![PyPi downloads](https://img.shields.io/pypi/dm/optimesh.svg?style=flat-square)](https://pypistats.org/packages/optimesh)
+
+[![gh-actions](https://img.shields.io/github/workflow/status/nschloe/optimesh/ci?style=flat-square)](https://github.com/nschloe/optimesh/actions?query=workflow%3Aci)
+[![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg?style=flat-square)](https://codecov.io/gh/nschloe/optimesh)
+[![LGTM](https://img.shields.io/lgtm/grade/python/github/nschloe/optimesh.svg?style=flat-square)](https://lgtm.com/projects/g/nschloe/optimesh)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
 Several mesh smoothing/optimization methods with one simple interface. optimesh
 
