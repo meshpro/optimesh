@@ -204,8 +204,7 @@ def circle_random(n, radius):
 
 
 def circle_random2(n, radius, seed=0):
-    """Boundary points are random, too.
-    """
+    """Boundary points are random, too."""
     # generate random points in circle; <http://mathworld.wolfram.com/DiskPointPicking.html>
     numpy.random.seed(seed)
     r = numpy.random.rand(n)
