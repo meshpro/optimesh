@@ -114,7 +114,7 @@ def dmsh(target_num_points):
     print("target num points", target_num_points)
 
     est_num_boundary_nodes = _compute_num_boundary_points(target_num_points)
-    est_num_boundary_nodes = 100
+    # est_num_boundary_nodes = 100
     target_edge_length = 2 * np.pi / est_num_boundary_nodes
     print(target_edge_length)
     print("est num boundary", est_num_boundary_nodes)
@@ -131,5 +131,5 @@ def dmsh(target_num_points):
 
 
 if __name__ == "__main__":
-    random()
+    random(5)
     # gmsh()
