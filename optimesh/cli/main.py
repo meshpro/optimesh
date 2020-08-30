@@ -207,5 +207,8 @@ def main(argv=None):
 
     q = meshplex.MeshTri(X, cls).cell_quality
     meshio.write_points_cells(
-        args.output_file, X, [("triangle", cells)], cell_data={"cell_quality": [q]},
+        args.output_file,
+        X,
+        [("triangle", cells)],
+        cell_data={"cell_quality": [q]},
     )

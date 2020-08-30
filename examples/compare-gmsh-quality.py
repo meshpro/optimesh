@@ -80,7 +80,6 @@ def get_poisson_condition(pts, cells):
 
 
 def process(name, t):
-    show_meshes = False
     cond, num_steps = get_poisson_condition(pts, cells)
     data[name]["n"].append(len(pts))
     data[name]["cond"].append(cond)
@@ -89,9 +88,7 @@ def process(name, t):
     avg_q = numpy.sum(mesh.cell_quality) / len(mesh.cell_quality)
     data[name]["q"].append(avg_q)
     print("{:.2e}".format(cond), num_steps, f"{avg_q:.2f}", f"({t:.2f}s)")
-    if show_meshes:
-        mesh.show()
-    return
+    # mesh.show()
 
 
 # draw test meshes
