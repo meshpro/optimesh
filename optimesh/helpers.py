@@ -142,7 +142,7 @@ def runner(
         mesh.update_values()
         mesh.flip_until_delaunay()
         # mesh.show(control_volume_centroid_color="C1")
-        mesh.show()
+        # mesh.show()
 
         # Abort the loop if the update was small
         diff_norm_2 = numpy.einsum("ij,ij->i", diff, diff)
