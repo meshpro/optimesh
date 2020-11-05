@@ -39,7 +39,7 @@ def create_random_circle(num_boundary_points, num_interior_points, radius):
     k = 2 * np.pi * np.arange(n) / n
     boundary_pts = radius * np.array([np.cos(k), np.sin(k)])
 
-    # # Compute the number of interior nodes such that all triangles can be somewhat
+    # # Compute the number of interior points such that all triangles can be somewhat
     # # equilateral.
     # edge_length = 2 * np.pi * radius / n
     # domain_area = np.pi - n * (
@@ -113,11 +113,11 @@ def dmsh(target_num_points):
 
     print("target num points", target_num_points)
 
-    est_num_boundary_nodes = _compute_num_boundary_points(target_num_points)
-    # est_num_boundary_nodes = 100
-    target_edge_length = 2 * np.pi / est_num_boundary_nodes
+    est_num_boundary_points = _compute_num_boundary_points(target_num_points)
+    # est_num_boundary_points = 100
+    target_edge_length = 2 * np.pi / est_num_boundary_points
     print(target_edge_length)
-    print("est num boundary", est_num_boundary_nodes)
+    print("est num boundary", est_num_boundary_points)
     geo = dmsh.Circle([0.0, 0.0], 1.0)
     X, cells = dmsh.generate(geo, target_edge_length)
     print("num points", X.shape[0])
@@ -125,7 +125,7 @@ def dmsh(target_num_points):
     import meshplex
 
     mesh = meshplex.MeshTri(X, cells)
-    print("num boundary points", sum(mesh.is_boundary_node))
+    print("num boundary points", sum(mesh.is_boundary_point))
     # exit(1)
     return X, cells
 

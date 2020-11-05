@@ -15,30 +15,30 @@ def fixed_point(points, cells, *args, **kwargs):
         # old way:
         # num_neighbors = numpy.zeros(n, dtype=int)
         # numpy.add.at(num_neighbors, idx, numpy.ones(idx.shape, dtype=int))
-        # new_points = numpy.zeros(mesh.node_coords.shape)
-        # numpy.add.at(new_points, idx[:, 0], mesh.node_coords[idx[:, 1]])
-        # numpy.add.at(new_points, idx[:, 1], mesh.node_coords[idx[:, 0]])
+        # new_points = numpy.zeros(mesh.points.shape)
+        # numpy.add.at(new_points, idx[:, 0], mesh.points[idx[:, 1]])
+        # numpy.add.at(new_points, idx[:, 1], mesh.points[idx[:, 0]])
 
-        n = mesh.node_coords.shape[0]
-        idx = mesh.edges["nodes"]
+        n = mesh.points.shape[0]
+        idx = mesh.edges["points"]
         num_neighbors = numpy.bincount(idx.reshape(-1), minlength=n)
 
-        new_points = numpy.zeros(mesh.node_coords.shape)
-        vals = mesh.node_coords[idx[:, 1]].T
+        new_points = numpy.zeros(mesh.points.shape)
+        vals = mesh.points[idx[:, 1]].T
         new_points += numpy.array(
             [numpy.bincount(idx[:, 0], val, minlength=n) for val in vals]
         ).T
-        vals = mesh.node_coords[idx[:, 0]].T
+        vals = mesh.points[idx[:, 0]].T
         new_points += numpy.array(
             [numpy.bincount(idx[:, 1], val, minlength=n) for val in vals]
         ).T
         new_points /= num_neighbors[:, None]
 
-        # reset boundary nodes
-        idx = mesh.is_boundary_node
-        new_points[idx] = mesh.node_coords[idx]
+        # reset boundary points
+        idx = mesh.is_boundary_point
+        new_points[idx] = mesh.points[idx]
         return new_points
 
     mesh = MeshTri(points, cells)
     runner(get_new_points, mesh, *args, **kwargs)
-    return mesh.node_coords, mesh.cells["nodes"]
+    return mesh.points, mesh.cells["points"]

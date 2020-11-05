@@ -9,7 +9,7 @@ from ._helpers import jac_uniform
 def quasi_newton_uniform_full(points, cells, *args, **kwargs):
     def get_new_points(mesh):
         # TODO need copy?
-        x = mesh.node_coords.copy()
+        x = mesh.points.copy()
         x += update(mesh)
         return x
 
@@ -22,12 +22,12 @@ def quasi_newton_uniform_full(points, cells, *args, **kwargs):
         **kwargs,
         method_name="Centroidal Voronoi Tesselation (CVT), uniform density, full-Hessian variant"
     )
-    return mesh.node_coords, mesh.cells["nodes"]
+    return mesh.points, mesh.cells["points"]
 
 
 def update(mesh):
     # Exclude all cells which have a too negative covolume-edgelength ratio. This is
-    # necessary to prevent nodes to be dragged outside of the domain by very flat
+    # necessary to prevent points to be dragged outside of the domain by very flat
     # cells on the boundary.
     # There are other possible heuristics too. For example, one could restrict the
     # mask to cells at or near the boundary.
@@ -105,17 +105,17 @@ def update(mesh):
     rhs = -jac_uniform(mesh, mask)
 
     # Apply Dirichlet conditions.
-    # Ideally, we'd allow the boundary nodes to move, too, and move them back to the
+    # Ideally, we'd allow the boundary points to move, too, and move them back to the
     # boundary in a second step. Since the points are coupled, however, the interior
     # points would move to different places as well.
     #
     # Instead of hard Dirichlet conditions, we would have to insert conditions for the
     # points to move along the surface. Before this is implemented, just use Dirichlet.
     #
-    # Set all Dirichlet rows to 0. When using a cell mask, it can happen that some nodes
+    # Set all Dirichlet rows to 0. When using a cell mask, it can happen that some points
     # don't get any contribution at all because they are adjacent only to masked cells.
     # Reset those, too.
-    idx = numpy.any(numpy.isnan(rhs), axis=1) | mesh.is_boundary_node
+    idx = numpy.any(numpy.isnan(rhs), axis=1) | mesh.is_boundary_point
     i_reset = numpy.where(idx)[0]
     for i in i_reset:
         for k in range(block_size):
@@ -134,7 +134,7 @@ def update(mesh):
     # out = ml.solve(rhs, tol=1.0e-12)
     dX = out.reshape(-1, block_size)
 
-    # idx = numpy.any(numpy.isnan(rhs), axis=1) | mesh.is_boundary_node
+    # idx = numpy.any(numpy.isnan(rhs), axis=1) | mesh.is_boundary_point
     # dX[idx] = 0.0
 
     return dX

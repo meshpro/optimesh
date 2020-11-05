@@ -87,7 +87,7 @@ def process(name, t):
     mesh = meshplex.MeshTri(pts, cells)
     avg_q = numpy.sum(mesh.cell_quality) / len(mesh.cell_quality)
     data[name]["q"].append(avg_q)
-    print("{:.2e}".format(cond), num_steps, f"{avg_q:.2f}", f"({t:.2f}s)")
+    print(f"{cond:.2e}", num_steps, f"{avg_q:.2f}", f"({t:.2f}s)")
     # mesh.show()
 
 
