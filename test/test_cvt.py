@@ -114,7 +114,7 @@ def create_random_circle(n, radius, seed=0):
         [numpy.cos(2 * numpy.pi * k / n), numpy.sin(2 * numpy.pi * k / n)]
     )
 
-    # Compute the number of interior nodes such that all triangles can be somewhat
+    # Compute the number of interior points such that all triangles can be somewhat
     # equilateral.
     edge_length = 2 * numpy.pi * radius / n
     domain_area = numpy.pi - n * (

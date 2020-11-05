@@ -100,7 +100,7 @@ def runner(
         k += 1
 
         new_points = get_new_points(mesh)
-        diff = omega * (new_points - mesh.node_coords)
+        diff = omega * (new_points - mesh.points)
 
         # Some methods are stable (CPT), others can break down if the mesh isn't very
         # smooth. A break-down manifests, for example, in a step size that lets
@@ -109,10 +109,10 @@ def runner(
         # the incircle radius of all adjacent cells. This makes sure that triangles
         # cannot "flip".
         # <https://stackoverflow.com/a/57261082/353337>
-        max_step = numpy.full(mesh.node_coords.shape[0], numpy.inf)
+        max_step = numpy.full(mesh.points.shape[0], numpy.inf)
         numpy.minimum.at(
             max_step,
-            mesh.cells["nodes"].reshape(-1),
+            mesh.cells["points"].reshape(-1),
             numpy.repeat(mesh.cell_inradius, 3),
         )
         max_step *= 0.5
@@ -124,20 +124,20 @@ def runner(
         idx = step_lengths > max_step
         diff[idx] *= max_step[idx, None] / step_lengths[idx, None]
 
-        mesh.node_coords += diff
+        mesh.points += diff
 
         # project all points back to the surface
         if implicit_surface is not None:
-            fval = implicit_surface.f(mesh.node_coords.T)
+            fval = implicit_surface.f(mesh.points.T)
             while numpy.any(numpy.abs(fval) > implicit_surface_tol):
-                grad = implicit_surface.grad(mesh.node_coords.T)
+                grad = implicit_surface.grad(mesh.points.T)
                 grad_dot_grad = numpy.einsum("ij,ij->j", grad, grad)
                 # The step is chosen in the direction of the gradient with a step size
                 # such that, if the function was linear, the boundary (fval=0) would be
                 # hit in one step.
-                mesh.node_coords -= (grad * (fval / grad_dot_grad)).T
+                mesh.points -= (grad * (fval / grad_dot_grad)).T
                 # compute new value
-                fval = implicit_surface.f(mesh.node_coords.T)
+                fval = implicit_surface.f(mesh.points.T)
 
         mesh.update_values()
         mesh.flip_until_delaunay()
@@ -185,25 +185,25 @@ def get_new_points_averaged(mesh, reference_points, weights=None):
     else:
         scaled_rp = reference_points.T * weights
 
-    # new_points = numpy.zeros(mesh.node_coords.shape)
-    # for i in mesh.cells["nodes"].T:
+    # new_points = numpy.zeros(mesh.points.shape)
+    # for i in mesh.cells["points"].T:
     #     numpy.add.at(new_points, i, scaled_rp)
-    # omega = numpy.zeros(len(mesh.node_coords))
-    # for i in mesh.cells["nodes"].T:
+    # omega = numpy.zeros(len(mesh.points))
+    # for i in mesh.cells["points"].T:
     #     numpy.add.at(omega, i, mesh.cell_volumes)
 
-    n = mesh.node_coords.shape[0]
-    new_points = numpy.zeros(mesh.node_coords.shape)
-    for i in mesh.cells["nodes"].T:
+    n = mesh.points.shape[0]
+    new_points = numpy.zeros(mesh.points.shape)
+    for i in mesh.cells["points"].T:
         new_points += numpy.array(
             [numpy.bincount(i, vals, minlength=n) for vals in scaled_rp]
         ).T
 
     if weights is None:
-        omega = numpy.bincount(mesh.cells["nodes"].reshape(-1), minlength=n)
+        omega = numpy.bincount(mesh.cells["points"].reshape(-1), minlength=n)
     else:
         omega = numpy.zeros(n)
-        for i in mesh.cells["nodes"].T:
+        for i in mesh.cells["points"].T:
             omega += numpy.bincount(i, weights, minlength=n)
 
     new_points /= omega[:, None]

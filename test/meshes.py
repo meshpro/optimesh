@@ -169,7 +169,7 @@ def circle_random(n, radius):
         [numpy.cos(2 * numpy.pi * k / n), numpy.sin(2 * numpy.pi * k / n)]
     )
 
-    # Compute the number of interior nodes such that all triangles can be somewhat
+    # Compute the number of interior points such that all triangles can be somewhat
     # equilateral.
     edge_length = 2 * numpy.pi * radius / n
     domain_area = numpy.pi - n * (
@@ -198,7 +198,7 @@ def circle_random(n, radius):
 
     # Make sure there are exactly `n` boundary points
     mesh = MeshTri(pts, tri.simplices)
-    assert numpy.sum(mesh.is_boundary_node) == n
+    assert numpy.sum(mesh.is_boundary_point) == n
 
     return pts, tri.simplices
 
@@ -217,21 +217,21 @@ def circle_random2(n, radius, seed=0):
     # Make sure there are exactly `n` boundary points
     mesh = MeshTri(pts, tri.simplices)
     # inflate the mesh such that the boundary points average around the radius
-    boundary_pts = pts[mesh.is_boundary_node]
+    boundary_pts = pts[mesh.is_boundary_point]
     dist = numpy.sqrt(numpy.einsum("ij,ij->i", boundary_pts, boundary_pts))
     avg_dist = numpy.sum(dist) / len(dist)
     pts /= avg_dist
-    # boundary_pts = pts[mesh.is_boundary_node]
+    # boundary_pts = pts[mesh.is_boundary_point]
     # dist = numpy.sqrt(numpy.einsum("ij,ij->i", boundary_pts, boundary_pts))
     # avg_dist = numpy.sum(dist) / len(dist)
     # print(avg_dist)
 
     # now move all boundary points to the circle
-    bpts = pts[mesh.is_boundary_node]
-    pts[mesh.is_boundary_node] = (
+    bpts = pts[mesh.is_boundary_point]
+    pts[mesh.is_boundary_point] = (
         bpts.T / numpy.sqrt(numpy.einsum("ij,ij->i", bpts, bpts))
     ).T
-    # bpts = pts[mesh.is_boundary_node]
+    # bpts = pts[mesh.is_boundary_point]
     # print(numpy.sqrt(numpy.einsum("ij,ij->i", bpts, bpts)))
     # mesh = MeshTri(pts, tri.simplices)
     # mesh.show()

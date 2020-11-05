@@ -12,13 +12,13 @@ def quasi_newton_uniform_blocks(points, cells, *args, boundary_step=None, **kwar
 
     def get_new_points(mesh):
         # Exclude all cells which have a too negative covolume-edgelength ratio. This is
-        # necessary to prevent nodes to be dragged outside of the domain by very flat
+        # necessary to prevent points to be dragged outside of the domain by very flat
         # cells on the boundary.
         # There are other possible heuristics too. For example, one could restrict the
         # mask to cells at or near the boundary.
         mask = numpy.any(mesh.ce_ratios < -0.5, axis=0)
 
-        X = mesh.node_coords.copy()
+        X = mesh.points.copy()
         # Collect the diagonal blocks.
         diagonal_blocks = numpy.zeros((X.shape[0], X.shape[1], X.shape[1]))
 
@@ -76,7 +76,7 @@ def quasi_newton_uniform_blocks(points, cells, *args, boundary_step=None, **kwar
 
         rhs = -jac_uniform(mesh, mask)
 
-        # When using a cell mask, it can happen that some nodes don't get any
+        # When using a cell mask, it can happen that some points don't get any
         # contribution at all because they are adjacent only to masked cells.
         idx = numpy.any(numpy.isnan(rhs), axis=1)
         diagonal_blocks[idx] = 0.0
@@ -88,11 +88,11 @@ def quasi_newton_uniform_blocks(points, cells, *args, boundary_step=None, **kwar
 
         if boundary_step is None:
             # Reset boundary points to their original positions.
-            idx = mesh.is_boundary_node
-            X[idx] = mesh.node_coords[idx]
+            idx = mesh.is_boundary_point
+            X[idx] = mesh.points[idx]
         else:
-            # Move all boundary nodes back to the boundary.
-            idx = mesh.is_boundary_node
+            # Move all boundary points back to the boundary.
+            idx = mesh.is_boundary_point
             X[idx] = boundary_step(X[idx].T).T
 
         return X
@@ -106,4 +106,4 @@ def quasi_newton_uniform_blocks(points, cells, *args, boundary_step=None, **kwar
         **kwargs,
         method_name="Centroidal Voronoi Tesselation (CVT), uniform density, block-diagonal variant"
     )
-    return mesh.node_coords, mesh.cells["nodes"]
+    return mesh.points, mesh.cells["points"]

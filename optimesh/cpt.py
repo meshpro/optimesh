@@ -25,18 +25,18 @@ def _build_graph_laplacian(mesh):
     val = numpy.array([+a, +a, -a, -a]).flat
 
     # Create CSR matrix for efficiency
-    n = mesh.node_coords.shape[0]
+    n = mesh.points.shape[0]
     matrix = scipy.sparse.coo_matrix((val, (row_idx, col_idx)), shape=(n, n))
     matrix = matrix.tocsr()
 
     # Apply Dirichlet conditions.
-    verts = numpy.where(mesh.is_boundary_node)[0]
+    verts = numpy.where(mesh.is_boundary_point)[0]
     # Set all Dirichlet rows to 0.
     for i in verts:
         matrix.data[matrix.indptr[i] : matrix.indptr[i + 1]] = 0.0
     # Set the diagonal and RHS.
     d = matrix.diagonal()
-    d[mesh.is_boundary_node] = 1.0
+    d[mesh.is_boundary_point] = 1.0
     matrix.setdiag(d)
     return matrix
 
@@ -46,9 +46,9 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
     def get_new_points(mesh, tol=1.0e-10):
         matrix = _build_graph_laplacian(mesh)
 
-        n = mesh.node_coords.shape[0]
-        rhs = numpy.zeros((n, mesh.node_coords.shape[1]))
-        rhs[mesh.is_boundary_node] = mesh.node_coords[mesh.is_boundary_node]
+        n = mesh.points.shape[0]
+        rhs = numpy.zeros((n, mesh.points.shape[1]))
+        rhs[mesh.is_boundary_point] = mesh.points[mesh.is_boundary_point]
 
         out = scipy.sparse.linalg.spsolve(matrix, rhs)
 
@@ -65,7 +65,7 @@ def linear_solve_density_preserving(points, cells, *args, **kwargs):
     runner(
         get_new_points, mesh, *args, **kwargs, method_name="exact Laplacian smoothing"
     )
-    return mesh.node_coords, mesh.cells["nodes"]
+    return mesh.points, mesh.cells["points"]
 
 
 def fixed_point_uniform(points, cells, *args, boundary_step=None, **kwargs):
@@ -78,11 +78,11 @@ def fixed_point_uniform(points, cells, *args, boundary_step=None, **kwargs):
         X = get_new_points_averaged(mesh, mesh.cell_barycenters, mesh.cell_volumes)
         if boundary_step is None:
             # Reset boundary points to their original positions.
-            idx = mesh.is_boundary_node
-            X[idx] = mesh.node_coords[idx]
+            idx = mesh.is_boundary_point
+            X[idx] = mesh.points[idx]
         else:
-            # Move all boundary nodes back to the boundary.
-            idx = mesh.is_boundary_node
+            # Move all boundary points back to the boundary.
+            idx = mesh.is_boundary_point
             X[idx] = boundary_step(X[idx].T).T
         return X
 
@@ -94,10 +94,10 @@ def fixed_point_uniform(points, cells, *args, boundary_step=None, **kwargs):
         **kwargs,
         method_name="Centroidal Patch Tesselation (CPT), uniform density, fixed-point variant"
     )
-    return mesh.node_coords, mesh.cells["nodes"]
+    return mesh.points, mesh.cells["points"]
 
 
-def _energy_uniform_per_node(X, cells):
+def _energy_uniform_per_point(X, cells):
     """The CPT mesh energy is defined as
 
         sum_i E_i,
@@ -108,12 +108,12 @@ def _energy_uniform_per_node(X, cells):
     dim = 2
     mesh = MeshTri(X, cells)
 
-    star_integrals = numpy.zeros(mesh.node_coords.shape[0])
+    star_integrals = numpy.zeros(mesh.points.shape[0])
     # Python loop over the cells... slow!
-    for cell, cell_volume in zip(mesh.cells["nodes"], mesh.cell_volumes):
+    for cell, cell_volume in zip(mesh.cells["points"], mesh.cell_volumes):
         for idx in cell:
-            xi = mesh.node_coords[idx]
-            tri = mesh.node_coords[cell]
+            xi = mesh.points[idx]
+            tri = mesh.points[cell]
             # Get a scheme of order 2
             scheme = quadpy.t2.get_good_scheme(2)
             val = scheme.integrate(
@@ -125,7 +125,7 @@ def _energy_uniform_per_node(X, cells):
 
 
 def energy_uniform(X, cells):
-    return numpy.sum(_energy_uniform_per_node(X, cells))
+    return numpy.sum(_energy_uniform_per_point(X, cells))
 
 
 def jac_uniform(X, cells):
@@ -144,9 +144,9 @@ def jac_uniform(X, cells):
     mesh = MeshTri(X, cells)
 
     jac = numpy.zeros(X.shape)
-    for k in range(mesh.cells["nodes"].shape[1]):
-        i = mesh.cells["nodes"][:, k]
-        vals = (mesh.node_coords[i] - mesh.cell_barycenters).T * mesh.cell_volumes
+    for k in range(mesh.cells["points"].shape[1]):
+        i = mesh.cells["points"][:, k]
+        vals = (mesh.points[i] - mesh.cell_barycenters).T * mesh.cell_volumes
         # numpy.add.at(jac, i, vals)
         jac += numpy.array(
             [numpy.bincount(i, val, minlength=jac.shape[0]) for val in vals]
@@ -161,7 +161,7 @@ def solve_hessian_approx_uniform(X, cells, rhs):
       partial_i E = 2/(d+1) sum_{tau_j in omega_i} (x_i - b_j) |tau_j|.
 
     To get the Hessian, we have to form its derivative. As a simplifications,
-    let us assume again that |tau_j| is independent of the node positions. Then we get
+    let us assume again that |tau_j| is independent of the point positions. Then we get
 
        partial_ii E = 2/(d+1) |omega_i| - 2/(d+1)**2 |omega_i|,
        partial_ij E = -2/(d+1)**2 |tau_j|.
@@ -179,7 +179,7 @@ def solve_hessian_approx_uniform(X, cells, rhs):
     col_idx = []
     val = []
 
-    cells = mesh.cells["nodes"].T
+    cells = mesh.cells["points"].T
     n = X.shape[0]
 
     # Main diagonal, 2/(d+1) |omega_i| x_i
@@ -213,14 +213,14 @@ def solve_hessian_approx_uniform(X, cells, rhs):
 
     # Apply Dirichlet conditions.
     # Set all Dirichlet rows to 0.
-    for i in numpy.where(mesh.is_boundary_node)[0]:
+    for i in numpy.where(mesh.is_boundary_point)[0]:
         matrix.data[matrix.indptr[i] : matrix.indptr[i + 1]] = 0.0
     # Set the diagonal and RHS.
     d = matrix.diagonal()
-    d[mesh.is_boundary_node] = 1.0
+    d[mesh.is_boundary_point] = 1.0
     matrix.setdiag(d)
 
-    rhs[mesh.is_boundary_node] = 0.0
+    rhs[mesh.is_boundary_point] = 0.0
 
     out = scipy.sparse.linalg.spsolve(matrix, rhs)
 
@@ -254,8 +254,8 @@ def quasi_newton_uniform(points, cells, *args, **kwargs):
     def get_new_points(mesh):
         # do one Newton step
         # TODO need copy?
-        x = mesh.node_coords.copy()
-        cells = mesh.cells["nodes"]
+        x = mesh.points.copy()
+        cells = mesh.cells["points"]
         jac_x = jac_uniform(x, cells)
         x -= solve_hessian_approx_uniform(x, cells, jac_x)
         return x
@@ -268,4 +268,4 @@ def quasi_newton_uniform(points, cells, *args, **kwargs):
         **kwargs,
         method_name="Centroidal Patch Tesselation (CPT), uniform density, quasi-Newton variant"
     )
-    return mesh.node_coords, mesh.cells["nodes"]
+    return mesh.points, mesh.cells["points"]

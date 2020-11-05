@@ -30,8 +30,8 @@ def test_simple1_jac():
         x1 = X.copy()
         x0[4, j] -= eps
         x1[4, j] += eps
-        f1 = cpt._energy_uniform_per_node(x1, cells)
-        f0 = cpt._energy_uniform_per_node(x0, cells)
+        f1 = cpt._energy_uniform_per_point(x1, cells)
+        f0 = cpt._energy_uniform_per_point(x0, cells)
         dE = (f1 - f0) / (2 * eps)
         assert abs(dE[4] - jac[4, j]) < 1.0e-9
 

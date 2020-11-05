@@ -150,7 +150,7 @@ def main(argv=None):
 
     mesh = meshio.read(args.input_file)
 
-    # Remove all nodes which do not belong to the highest-order simplex. Those would
+    # Remove all points which do not belong to the highest-order simplex. Those would
     # lead to singular equations systems further down the line.
     mesh.cells = [meshio.CellBlock("triangle", mesh.get_cells_type("triangle"))]
     prune(mesh)
