@@ -150,14 +150,14 @@ def runner(
 
         if is_final or step_filename_format:
             if is_final:
-                info = "{} steps".format(k)
+                info = f"{k} steps"
                 if method_name is not None:
                     if abs(omega - 1.0) > 1.0e-10:
-                        method_name += ", relaxation parameter {}".format(omega)
+                        method_name += f", relaxation parameter {omega}"
                     info += " of " + method_name
 
                 if verbose:
-                    print("\nFinal ({}):".format(info))
+                    print(f"\nFinal ({info}):")
                     print_stats(mesh)
             if step_filename_format:
                 mesh.save(
