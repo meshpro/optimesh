@@ -220,17 +220,17 @@ def circle_random2(n, radius, seed=0):
     boundary_pts = pts[mesh.is_boundary_point]
     dist = numpy.sqrt(numpy.einsum("ij,ij->i", boundary_pts, boundary_pts))
     avg_dist = numpy.sum(dist) / len(dist)
-    pts /= avg_dist
+    mesh.points = pts / avg_dist
     # boundary_pts = pts[mesh.is_boundary_point]
     # dist = numpy.sqrt(numpy.einsum("ij,ij->i", boundary_pts, boundary_pts))
     # avg_dist = numpy.sum(dist) / len(dist)
     # print(avg_dist)
 
     # now move all boundary points to the circle
-    bpts = pts[mesh.is_boundary_point]
-    pts[mesh.is_boundary_point] = (
-        bpts.T / numpy.sqrt(numpy.einsum("ij,ij->i", bpts, bpts))
-    ).T
+    # bpts = pts[mesh.is_boundary_point]
+    # pts[mesh.is_boundary_point] = (
+    #     bpts.T / numpy.sqrt(numpy.einsum("ij,ij->i", bpts, bpts))
+    # ).T
     # bpts = pts[mesh.is_boundary_point]
     # print(numpy.sqrt(numpy.einsum("ij,ij->i", bpts, bpts)))
     # mesh = MeshTri(pts, tri.simplices)

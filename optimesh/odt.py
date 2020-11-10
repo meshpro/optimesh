@@ -54,7 +54,6 @@ def energy(mesh, uniform_density=False):
         val = numpy.dot(val, rho)
 
     assert out >= val
-
     return out - val
 
 
@@ -182,14 +181,12 @@ def nonlinear_optimization_uniform(
         print_stats(mesh, extra_cols=extra_cols)
 
     def f(x):
-        mesh.points[mesh.is_interior_point] = x.reshape(-1, X.shape[1])
-        mesh.update_values()
+        mesh.set_interior_points(x.reshape(-1, X.shape[1]))
         return energy(mesh, uniform_density=True)
 
     # TODO put f and jac together
     def jac(x):
-        mesh.points[mesh.is_interior_point] = x.reshape(-1, X.shape[1])
-        mesh.update_values()
+        mesh.set_interior_points(x.reshape(-1, X.shape[1]))
 
         grad = numpy.zeros(mesh.points.shape)
         n = grad.shape[0]
@@ -207,8 +204,7 @@ def nonlinear_optimization_uniform(
     def flip_delaunay(x):
         flip_delaunay.step += 1
         # Flip the edges
-        mesh.points[mesh.is_interior_point] = x.reshape(-1, X.shape[1])
-        mesh.update_values()
+        mesh.set_interior_points(x.reshape(-1, X.shape[1]))
         mesh.flip_until_delaunay()
 
         if step_filename_format:
@@ -253,8 +249,8 @@ def nonlinear_optimization_uniform(
     # Don't assert out.success; max_num_steps may be reached, that's fine.
 
     # One last edge flip
-    mesh.points[mesh.is_interior_point] = out.x.reshape(-1, X.shape[1])
-    mesh.update_values()
+    mesh.set_interior_points(out.x.reshape(-1, X.shape[1]))
+
     mesh.flip_until_delaunay()
 
     info = (
