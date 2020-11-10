@@ -54,7 +54,6 @@ def energy(mesh, uniform_density=False):
         val = numpy.dot(val, rho)
 
     assert out >= val
-
     return out - val
 
 
@@ -182,8 +181,10 @@ def nonlinear_optimization_uniform(
         print_stats(mesh, extra_cols=extra_cols)
 
     def f(x):
-        mesh.points[mesh.is_interior_point] = x.reshape(-1, X.shape[1])
-        mesh.update_values()
+        points_new = mesh.points.copy()
+        points_new.setflags(write=True)
+        points_new[mesh.is_interior_point] = x.reshape(-1, X.shape[1])
+        mesh.points = points_new
         return energy(mesh, uniform_density=True)
 
     # TODO put f and jac together

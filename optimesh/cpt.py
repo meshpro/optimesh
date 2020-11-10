@@ -253,12 +253,9 @@ def quasi_newton_uniform(points, cells, *args, **kwargs):
 
     def get_new_points(mesh):
         # do one Newton step
-        # TODO need copy?
-        x = mesh.points.copy()
         cells = mesh.cells["points"]
-        jac_x = jac_uniform(x, cells)
-        x -= solve_hessian_approx_uniform(x, cells, jac_x)
-        return x
+        jac_x = jac_uniform(mesh.points, cells)
+        return mesh.points - solve_hessian_approx_uniform(mesh.points, cells, jac_x)
 
     mesh = MeshTri(points, cells)
     runner(
