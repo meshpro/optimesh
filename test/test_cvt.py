@@ -11,51 +11,40 @@ import optimesh
     "mesh, ref1, ref2, refi",
     [
         (simple1, 4.9863354526224510, 2.1181412069258942, 1.0),
-        (pacman, 1.9378501813564521e03, 7.5989359705818785e01, 5.0),
+        (pacman, 1.9378493850318487e03, 7.5989333945604329e01, 5.0),
     ],
 )
 def test_cvt_lloyd(mesh, ref1, ref2, refi):
     X, cells = mesh()
-
     X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(
         X, cells, 1.0e-2, 100, verbose=False
     )
-
-    # Assert that we're dealing with the mesh we expect.
     helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
-    return
 
 
 @pytest.mark.parametrize(
     "mesh, ref1, ref2, refi",
     [
         (simple1, 4.9959407761650168e00, 2.1203672449514870e00, 1.0),
-        (pacman, 1.9367454827286492e03, 7.5966311532153185e01, 5.0),
+        (pacman, 1.9369945166933908e03, 7.5977272076992293e01, 5.0),
     ],
 )
 def test_cvt_lloyd2(mesh, ref1, ref2, refi):
     X, cells = mesh()
-
     X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(X, cells, 1.0e-2, 100, omega=2.0)
-
-    # Assert that we're dealing with the mesh we expect.
     helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
-    return
 
 
 @pytest.mark.parametrize(
     "mesh, ref1, ref2, refi",
     [
         (simple1, 4.9957677170205690e00, 2.1203267741647247e00, 1.0),
-        (pacman, 1.9368767962050219e03, 7.5956311011221615e01, 5.0),
+        (pacman, 1.9368767965291165e03, 7.5956311011221615e01, 5.0),
     ],
 )
 def test_cvt_qnb(mesh, ref1, ref2, refi):
     X, cells = mesh()
-
     X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 1.0e-2, 100)
-
-    # Assert that we're dealing with the mesh we expect.
     helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-10)
 
 
@@ -84,14 +73,13 @@ def test_cvt_qnb_boundary(n=10):
 
     # Assert that we're dealing with the mesh we expect.
     # helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
-    return
 
 
 @pytest.mark.parametrize(
     "mesh, ref1, ref2, refi",
     [
         (simple1, 4.9971490009329251e00, 2.1206501666066013e00, 1.0),
-        (pacman, 1.9384829418092067e03, 7.5992721059144543e01, 5.0),
+        (pacman, 1.9384734362432773e03, 7.5992449567867354e01, 5.0),
     ],
 )
 def test_cvt_qnf(mesh, ref1, ref2, refi):
@@ -105,7 +93,6 @@ def test_cvt_qnf(mesh, ref1, ref2, refi):
 
     # Assert that we're dealing with the mesh we expect.
     helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
-    return
 
 
 def create_random_circle(n, radius, seed=0):
@@ -159,7 +146,6 @@ def test_for_breakdown(seed):
     optimesh.cvt.quasi_newton_uniform_lloyd(
         pts, cells, omega=1.0, tol=1.0e-10, max_num_steps=10
     )
-    return
 
 
 if __name__ == "__main__":
