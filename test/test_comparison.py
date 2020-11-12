@@ -1,3 +1,4 @@
+import dufte
 import matplotlib.pyplot as plt
 import numpy
 from meshes import circle_random
@@ -6,6 +7,8 @@ import optimesh
 
 
 def test_comparison():
+    plt.style.use(dufte.style)
+
     X, cells = circle_random(40, 1.0)
 
     # Do a few steps of a robust method to avoid too crazy meshes.
@@ -56,19 +59,17 @@ def test_comparison():
     labels = list(d.keys())
     sorted_labels = [labels[i] for i in idx]
 
-    for label, values in zip(sorted_labels, avg_quality[idx]):
-        plt.plot(values, "-", label=label)
+    for i, label, values in zip(idx, sorted_labels, avg_quality[idx]):
+        plt.plot(values, "-", label=label, zorder=i)
 
     plt.xlim(0, num_steps)
     plt.ylim(0.93, 1.0)
-    plt.grid()
     plt.xlabel("step")
     plt.ylabel("average cell quality")
-    plt.legend(bbox_to_anchor=(1.03, 1), loc="upper left", borderaxespad=0)
+    dufte.legend()
 
     plt.savefig("comparison.svg", transparent=True, bbox_inches="tight")
     # plt.show()
-    return
 
 
 if __name__ == "__main__":
