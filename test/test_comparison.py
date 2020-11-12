@@ -65,7 +65,7 @@ def test_comparison():
     plt.xlim(0, num_steps)
     plt.ylim(0.93, 1.0)
     plt.xlabel("step")
-    plt.ylabel("average cell quality")
+    plt.title("average cell quality")
     dufte.legend()
 
     plt.savefig("comparison.svg", transparent=True, bbox_inches="tight")
