@@ -1,8 +1,9 @@
 import numpy
 import pytest
-from meshes import circle_random
 
 import optimesh
+
+from .meshes import circle_random
 
 
 def _rotate(X, theta, k):
