@@ -3,7 +3,7 @@ import pytest
 
 from optimesh import cpt
 
-from .meshes import pacman, simple0, simple1, simple2, simple3
+from .meshes import circle_random2, pacman, simple0, simple1, simple2, simple3
 
 
 @pytest.mark.parametrize(
@@ -133,8 +133,6 @@ def test_circle():
         y = (x.T - x0).T
         r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
         return ((y / r * r).T + x0).T
-
-    from meshes import circle_random2
 
     X, cells = circle_random2(150, 1.0)
     X, cells = cpt.fixed_point_uniform(

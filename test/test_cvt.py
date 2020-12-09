@@ -1,10 +1,10 @@
-import helpers
 import numpy
 import pytest
 from scipy.spatial import Delaunay
 
 import optimesh
 
+from . import helpers
 from .meshes import pacman, simple1
 
 

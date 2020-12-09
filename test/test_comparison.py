@@ -1,9 +1,10 @@
 import dufte
 import matplotlib.pyplot as plt
 import numpy
-from meshes import circle_random
 
 import optimesh
+
+from .meshes import circle_random
 
 
 def test_comparison():
