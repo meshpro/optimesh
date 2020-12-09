@@ -39,8 +39,6 @@ def run(mesh, volume, convol_norms, ce_ratio_norms, cellvol_norms, tol=1.0e-12):
     norm_inf = numpy.linalg.norm(mesh.get_control_volumes(), ord=numpy.Inf)
     assert near_equal(convol_norms, [norm2, norm_inf], tol)
 
-    return
-
 
 def assert_norms(X, ref, tol):
     nc = X.flatten()
@@ -57,4 +55,3 @@ def assert_norms(X, ref, tol):
     assert (
         abs(normi - ref[2]) < tol * ref[2]
     ), "Expected: {:.16e}  Computed: {:.16e}".format(ref[2], normi)
-    return

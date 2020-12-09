@@ -205,7 +205,7 @@ def main(argv=None):
 
         cells[cell_idx] = cls
 
-    q = meshplex.MeshTri(X, cls).cell_quality
+    q = meshplex.MeshTri(X, cls).q_radius_ratio
     meshio.write_points_cells(
         args.output_file,
         X,

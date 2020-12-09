@@ -1,10 +1,11 @@
-import helpers
 import numpy
 import pytest
-from meshes import pacman, simple1
 from scipy.spatial import Delaunay
 
 import optimesh
+
+from . import helpers
+from .meshes import pacman, simple1
 
 
 @pytest.mark.parametrize(

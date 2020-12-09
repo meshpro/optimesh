@@ -1,8 +1,9 @@
 import numpy
 import pytest
-from meshes import pacman, simple1, simple2, simple3
 
 import optimesh
+
+from .meshes import circle_gmsh2, pacman, simple1, simple2, simple3
 
 
 @pytest.mark.parametrize(
@@ -67,8 +68,6 @@ def test_circle():
         y = (x.T - x0).T
         r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
         return ((y / r * r).T + x0).T
-
-    from meshes import circle_gmsh2
 
     # ODT can't handle the random circle; some cells too flat near the boundary lead to
     # a breakdown.
