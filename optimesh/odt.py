@@ -69,8 +69,7 @@ def fixed_point_uniform(points, cells, *args, boundary_step=None, **kwargs):
         cc = mesh.cell_circumcenters
         bc = mesh.cell_barycenters
         # Find all cells with a boundary edge
-        boundary_cell_ids = mesh.edges_cells[1][:, 0]
-        cc[boundary_cell_ids] = bc[boundary_cell_ids]
+        cc[mesh.is_boundary_cell] = bc[mesh.is_boundary_cell]
         X = get_new_points_averaged(mesh, cc, mesh.cell_volumes)
         if boundary_step is None:
             # Reset boundary points to their original positions.
