@@ -1,26 +1,34 @@
+import meshplex
 import numpy
 import pytest
 from scipy.spatial import Delaunay
 
 import optimesh
 
-from . import helpers
+from .helpers import assert_norm_equality
 from .meshes import pacman, simple1
 
 
 @pytest.mark.parametrize(
-    "mesh, ref1, ref2, refi",
+    "mesh, ref",
     [
-        (simple1, 4.9863354526224510, 2.1181412069258942, 1.0),
-        (pacman, 1.9378493850318487e03, 7.5989333945604329e01, 5.0),
+        (simple1, [4.9863354526224510, 2.1181412069258942, 1.0]),
+        (pacman, [1.9378493850318487e03, 7.5989333945604329e01, 5.0]),
     ],
 )
-def test_cvt_lloyd(mesh, ref1, ref2, refi):
+def test_cvt_lloyd(mesh, ref):
     X, cells = mesh()
-    X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(
-        X, cells, 1.0e-2, 100, verbose=False
-    )
-    helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
+    # X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(
+    #     X, cells, 1.0e-2, 100, verbose=False
+    # )
+    m = meshplex.MeshTri(X, cells)
+    optimesh.optimize(m, "lloyd", 1.0e-2, 100, verbose=False)
+    assert_norm_equality(m.points, ref, 1.0e-12)
+
+    # try the other way of calling optimesh
+    X, c = mesh()
+    X, _ = optimesh.optimize_points_cells(X, c, "lloyd", 1.0e-2, 100, verbose=False)
+    assert_norm_equality(X, ref, 1.0e-12)
 
 
 @pytest.mark.parametrize(
@@ -33,7 +41,7 @@ def test_cvt_lloyd(mesh, ref1, ref2, refi):
 def test_cvt_lloyd2(mesh, ref1, ref2, refi):
     X, cells = mesh()
     X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(X, cells, 1.0e-2, 100, omega=2.0)
-    helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
+    assert_norm_equality(X, [ref1, ref2, refi], 1.0e-12)
 
 
 @pytest.mark.parametrize(
@@ -46,7 +54,7 @@ def test_cvt_lloyd2(mesh, ref1, ref2, refi):
 def test_cvt_qnb(mesh, ref1, ref2, refi):
     X, cells = mesh()
     X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 1.0e-2, 100)
-    helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-10)
+    assert_norm_equality(X, [ref1, ref2, refi], 1.0e-10)
 
 
 def test_cvt_qnb_boundary(n=10):
@@ -73,7 +81,7 @@ def test_cvt_qnb_boundary(n=10):
     mesh.show()
 
     # Assert that we're dealing with the mesh we expect.
-    # helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
+    # assert_norm_equality(X, [ref1, ref2, refi], 1.0e-12)
 
 
 @pytest.mark.parametrize(
@@ -93,7 +101,7 @@ def test_cvt_qnf(mesh, ref1, ref2, refi):
     mesh.show()
 
     # Assert that we're dealing with the mesh we expect.
-    helpers.assert_norms(X, [ref1, ref2, refi], 1.0e-12)
+    assert_norm_equality(X, [ref1, ref2, refi], 1.0e-12)
 
 
 def create_random_circle(n, radius, seed=0):

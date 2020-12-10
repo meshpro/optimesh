@@ -1,3 +1,4 @@
+from . import _lloyd as lloyd
 from ._block_diagonal import quasi_newton_uniform_blocks
 from ._full_hessian import quasi_newton_uniform_full
 from ._lloyd import quasi_newton_uniform_lloyd
