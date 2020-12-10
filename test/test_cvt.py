@@ -22,39 +22,41 @@ def test_cvt_lloyd(mesh, ref):
     #     X, cells, 1.0e-2, 100, verbose=False
     # )
     m = meshplex.MeshTri(X, cells)
-    optimesh.optimize(m, "lloyd", 1.0e-2, 100, verbose=False)
+    optimesh.optimize(m, "Lloyd", 1.0e-2, 100, verbose=False)
     assert_norm_equality(m.points, ref, 1.0e-12)
 
     # try the other way of calling optimesh
     X, c = mesh()
-    X, _ = optimesh.optimize_points_cells(X, c, "lloyd", 1.0e-2, 100, verbose=False)
+    X, _ = optimesh.optimize_points_cells(X, c, "lloyd", 1.0e-2, 100)
     assert_norm_equality(X, ref, 1.0e-12)
 
 
 @pytest.mark.parametrize(
-    "mesh, ref1, ref2, refi",
+    "mesh, ref",
     [
-        (simple1, 4.9959407761650168e00, 2.1203672449514870e00, 1.0),
-        (pacman, 1.9369945166933908e03, 7.5977272076992293e01, 5.0),
+        (simple1, [4.9959407761650168e00, 2.1203672449514870e00, 1.0]),
+        (pacman, [1.9369945166933908e03, 7.5977272076992293e01, 5.0]),
     ],
 )
-def test_cvt_lloyd2(mesh, ref1, ref2, refi):
+def test_cvt_lloyd_overrelaxed(mesh, ref):
     X, cells = mesh()
-    X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(X, cells, 1.0e-2, 100, omega=2.0)
-    assert_norm_equality(X, [ref1, ref2, refi], 1.0e-12)
+    m = meshplex.MeshTri(X, cells)
+    optimesh.optimize(m, "Lloyd", 1.0e-2, 100, omega=2.0)
+    assert_norm_equality(m.points, ref, 1.0e-12)
 
 
 @pytest.mark.parametrize(
-    "mesh, ref1, ref2, refi",
+    "mesh, ref",
     [
-        (simple1, 4.9957677170205690e00, 2.1203267741647247e00, 1.0),
-        (pacman, 1.9368767965291165e03, 7.5956311011221615e01, 5.0),
+        (simple1, [4.9957677170205690e00, 2.1203267741647247e00, 1.0]),
+        (pacman, [1.9368767965291165e03, 7.5956311011221615e01, 5.0]),
     ],
 )
-def test_cvt_qnb(mesh, ref1, ref2, refi):
+def test_cvt_qnb(mesh, ref):
     X, cells = mesh()
-    X, cells = optimesh.cvt.quasi_newton_uniform_blocks(X, cells, 1.0e-2, 100)
-    assert_norm_equality(X, [ref1, ref2, refi], 1.0e-10)
+    m = meshplex.MeshTri(X, cells)
+    optimesh.optimize(m, "CVT (block-diagonal)", 1.0e-2, 100)
+    assert_norm_equality(m.points, ref, 1.0e-10)
 
 
 def test_cvt_qnb_boundary(n=10):
@@ -68,16 +70,16 @@ def test_cvt_qnb_boundary(n=10):
         r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
         return ((y / r * r).T + x0).T
 
-    X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(
-        X, cells, 1.0e-2, 100, boundary_step=boundary_step
-    )
+    mesh = meshplex.MeshTri(X, cells)
+    optimesh.optimize(mesh, "Lloyd", 1.0e-2, 100, boundary_step=boundary_step)
+
+    # X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(
+    #     X, cells, 1.0e-2, 100, boundary_step=boundary_step
+    # )
     # X, cells = optimesh.cvt.quasi_newton_uniform_blocks(
     #     X, cells, 1.0e-2, 100, boundary=Circle()
     # )
 
-    import meshplex
-
-    mesh = meshplex.MeshTri(X, cells)
     mesh.show()
 
     # Assert that we're dealing with the mesh we expect.
