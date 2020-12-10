@@ -15,8 +15,7 @@ from .meshes import pacman, simple1
 )
 def test_fixed_point(mesh, ref1, ref2, refi):
     X, cells = mesh()
-
-    X, cells = optimesh.laplace.fixed_point(X, cells, 0.0, 10)
+    X, cells = optimesh.optimize_points_cells(X, cells, "laplace", 0.0, 10)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -28,4 +27,3 @@ def test_fixed_point(mesh, ref1, ref2, refi):
     assert abs(norm1 - ref1) < tol * ref1
     assert abs(norm2 - ref2) < tol * ref2
     assert abs(normi - refi) < tol * refi
-    return
