@@ -95,7 +95,9 @@ def test_cvt_qnb_boundary(n=10):
 )
 def test_cvt_qnf(mesh, ref1, ref2, refi):
     X, cells = mesh()
-    X, cells = optimesh.cvt.quasi_newton_uniform_full(X, cells, 1.0e-2, 100, omega=0.9)
+    X, cells = optimesh.optimize_points_cells(
+        X, cells, "cvt (full)", 1.0e-2, 100, omega=0.9
+    )
 
     import meshplex
 
@@ -154,8 +156,8 @@ def test_for_breakdown(seed):
     n = numpy.random.randint(10, 20)
     pts, cells = create_random_circle(n=n, radius=1.0)
 
-    optimesh.cvt.quasi_newton_uniform_lloyd(
-        pts, cells, omega=1.0, tol=1.0e-10, max_num_steps=10
+    optimesh.optimize_points_cells(
+        pts, cells, "lloyd", omega=1.0, tol=1.0e-10, max_num_steps=10
     )
 
 
