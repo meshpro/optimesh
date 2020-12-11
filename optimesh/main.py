@@ -22,27 +22,31 @@ methods = {
 }
 
 
+def _normalize_method(name: str):
+    # Normalize the method name, e.g.,
+    #   ODT  (block diagonal) -> odt-block-diagonal
+    return "-".join(
+        filter(lambda item: item != "", re.split("-| |\\(|\\)", name.lower()))
+    )
+
+
 def get_new_points(mesh, method: str):
-    return methods[method.lower()].get_new_points(mesh)
+    return methods[_normalize_method(method)].get_new_points(mesh)
 
 
 def optimize(mesh, method: str, *args, **kwargs):
-    # Normalize the method name, e.g.,
-    #   ODT  (block diagonal) -> odt-block-diagonal
-    normalized_method = "-".join(
-        filter(lambda item: item != "", re.split("-| |\\(|\\)", method.lower()))
-    )
+    method = _normalize_method(method)
 
     # Special treatment for ODT. We're using scipy.optimize there.
-    if normalized_method[:3] == "odt" and normalized_method[4:] != "fixed-point":
-        min_method = normalized_method[4:]
+    if method[:3] == "odt" and method[4:] != "fixed-point":
+        min_method = method[4:]
         if "omega" in kwargs:
             assert kwargs["omega"] == 1.0
             kwargs.pop("omega")
         odt.nonlinear_optimization(mesh, min_method, *args, **kwargs)
         return
 
-    return _optimize(methods[normalized_method].get_new_points, mesh, *args, **kwargs)
+    return _optimize(methods[method].get_new_points, mesh, *args, **kwargs)
 
 
 def optimize_points_cells(X, cells, method: str, *args, **kwargs):
