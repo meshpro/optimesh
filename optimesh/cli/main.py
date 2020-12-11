@@ -6,8 +6,6 @@ import meshio
 import meshplex
 import numpy
 
-from optimesh.main import optimize_points_cells
-
 from ..__about__ import __version__
 from ..main import optimize_points_cells
 

@@ -8,7 +8,6 @@ Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 """
 import numpy
 import quadpy
-from meshplex import MeshTri
 
 from ..helpers import print_stats
 

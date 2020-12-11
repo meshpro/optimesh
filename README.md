@@ -113,6 +113,7 @@ optimesh.optimize(mesh, "CVT (block-diagonal)", 1.0e-5, 100)
 # mesh.points, mesh.cells, ...
 ```
 If you only want to do one optimization step, do
+<!--exdown-skip-->
 ```python
 points = optimesh.get_new_points(mesh, "CVT (block-diagonal)")
 ```
