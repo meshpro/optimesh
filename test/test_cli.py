@@ -1,8 +1,10 @@
-import os.path
+import pathlib
 
 import pytest
 
 import optimesh
+
+this_dir = pathlib.Path(__file__).resolve().parent
 
 
 @pytest.mark.parametrize(
@@ -24,16 +26,16 @@ import optimesh
     ],
 )
 def test_cli(options):
-    this_dir = os.path.dirname(os.path.realpath(__file__))
-    input_file = os.path.join(this_dir, "meshes", "pacman.vtk")
+    input_file = this_dir / "meshes" / "pacman.vtk"
     output_file = "out.vtk"
-    optimesh.cli.main([input_file, output_file, "-t", "1.0e-5", "-n", "5"] + options)
+    optimesh.cli.main(
+        [str(input_file), output_file, "-t", "1.0e-5", "-n", "5"] + options
+    )
 
 
 def test_info():
-    this_dir = os.path.dirname(os.path.realpath(__file__))
-    input_file = os.path.join(this_dir, "meshes", "pacman.vtk")
-    optimesh.cli.info([input_file])
+    input_file = this_dir / "meshes" / "pacman.vtk"
+    optimesh.cli.info([str(input_file)])
 
 
 if __name__ == "__main__":

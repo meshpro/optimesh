@@ -1,9 +1,11 @@
-import os.path
+import pathlib
 
 import meshio
 import numpy
 from meshplex import MeshTri
 from scipy.spatial import Delaunay
+
+this_dir = pathlib.Path(__file__).resolve().parent
 
 
 def simple0():
@@ -103,14 +105,12 @@ def simple3():
 
 
 def pacman():
-    this_dir = os.path.dirname(os.path.realpath(__file__))
-    mesh = meshio.read(os.path.join(this_dir, "meshes", "pacman.vtk"))
+    mesh = meshio.read(this_dir / "meshes" / "pacman.vtk")
     return mesh.points[:, :2], mesh.get_cells_type("triangle")
 
 
 def circle_gmsh():
-    this_dir = os.path.dirname(os.path.realpath(__file__))
-    mesh = meshio.read(os.path.join(this_dir, "meshes", "circle.vtk"))
+    mesh = meshio.read(this_dir / "meshes" / "circle.vtk")
     c = mesh.get_cells_type("triangle")
     return mesh.points[:, :2], c
 
@@ -157,8 +157,7 @@ def circle_gmsh2():
     # mesh = pygmsh.generate_mesh(geom, remove_lower_dim_cells=True, verbose=False)
     # mesh.write("out.vtk")
 
-    this_dir = os.path.dirname(os.path.realpath(__file__))
-    mesh = meshio.read(os.path.join(this_dir, "meshes", "circle-small.vtk"))
+    mesh = meshio.read(this_dir / "meshes" / "circle-small.vtk")
     c = mesh.get_cells_type("triangle")
     return mesh.points[:, :2], c
 
