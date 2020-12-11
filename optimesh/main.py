@@ -1,3 +1,5 @@
+import re
+
 import meshplex
 import numpy
 
@@ -6,17 +8,17 @@ from .helpers import print_stats
 
 methods = {
     "lloyd": cvt.lloyd,
-    "cvt (diagonal)": cvt.lloyd,
-    "cvt (block-diagonal)": cvt.block_diagonal,
-    "cvt (full)": cvt.full,
+    "cvt-diaognal": cvt.lloyd,
+    "cvt-block-diagonal": cvt.block_diagonal,
+    "cvt-full": cvt.full,
     #
-    "cpt (linear solve)": cpt.linear_solve,
-    "cpt (fixed-point)": cpt.fixed_point,
-    "cpt (quasi-newton)": cpt.quasi_newton,
+    "cpt-linear-solve": cpt.linear_solve,
+    "cpt-fixed-point": cpt.fixed_point,
+    "cpt-quasi-newton": cpt.quasi_newton,
     #
     "laplace": laplace,
     #
-    "odt (fixed-point)": odt.fixed_point,
+    "odt-fixed-point": odt.fixed_point,
 }
 
 
@@ -25,15 +27,22 @@ def get_new_points(mesh, method: str):
 
 
 def optimize(mesh, method: str, *args, **kwargs):
-    method = method.lower()
+    # Normalize the method name, e.g.,
+    #   ODT  (block diagonal) -> odt-block-diagonal
+    normalized_method = "-".join(
+        filter(lambda item: item != "", re.split("-| |\\(|\\)", method.lower()))
+    )
 
     # Special treatment for ODT. We're using scipy.optimize there.
-    if method[:3] == "odt" and method[5:-1] != "fixed-point":
-        min_method = method[5:-1]
+    if normalized_method[:3] == "odt" and normalized_method[4:] != "fixed-point":
+        min_method = normalized_method[4:]
+        if "omega" in kwargs:
+            assert kwargs["omega"] == 1.0
+            kwargs.pop("omega")
         odt.nonlinear_optimization(mesh, min_method, *args, **kwargs)
         return
 
-    return _optimize(methods[method].get_new_points, mesh, *args, **kwargs)
+    return _optimize(methods[normalized_method].get_new_points, mesh, *args, **kwargs)
 
 
 def optimize_points_cells(X, cells, method: str, *args, **kwargs):

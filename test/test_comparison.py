@@ -17,7 +17,7 @@ def test_comparison():
     n = 10
     # X, cells = optimesh.cpt.fixed_point_uniform(X, cells, tol, n)
     # X, cells = optimesh.odt.fixed_point_uniform(X, cells, tol, n)
-    X, cells = optimesh.cvt.quasi_newton_uniform_lloyd(X, cells, tol, n, omega=2.0)
+    X, cells = optimesh.optimize_points_cells(X, cells, "lloyd", tol, n, omega=2.0)
 
     # from meshplex import MeshTri
     # mesh = MeshTri(X, cells)
@@ -25,22 +25,22 @@ def test_comparison():
     # exit(1)
 
     num_steps = 50
-    d = {
-        "cpt-uniform-fp": optimesh.cpt.fixed_point_uniform,
-        "cpt-uniform-qn": optimesh.cpt.quasi_newton_uniform,
+    names = [
+        "cpt-fixed-point",
+        "cpt-quasi-newton",
         #
-        "cvt-uniform-lloyd": optimesh.cvt.quasi_newton_uniform_lloyd,
-        "cvt-uniform-lloyd(2.0)": optimesh.cvt.quasi_newton_uniform_lloyd,
-        "cvt-uniform-qnb": optimesh.cvt.quasi_newton_uniform_blocks,
-        "cvt-uniform-qnf": optimesh.cvt.quasi_newton_uniform_full,
+        "lloyd",
+        "lloyd(2.0)",
+        "cvt-block-diagonal",
+        "cvt-full",
         #
-        "odt-uniform-fp": optimesh.odt.fixed_point_uniform,
-        "odt-uniform-bfgs": optimesh.odt.nonlinear_optimization_uniform,
-    }
+        "odt-fixed-point",
+        "odt-bfgs",
+    ]
 
-    avg_quality = numpy.empty((len(d), num_steps + 1))
+    avg_quality = numpy.empty((len(names), num_steps + 1))
 
-    for i, (name, method) in enumerate(d.items()):
+    for i, name in enumerate(names):
 
         def callback(k, mesh):
             avg_quality[i, k] = numpy.average(mesh.q_radius_ratio)
@@ -49,16 +49,19 @@ def test_comparison():
         X_in = X.copy()
         cells_in = cells.copy()
 
-        if name == "cvt-uniform-lloyd(2.0)":
-            method(X_in, cells_in, 0.0, num_steps, omega=2.0, callback=callback)
+        if name == "lloyd(2.0)":
+            optimesh.optimize_points_cells(
+                X_in, cells_in, "lloyd", 0.0, num_steps, omega=2.0, callback=callback
+            )
         else:
-            method(X_in, cells_in, 0.0, num_steps, callback=callback)
+            optimesh.optimize_points_cells(
+                X_in, cells_in, name, 0.0, num_steps, callback=callback
+            )
 
     # sort by best final quality
     idx = numpy.argsort(avg_quality[:, -1])[::-1]
 
-    labels = list(d.keys())
-    sorted_labels = [labels[i] for i in idx]
+    sorted_labels = [names[i] for i in idx]
 
     for i, label, values in zip(idx, sorted_labels, avg_quality[idx]):
         plt.plot(values, "-", label=label, zorder=i)

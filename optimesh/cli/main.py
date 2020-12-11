@@ -6,8 +6,10 @@ import meshio
 import meshplex
 import numpy
 
-from .. import cpt, cvt, laplace, odt
+from optimesh.main import optimize_points_cells
+
 from ..__about__ import __version__
+from ..main import optimize_points_cells
 
 
 def _get_parser():
@@ -29,21 +31,20 @@ def _get_parser():
         "-m",
         choices=[
             "laplace",
-            "cpt-dp",
-            "cpt-uniform-fp",
-            "cpt-uniform-qn",
+            "cpt-linear-solve",
+            "cpt-fixed-point",
+            "cpt-quasi-newton",
             #
             "lloyd",
-            "cvt-uniform-fp",
-            "cvt-uniform-qnb",
-            "cvt-uniform-qnf",
+            "cvt-diagonal",
+            "cvt-block-diagonal",
+            "cvt-full",
             #
-            "odt-dp-fp",
-            "odt-uniform-fp",
-            "odt-uniform-bfgs",
+            "odt-fixed-point",
+            "odt-bfgs",
         ],
-        default="cvt-uniform-qnf",
-        help="smoothing method (default: cvt-uniform-qnf)",
+        default="cvt-full",
+        help="smoothing method (default: cvt-full)",
     )
 
     parser.add_argument(
@@ -132,7 +133,7 @@ def prune(mesh):
     ncells = numpy.concatenate([numpy.concatenate(data) for _, data in mesh.cells])
     uvertices, uidx = numpy.unique(ncells, return_inverse=True)
     k = 0
-    for cell_type, data in mesh.cells:
+    for _, data in mesh.cells:
         n = numpy.prod(data.shape)
         data[:] = uidx[k : k + n].reshape(data.shape)
         k += n
@@ -162,46 +163,19 @@ def main(argv=None):
     else:
         cell_sets = [numpy.ones(mesh.get_cells_type("triangle").shape[0], dtype=bool)]
 
-    method = {
-        "laplace": laplace.fixed_point,
-        #
-        "cpt-dp": cpt.linear_solve_density_preserving,
-        "cpt-uniform-fp": cpt.fixed_point_uniform,
-        "cpt-uniform-qn": cpt.quasi_newton_uniform,
-        #
-        "lloyd": cvt.quasi_newton_uniform_lloyd,
-        "cvt-uniform-fp": cvt.quasi_newton_uniform_lloyd,
-        "cvt-uniform-qnb": cvt.quasi_newton_uniform_blocks,
-        "cvt-uniform-qnf": cvt.quasi_newton_uniform_full,
-        #
-        "odt-dp-fp": odt.fixed_point_density_preserving,
-        "odt-uniform-fp": odt.fixed_point_uniform,
-        "odt-uniform-bfgs": odt.nonlinear_optimization_uniform,
-    }[args.method]
-
     cells = mesh.get_cells_type("triangle")
 
     for cell_idx in cell_sets:
-        if args.method in ["odt-uniform-bfgs"]:
-            # no relaxation parameter omega
-            X, cls = method(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                verbose=~args.quiet,
-                step_filename_format=args.step_filename_format,
-            )
-        else:
-            X, cls = method(
-                mesh.points,
-                cells[cell_idx],
-                args.tolerance,
-                args.max_num_steps,
-                omega=args.omega,
-                verbose=~args.quiet,
-                step_filename_format=args.step_filename_format,
-            )
+        X, cls = optimize_points_cells(
+            mesh.points,
+            cells[cell_idx],
+            args.method,
+            args.tolerance,
+            args.max_num_steps,
+            omega=args.omega,
+            verbose=~args.quiet,
+            step_filename_format=args.step_filename_format,
+        )
 
         cells[cell_idx] = cls
 
