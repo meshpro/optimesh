@@ -40,18 +40,18 @@ def run(mesh, volume, convol_norms, ce_ratio_norms, cellvol_norms, tol=1.0e-12):
     assert near_equal(convol_norms, [norm2, norm_inf], tol)
 
 
-def assert_norms(X, ref, tol):
+def assert_norm_equality(X, ref, tol):
     nc = X.flatten()
-    norm1 = numpy.linalg.norm(nc, ord=1)
-    norm2 = numpy.linalg.norm(nc, ord=2)
-    normi = numpy.linalg.norm(nc, ord=numpy.inf)
+    ref = numpy.asarray(ref)
+    norms = numpy.array(
+        [
+            numpy.linalg.norm(nc, ord=1),
+            numpy.linalg.norm(nc, ord=2),
+            numpy.linalg.norm(nc, ord=numpy.inf),
+        ]
+    )
 
-    assert (
-        abs(norm1 - ref[0]) < tol * ref[0]
-    ), "Expected: {:.16e}  Computed: {:.16e}".format(ref[0], norm1)
-    assert (
-        abs(norm2 - ref[1]) < tol * ref[1]
-    ), "Expected: {:.16e}  Computed: {:.16e}".format(ref[1], norm2)
-    assert (
-        abs(normi - ref[2]) < tol * ref[2]
-    ), "Expected: {:.16e}  Computed: {:.16e}".format(ref[2], normi)
+    assert numpy.all(numpy.abs(norms - ref) < tol * ref), (
+        f"Expected:\n  [{ref[0]:.16e}, {ref[1]:.16e}, {ref[2]:.16e}]\n"
+        "Computed:\n  [{:.16e}, {:.16e}, {:.16e}]".format(*norms)
+    )

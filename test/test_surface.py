@@ -17,9 +17,10 @@ def test_surface():
 
     # points, cells = optimesh.cpt.fixed_point_uniform(
     # points, cells = optimesh.odt.fixed_point_uniform(
-    points, cells = optimesh.cvt.quasi_newton_uniform_full(
+    points, cells = optimesh.optimize_points_cells(
         points,
         cells,
+        "cvt (full)",
         1.0e-2,
         100,
         verbose=False,

@@ -1,28 +1,14 @@
 import numpy
 import scipy.sparse
-from meshplex import MeshTri
 
-from ..helpers import runner
 from ._helpers import jac_uniform
 
 
-def quasi_newton_uniform_full(points, cells, *args, **kwargs):
-    def get_new_points(mesh):
-        # TODO need copy?
-        x = mesh.points.copy()
-        x += update(mesh)
-        return x
-
-    mesh = MeshTri(points, cells)
-
-    runner(
-        get_new_points,
-        mesh,
-        *args,
-        **kwargs,
-        method_name="Centroidal Voronoi Tesselation (CVT), uniform density, full-Hessian variant"
-    )
-    return mesh.points, mesh.cells["points"]
+def get_new_points(mesh):
+    # TODO need copy?
+    x = mesh.points.copy()
+    x += update(mesh)
+    return x
 
 
 def update(mesh):
