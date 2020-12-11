@@ -103,6 +103,7 @@ import optimesh
 
 points, cells = meshzoo.tetra_sphere(20)
 
+
 class Sphere:
     def f(self, x):
         return 1.0 - (x[0] ** 2 + x[1] ** 2 + x[2] ** 2)
@@ -110,11 +111,17 @@ class Sphere:
     def grad(self, x):
         return -2 * x
 
+
 # You can use all methods in optimesh:
 # points, cells = optimesh.cpt.fixed_point_uniform(
 # points, cells = optimesh.odt.fixed_point_uniform(
 points, cells = optimesh.optimize_points_cells(
-    points, cells, "CVT (full)", 1.0e-2, 100, verbose=False,
+    points,
+    cells,
+    "CVT (full)",
+    1.0e-2,
+    100,
+    verbose=False,
     implicit_surface=Sphere(),
     # step_filename_format="out{:03d}.vtk"
 )
