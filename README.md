@@ -56,7 +56,7 @@ bad, yellow is good.
 
 ![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/lloyd2.webp) | ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) | ![cvt-uniform-qnf](https://nschloe.github.io/optimesh/cvt-uniform-qnf.webp) |
 :------------------------:|:---------------------:|:----:|
-uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-uniform-qnb`) | uniform-density quasi-Newton iteration (default method, full Hessian, `--method cvt-uniform-qnf`) |
+uniform-density relaxed [Lloyd's algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm) (`--method lloyd --omega 2.0`) | uniform-density quasi-Newton iteration (block-diagonal Hessian, `--method cvt-block-diagonal`) | uniform-density quasi-Newton iteration (default method, full Hessian, `--method cvt-full`) |
 
 Centroidal Voronoi tessellation smoothing ([Du et al.](#relevant-publications)) is one
 of the oldest and most reliable approaches. optimesh provides classical Lloyd smoothing
@@ -67,7 +67,7 @@ as well as several variants that result in better meshes.
 
 ![cpt-cp](https://nschloe.github.io/optimesh/cpt-dp.png) | ![cpt-uniform-fp](https://nschloe.github.io/optimesh/cpt-uniform-fp.webp) | ![cpt-uniform-qn](https://nschloe.github.io/optimesh/cpt-uniform-qn.webp) |
 :-----------------------------------------------------------------------:|:-----------------------------------------------------------------:|:--------------------------------------------------------:|
-density-preserving linear solve ([Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing), `--method cpt-dp`) | uniform-density fixed-point iteration (`--method cpt-uniform-fp`) | uniform-density quasi-Newton (`--method cpt-uniform-qn`) |
+density-preserving linear solve ([Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing), `--method cpt-linear-solve`) | uniform-density fixed-point iteration (`--method cpt-fixed-point`) | uniform-density quasi-Newton (`--method cpt-quasi-newton`) |
 
 A smoothing method suggested by [Chen and Holst](#relevant-publications), mimicking CVT
 but much more easily implemented. The density-preserving variant leads to the exact same
@@ -82,7 +82,7 @@ as a quasi-Newton method. The latter typically converges faster.
 
 ![odt-dp-fp](https://nschloe.github.io/optimesh/odt-dp-fp.webp) | ![odt-uniform-fp](https://nschloe.github.io/optimesh/odt-uniform-fp.webp) | ![odt-uniform-bfgs](https://nschloe.github.io/optimesh/odt-uniform-bfgs.webp) |
 :--------------------------------------------------------------:|:-----------------------------------------------------------------:|:------------------------------------------------------------------:|
-density-preserving fixed-point iteration (`--method odt-dp-fp`) | uniform-density fixed-point iteration (`--method odt-uniform-fp`) | uniform-density BFGS (`--method odt-uniform-bfgs`) |
+density-preserving fixed-point iteration (`--method odt-dp-fp`) | uniform-density fixed-point iteration (`--method odt-fixed-point`) | uniform-density BFGS (`--method odt-bfgs`) |
 
 Optimal Delaunay Triangulation (ODT) as suggested by [Chen and
 Holst](#relevant-publications). Typically superior to CPT, but also more expensive to
@@ -90,6 +90,32 @@ compute.
 
 Implemented once classically as a fixed-point iteration, once as a nonlinear
 optimization method. The latter typically leads to better results.
+
+
+### Using optimesh from Python
+
+You can also use optimesh in a Python program. Try
+<!--exdown-skip-->
+```python
+import optimesh
+
+# [...] create points, cells [...]
+
+points, cells = optimesh.optimize_points_cells(
+    points, cells, "CVT (block-diagonal)", 1.0e-5, 100
+)
+
+# or create a meshplex Mesh
+import meshplex
+
+mesh = meshplex.MeshTri(points, cells)
+optimesh.optimize(mesh, "CVT (block-diagonal)", 1.0e-5, 100)
+# mesh.points, mesh.cells, ...
+```
+If you only want to do one optimization step, do
+```python
+points = optimesh.get_new_points(mesh, "CVT (block-diagonal)")
+```
 
 
 ### Surface mesh smoothing
