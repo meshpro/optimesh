@@ -2,6 +2,7 @@
 """
 from ..helpers import get_new_points_averaged
 
+
 def get_new_points(mesh):
     """Idea:
     Move interior mesh points into the weighted averages of the circumcenters

@@ -10,6 +10,8 @@ import numpy
 import quadpy
 from meshplex import MeshTri
 
+from ..helpers import print_stats
+
 
 def _energy(mesh, uniform_density=False):
     """The mesh energy is defined as
@@ -55,9 +57,18 @@ def _energy(mesh, uniform_density=False):
     return out - val
 
 
-def nonlinear_optimization_uniform(
-    X,
-    cells,
+def nonlinear_optimization(
+    mesh,
+    method,
+    # method="BFGS",
+    # method="Nelder-Mead",
+    # method="Powell",
+    # method="CG",
+    # method="Newton-CG",
+    # method="L-BFGS-B",
+    # method="TNC",
+    # method="COBYLA",
+    # method="SLSQP",
     tol,
     max_num_steps,
     verbose=False,
@@ -85,7 +96,7 @@ def nonlinear_optimization_uniform(
     """
     import scipy.optimize
 
-    mesh = MeshTri(X, cells)
+    X = mesh.points
 
     if step_filename_format:
         mesh.save(
@@ -102,7 +113,7 @@ def nonlinear_optimization_uniform(
 
     def f(x):
         mesh.set_points(x.reshape(-1, X.shape[1]), mesh.is_interior_point)
-        return energy(mesh, uniform_density=True)
+        return _energy(mesh, uniform_density=True)
 
     # TODO put f and jac together
     def jac(x):
@@ -138,10 +149,6 @@ def nonlinear_optimization_uniform(
         if callback:
             callback(flip_delaunay.step, mesh)
 
-        # mesh.show()
-        # exit(1)
-        return
-
     flip_delaunay.step = 0
 
     x0 = X[mesh.is_interior_point].flatten()
@@ -153,15 +160,7 @@ def nonlinear_optimization_uniform(
         f,
         x0,
         jac=jac,
-        # method="Nelder-Mead",
-        # method="Powell",
-        # method="CG",
-        # method="Newton-CG",
-        method="BFGS",
-        # method="L-BFGS-B",
-        # method="TNC",
-        # method="COBYLA",
-        # method="SLSQP",
+        method=method,
         tol=tol,
         callback=flip_delaunay,
         options={"maxiter": max_num_steps},
@@ -179,8 +178,6 @@ def nonlinear_optimization_uniform(
     )
     if verbose:
         print(f"\nFinal ({info})")
-        extra_cols = ["energy: {:.5e}".format(energy(mesh))]
+        extra_cols = ["energy: {:.5e}".format(_energy(mesh))]
         print_stats(mesh, extra_cols=extra_cols)
         print()
-
-    return mesh.points, mesh.cells["points"]

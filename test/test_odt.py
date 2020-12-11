@@ -18,8 +18,8 @@ from .meshes import circle_gmsh2, pacman, simple1, simple2, simple3
 def test_fixed_point(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    X, cells = optimesh.odt.fixed_point_uniform(
-        X, cells, 1.0e-3, 100, uniform_density=True
+    X, cells = optimesh.optimize_points_cells(
+        X, cells, "ODT (fixed-point)", 1.0e-3, 100
     )
 
     # Test if we're dealing with the mesh we expect.
@@ -46,7 +46,7 @@ def test_fixed_point(mesh, ref1, ref2, refi):
 def test_nonlinear_optimization(mesh, ref1, ref2, refi):
     X, cells = mesh()
 
-    X, cells = optimesh.odt.nonlinear_optimization_uniform(X, cells, 1.0e-5, 100)
+    X, cells = optimesh.optimize_points_cells(X, cells, "ODT (BFGS)", 1.0e-5, 100)
 
     # Test if we're dealing with the mesh we expect.
     nc = X.flatten()
@@ -73,8 +73,8 @@ def test_circle():
     # a breakdown.
     # X, cells = circle_random2(150, 1.0, seed=1)
     X, cells = circle_gmsh2()
-    X, cells = optimesh.odt.fixed_point_uniform(
-        X, cells, 1.0e-3, 100, boundary_step=boundary_step
+    X, cells = optimesh.optimize_points_cells(
+        X, cells, "ODT (fixed-point)", 1.0e-3, 100, boundary_step=boundary_step
     )
 
 

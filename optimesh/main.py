@@ -1,7 +1,7 @@
 import meshplex
 import numpy
 
-from . import cpt, cvt, laplace
+from . import cpt, cvt, laplace, odt
 from .helpers import print_stats
 
 methods = {
@@ -15,41 +15,9 @@ methods = {
     "cpt (quasi-newton)": cpt.quasi_newton,
     #
     "laplace": laplace,
+    #
+    "odt (fixed-point)": odt.fixed_point,
 }
-
-# mesh = meshplex.MeshTri(points, cells)
-# pts = optimesh.cpt.get_new_points(mesh, "linear solve")
-# pts = optimesh.cpt.get_new_points(mesh, "fixed-point")
-# pts = optimesh.cpt.get_new_points(mesh, "quasi-newton")
-# pts = optimesh.cpt.get_new_points(mesh)
-#
-# optimesh.cpt.optimize(mesh, "quasi-newton", 1.0e-10, 50)
-# optimesh.cpt.optimize(mesh, "fixed-point")
-#
-# optimesh.laplace.get_new_points(mesh)
-# optimesh.laplace.optimize(mesh)
-#
-# optimesh.lloyd.get_new_points(mesh)
-# optimesh.lloyd.optimize(mesh)
-#
-#
-# optimesh.get_new_points(mesh, "lloyd")
-#
-# optimesh.optimize(mesh, "lloyd", omega=2.0)
-# optimesh.optimize(mesh, "laplace")  # dp
-# optimesh.optimize(mesh, "laplace (linear solve)")
-#
-# optimesh.optimize(mesh, "cvt (diagonal)")
-# optimesh.optimize(mesh, "cvt (block-diagonal)")
-# optimesh.optimize(mesh, "cvt (full)")
-#
-# optimesh.optimize(mesh, "cpt (linear solve)")  # dp
-# optimesh.optimize(mesh, "cpt (fixed-point)")
-# optimesh.optimize(mesh, "cpt (quasi-newton)")
-#
-# # optimesh.optimize(mesh, "odt (fixed-point density-preserving)")
-# optimesh.optimize(mesh, "odt (fixed-point)")
-# optimesh.optimize(mesh, "odt (bfgs)")
 
 
 def get_new_points(mesh, method: str):
@@ -57,7 +25,15 @@ def get_new_points(mesh, method: str):
 
 
 def optimize(mesh, method: str, *args, **kwargs):
-    return _optimize(methods[method.lower()].get_new_points, mesh, *args, **kwargs)
+    method = method.lower()
+
+    # Special treatment for ODT. We're using scipy.optimize there.
+    if method[:3] == "odt" and method[5:-1] != "fixed-point":
+        min_method = method[5:-1]
+        odt.nonlinear_optimization(mesh, min_method, *args, **kwargs)
+        return
+
+    return _optimize(methods[method].get_new_points, mesh, *args, **kwargs)
 
 
 def optimize_points_cells(X, cells, method: str, *args, **kwargs):
