@@ -6,8 +6,14 @@ from meshplex import MeshTri
 import optimesh
 from optimesh.cpt.quasi_newton import _jac_uniform
 
+from . import meshes
 from .helpers import assert_norm_equality
-from .meshes import circle_random2, pacman, simple0, simple1, simple2, simple3
+
+simple0 = meshes.simple0()
+simple1 = meshes.simple1()
+simple2 = meshes.simple2()
+simple3 = meshes.simple3()
+pacman = meshes.pacman()
 
 
 def _energy_uniform_per_point(X, cells):
@@ -46,13 +52,13 @@ def _energy_uniform(X, cells):
     [(simple0, 5.0 / 18.0), (simple1, 17.0 / 60.0), (pacman, 7.320400634147646)],
 )
 def test_energy(mesh, ref):
-    X, cells = mesh()
+    X, cells = mesh
     energy = _energy_uniform(X, cells)
     assert abs(energy - ref) < 1.0e-12 * ref
 
 
 def test_simple1_jac():
-    X, cells = simple1()
+    X, cells = simple1
     # First assert that the Jacobian at interior points coincides with the finite
     # difference computed for the energy component from that point. Note that the
     # contribution from all other points is disregarded here, just like in the
@@ -78,7 +84,7 @@ def test_simple1_jac():
     ],
 )
 def test_jac(mesh, ref):
-    X, cells = mesh()
+    X, cells = mesh
     jac = _jac_uniform(X, cells)
     assert_norm_equality(jac, ref, 1.0e-12)
 
@@ -98,7 +104,7 @@ def test_jac(mesh, ref):
     ],
 )
 def test_methods(method, mesh, ref):
-    X_in, cells_in = mesh()
+    X_in, cells_in = mesh
 
     # X_before = X_in.copy()
     # cells_before = cells_in.copy()
@@ -120,7 +126,7 @@ def test_methods(method, mesh, ref):
     ],
 )
 def test_density_preserving(mesh, ref):
-    X, cells = mesh()
+    X, cells = mesh
     X, cells = optimesh.optimize_points_cells(X, cells, "cpt (linear solve)", 0.0, 10)
     assert_norm_equality(X, ref, 1.0e-12)
 
@@ -134,7 +140,7 @@ def test_circle():
         r = np.sqrt(np.einsum("ij,ij->j", y, y))
         return ((y / r * r).T + x0).T
 
-    X, cells = circle_random2(150, 1.0)
+    X, cells = meshes.circle_random2(150, 1.0)
     X, cells = optimesh.optimize_points_cells(
         X, cells, "cpt (fixed-point)", 1.0e-3, 100, boundary_step=boundary_step
     )
