@@ -35,7 +35,7 @@ def simple0():
         ]
     )
     cells = np.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
-    return X, cells
+    return meshplex.MeshTri(X, cells)
 
 
 def simple1():
@@ -51,7 +51,7 @@ def simple1():
     #
     X = np.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.4, 0.5]])
     cells = np.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
-    return X, cells
+    return meshplex.MeshTri(X, cells)
 
 
 def simple2():
@@ -69,7 +69,7 @@ def simple2():
         [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.7, 0.5], [1.7, 0.5]]
     )
     cells = np.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
-    return X, cells
+    return meshplex.MeshTri(X, cells)
 
 
 def simple3():
@@ -107,12 +107,12 @@ def simple3():
             [5, 0, 6],
         ]
     )
-    return X, cells
+    return meshplex.MeshTri(X, cells)
 
 
 def pacman():
     mesh = meshio.read(this_dir / "meshes" / "pacman.vtk")
-    return mesh.points[:, :2], mesh.get_cells_type("triangle")
+    return meshplex.MeshTri(mesh.points[:, :2], mesh.get_cells_type("triangle"))
 
 
 def circle_gmsh():

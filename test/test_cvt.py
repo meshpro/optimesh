@@ -36,13 +36,13 @@ simple1 = meshes.simple1()
 def test_cvt_lloyd(mesh, num_steps, ref):
     # print(mesh)
     print(num_steps)
-    X, cells = mesh
+    X, cells = mesh.points, mesh.cells["points"]
     m = meshplex.MeshTri(X.copy(), cells.copy())
     optimesh.optimize(m, "Lloyd", 1.0e-2, num_steps, verbose=False)
     assert_norm_equality(m.points, ref, 1.0e-12)
 
     # try the other way of calling optimesh
-    X, c = mesh
+    X, c = mesh.points, mesh.cells["points"]
     X, _ = optimesh.optimize_points_cells(
         X.copy(), c.copy(), "lloyd", 1.0e-2, num_steps
     )
@@ -57,7 +57,7 @@ def test_cvt_lloyd(mesh, num_steps, ref):
     ],
 )
 def test_cvt_lloyd_overrelaxed(mesh, ref):
-    X, cells = mesh
+    X, cells = mesh.points, mesh.cells["points"]
     m = meshplex.MeshTri(X.copy(), cells.copy())
     optimesh.optimize(m, "Lloyd", 1.0e-2, 100, omega=2.0)
     assert_norm_equality(m.points, ref, 1.0e-12)
@@ -71,7 +71,7 @@ def test_cvt_lloyd_overrelaxed(mesh, ref):
     ],
 )
 def test_cvt_qnb(mesh, ref):
-    X, cells = mesh
+    X, cells = mesh.points, mesh.cells["points"]
     m = meshplex.MeshTri(X.copy(), cells.copy())
     optimesh.optimize(m, "CVT (block-diagonal)", 1.0e-2, 100)
     assert_norm_equality(m.points, ref, 1.0e-10)
@@ -112,7 +112,7 @@ def test_cvt_qnb_boundary(n=10):
     ],
 )
 def test_cvt_qnf(mesh, ref):
-    X, cells = mesh
+    X, cells = mesh.points, mesh.cells["points"]
     X, cells = optimesh.optimize_points_cells(
         X.copy(), cells.copy(), "cvt (full)", 1.0e-2, 100, omega=0.9
     )
