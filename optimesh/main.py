@@ -46,6 +46,9 @@ def optimize(mesh, method: str, *args, **kwargs):
         odt.nonlinear_optimization(mesh, min_method, *args, **kwargs)
         return
 
+    if method not in methods:
+        raise KeyError(f"Choose one of {', '.join(methods.keys())}.")
+
     return _optimize(methods[method].get_new_points, mesh, *args, **kwargs)
 
 
