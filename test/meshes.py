@@ -1,8 +1,8 @@
 import pathlib
 
 import meshio
+import meshplex
 import numpy as np
-from meshplex import MeshTri
 from scipy.spatial import Delaunay
 
 this_dir = pathlib.Path(__file__).resolve().parent
@@ -200,7 +200,7 @@ def circle_random(n, radius):
     tri = Delaunay(pts)
 
     # Make sure there are exactly `n` boundary points
-    mesh = MeshTri(pts, tri.simplices)
+    mesh = meshplex.MeshTri(pts, tri.simplices)
     assert np.sum(mesh.is_boundary_point) == n
 
     return pts, tri.simplices
@@ -216,7 +216,7 @@ def circle_random2(n, radius, seed=0):
     pts = np.column_stack([np.sqrt(r) * np.cos(alpha), np.sqrt(r) * np.sin(alpha)])
     tri = Delaunay(pts)
     # Make sure there are exactly `n` boundary points
-    mesh = MeshTri(pts, tri.simplices)
+    mesh = meshplex.MeshTri(pts, tri.simplices)
     # inflate the mesh such that the boundary points average around the radius
     boundary_pts = pts[mesh.is_boundary_point]
     dist = np.sqrt(np.einsum("ij,ij->i", boundary_pts, boundary_pts))
@@ -234,7 +234,7 @@ def circle_random2(n, radius, seed=0):
     # ).T
     # bpts = pts[mesh.is_boundary_point]
     # print(np.sqrt(np.einsum("ij,ij->i", bpts, bpts)))
-    # mesh = MeshTri(pts, tri.simplices)
+    # mesh = meshplex.MeshTri(pts, tri.simplices)
     # mesh.show()
 
     return pts, tri.simplices
