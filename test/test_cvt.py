@@ -36,12 +36,12 @@ def test_cvt_lloyd(mesh, num_steps, ref):
     X, cells = mesh()
     m = meshplex.MeshTri(X, cells)
     optimesh.optimize(m, "Lloyd", 1.0e-2, num_steps, verbose=False)
-    assert_norm_equality(m.points, ref, 1.0e-13)
+    assert_norm_equality(m.points, ref, 1.0e-12)
 
     # try the other way of calling optimesh
     X, c = mesh()
     X, _ = optimesh.optimize_points_cells(X, c, "lloyd", 1.0e-2, num_steps)
-    assert_norm_equality(X, ref, 1.0e-13)
+    assert_norm_equality(X, ref, 1.0e-12)
 
 
 @pytest.mark.parametrize(
