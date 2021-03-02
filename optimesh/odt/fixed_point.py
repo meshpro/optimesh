@@ -34,7 +34,7 @@ def get_new_points(mesh):
 #     cc = mesh.cell_circumcenters.copy()
 #     # Find all cells with a boundary edge
 #     is_boundary_cell = (
-#         numpy.sum(mesh.is_boundary_point[mesh.cells["points"]], axis=1) == 2
+#         np.sum(mesh.is_boundary_point[mesh.cells["points"]], axis=1) == 2
 #     )
 #     cc[is_boundary_cell] = mesh.cell_barycenters[is_boundary_cell]
 #     X = get_new_points_averaged(mesh, cc)

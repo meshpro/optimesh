@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import pytest
 import quadpy
 from meshplex import MeshTri
@@ -20,7 +20,7 @@ def _energy_uniform_per_point(X, cells):
     """
     mesh = MeshTri(X, cells)
 
-    star_integrals = numpy.zeros(mesh.points.shape[0])
+    star_integrals = np.zeros(mesh.points.shape[0])
     # Python loop over the cells... slow!
     for cell in mesh.cells["points"]:
         for idx in cell:
@@ -29,7 +29,7 @@ def _energy_uniform_per_point(X, cells):
             # Get a scheme of order 2
             scheme = quadpy.t2.get_good_scheme(2)
             val = scheme.integrate(
-                lambda x: numpy.einsum("ij,ij->i", x.T - xi, x.T - xi), tri
+                lambda x: np.einsum("ij,ij->i", x.T - xi, x.T - xi), tri
             )
             star_integrals[idx] += val
 
@@ -38,7 +38,7 @@ def _energy_uniform_per_point(X, cells):
 
 
 def _energy_uniform(X, cells):
-    return numpy.sum(_energy_uniform_per_point(X, cells))
+    return np.sum(_energy_uniform_per_point(X, cells))
 
 
 @pytest.mark.parametrize(
@@ -105,8 +105,8 @@ def test_methods(method, mesh, ref):
 
     X, _ = optimesh.optimize_points_cells(X_in, cells_in, method, 1.0e-12, 100)
 
-    # assert numpy.all(cells_in == cells_before)
-    # assert numpy.all(numpy.abs(X_in == X_before) < 1.0e-15)
+    # assert np.all(cells_in == cells_before)
+    # assert np.all(np.abs(X_in == X_before) < 1.0e-15)
 
     # Test if we're dealing with the mesh we expect.
     assert_norm_equality(X, ref, 1.0e-12)
@@ -131,7 +131,7 @@ def test_circle():
         r = 1.0
         # simply project onto the circle
         y = (x.T - x0).T
-        r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
+        r = np.sqrt(np.einsum("ij,ij->j", y, y))
         return ((y / r * r).T + x0).T
 
     X, cells = circle_random2(150, 1.0)

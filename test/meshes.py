@@ -1,11 +1,17 @@
 import pathlib
 
 import meshio
-import numpy
+import numpy as np
 from meshplex import MeshTri
 from scipy.spatial import Delaunay
 
 this_dir = pathlib.Path(__file__).resolve().parent
+
+
+def simple_line():
+    X = np.array([0.0, 0.1, 1.0])
+    cells = np.array([[0, 1], [1, 2]])
+    return X, cells
 
 
 def simple0():
@@ -19,7 +25,7 @@ def simple0():
     #  |/    0    \|
     #  0-----------1
     #
-    X = numpy.array(
+    X = np.array(
         [
             [0.0, 0.0, 0.0],
             [1.0, 0.0, 0.0],
@@ -28,7 +34,7 @@ def simple0():
             [0.5, 0.5, 0.0],
         ]
     )
-    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
+    cells = np.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
     return X, cells
 
 
@@ -43,8 +49,8 @@ def simple1():
     #  |/    0    \|
     #  0-----------1
     #
-    X = numpy.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.4, 0.5]])
-    cells = numpy.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
+    X = np.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.4, 0.5]])
+    cells = np.array([[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]])
     return X, cells
 
 
@@ -59,10 +65,10 @@ def simple2():
     #  |/    0    \ /
     #  0-----------1
     #
-    X = numpy.array(
+    X = np.array(
         [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.7, 0.5], [1.7, 0.5]]
     )
-    cells = numpy.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
+    cells = np.array([[0, 1, 4], [1, 5, 4], [2, 4, 5], [2, 3, 4], [3, 0, 4]])
     return X, cells
 
 
@@ -77,7 +83,7 @@ def simple3():
     #  |/    0    \ /         \|
     #  0-----------1-----------2
     #
-    X = numpy.array(
+    X = np.array(
         [
             [0.0, 0.0],
             [1.0, 0.0],
@@ -89,7 +95,7 @@ def simple3():
             [1.7, 0.5],
         ]
     )
-    cells = numpy.array(
+    cells = np.array(
         [
             [0, 1, 6],
             [1, 7, 6],
@@ -140,9 +146,9 @@ def _compute_num_boundary_points(total_num_points):
     # = 0
     #
     # for the number of boundary points.
-    sqrt3_pi = numpy.sqrt(3) * numpy.pi
-    num_boundary_points = -sqrt3_pi / 2 + numpy.sqrt(
-        3 / 4 * numpy.pi ** 2 - (2 - 2 * total_num_points) * sqrt3_pi
+    sqrt3_pi = np.sqrt(3) * np.pi
+    num_boundary_points = -sqrt3_pi / 2 + np.sqrt(
+        3 / 4 * np.pi ** 2 - (2 - 2 * total_num_points) * sqrt3_pi
     )
     return num_boundary_points
 
@@ -150,7 +156,7 @@ def _compute_num_boundary_points(total_num_points):
 def circle_gmsh2():
     # import pygmsh
     # geom = pygmsh.built_in.Geometry()
-    # target_edge_length = 2 * numpy.pi / _compute_num_boundary_points(num_points)
+    # target_edge_length = 2 * np.pi / _compute_num_boundary_points(num_points)
     # geom.add_circle(
     #     [0.0, 0.0, 0.0], 1.0, lcar=target_edge_length, num_sections=4, compound=True
     # )
@@ -163,18 +169,16 @@ def circle_gmsh2():
 
 
 def circle_random(n, radius):
-    k = numpy.arange(n)
-    boundary_pts = radius * numpy.column_stack(
-        [numpy.cos(2 * numpy.pi * k / n), numpy.sin(2 * numpy.pi * k / n)]
+    k = np.arange(n)
+    boundary_pts = radius * np.column_stack(
+        [np.cos(2 * np.pi * k / n), np.sin(2 * np.pi * k / n)]
     )
 
     # Compute the number of interior points such that all triangles can be somewhat
     # equilateral.
-    edge_length = 2 * numpy.pi * radius / n
-    domain_area = numpy.pi - n * (
-        radius ** 2 / 2 * (edge_length - numpy.sin(edge_length))
-    )
-    cell_area = numpy.sqrt(3) / 4 * edge_length ** 2
+    edge_length = 2 * np.pi * radius / n
+    domain_area = np.pi - n * (radius ** 2 / 2 * (edge_length - np.sin(edge_length)))
+    cell_area = np.sqrt(3) / 4 * edge_length ** 2
     target_num_cells = domain_area / cell_area
     # Euler:
     # 2 * num_points - num_boundary_edges - 2 = num_cells
@@ -183,21 +187,21 @@ def circle_random(n, radius):
     m = int(0.5 * (target_num_cells + n) + 1 - n)
 
     # generate random points in circle; <http://mathworld.wolfram.com/DiskPointPicking.html>
-    numpy.random.seed(0)
-    r = numpy.random.rand(m)
-    alpha = 2 * numpy.pi * numpy.random.rand(m)
+    np.random.seed(0)
+    r = np.random.rand(m)
+    alpha = 2 * np.pi * np.random.rand(m)
 
-    interior_pts = numpy.column_stack(
-        [numpy.sqrt(r) * numpy.cos(alpha), numpy.sqrt(r) * numpy.sin(alpha)]
+    interior_pts = np.column_stack(
+        [np.sqrt(r) * np.cos(alpha), np.sqrt(r) * np.sin(alpha)]
     )
 
-    pts = numpy.concatenate([boundary_pts, interior_pts])
+    pts = np.concatenate([boundary_pts, interior_pts])
 
     tri = Delaunay(pts)
 
     # Make sure there are exactly `n` boundary points
     mesh = MeshTri(pts, tri.simplices)
-    assert numpy.sum(mesh.is_boundary_point) == n
+    assert np.sum(mesh.is_boundary_point) == n
 
     return pts, tri.simplices
 
@@ -205,33 +209,31 @@ def circle_random(n, radius):
 def circle_random2(n, radius, seed=0):
     """Boundary points are random, too."""
     # generate random points in circle; <http://mathworld.wolfram.com/DiskPointPicking.html>
-    numpy.random.seed(seed)
-    r = numpy.random.rand(n)
-    alpha = 2 * numpy.pi * numpy.random.rand(n)
+    np.random.seed(seed)
+    r = np.random.rand(n)
+    alpha = 2 * np.pi * np.random.rand(n)
 
-    pts = numpy.column_stack(
-        [numpy.sqrt(r) * numpy.cos(alpha), numpy.sqrt(r) * numpy.sin(alpha)]
-    )
+    pts = np.column_stack([np.sqrt(r) * np.cos(alpha), np.sqrt(r) * np.sin(alpha)])
     tri = Delaunay(pts)
     # Make sure there are exactly `n` boundary points
     mesh = MeshTri(pts, tri.simplices)
     # inflate the mesh such that the boundary points average around the radius
     boundary_pts = pts[mesh.is_boundary_point]
-    dist = numpy.sqrt(numpy.einsum("ij,ij->i", boundary_pts, boundary_pts))
-    avg_dist = numpy.sum(dist) / len(dist)
+    dist = np.sqrt(np.einsum("ij,ij->i", boundary_pts, boundary_pts))
+    avg_dist = np.sum(dist) / len(dist)
     mesh.points = pts / avg_dist
     # boundary_pts = pts[mesh.is_boundary_point]
-    # dist = numpy.sqrt(numpy.einsum("ij,ij->i", boundary_pts, boundary_pts))
-    # avg_dist = numpy.sum(dist) / len(dist)
+    # dist = np.sqrt(np.einsum("ij,ij->i", boundary_pts, boundary_pts))
+    # avg_dist = np.sum(dist) / len(dist)
     # print(avg_dist)
 
     # now move all boundary points to the circle
     # bpts = pts[mesh.is_boundary_point]
     # pts[mesh.is_boundary_point] = (
-    #     bpts.T / numpy.sqrt(numpy.einsum("ij,ij->i", bpts, bpts))
+    #     bpts.T / np.sqrt(np.einsum("ij,ij->i", bpts, bpts))
     # ).T
     # bpts = pts[mesh.is_boundary_point]
-    # print(numpy.sqrt(numpy.einsum("ij,ij->i", bpts, bpts)))
+    # print(np.sqrt(np.einsum("ij,ij->i", bpts, bpts)))
     # mesh = MeshTri(pts, tri.simplices)
     # mesh.show()
 
@@ -241,12 +243,12 @@ def circle_random2(n, radius, seed=0):
 def circle_rotated():
     pts, cells = circle_random()
     # <https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula>
-    theta = numpy.pi / 4
-    k = numpy.array([1.0, 0.0, 0.0])
+    theta = np.pi / 4
+    k = np.array([1.0, 0.0, 0.0])
     pts = (
-        pts * numpy.cos(theta)
-        + numpy.cross(k, pts) * numpy.sin(theta)
-        + numpy.outer(numpy.einsum("ij,j->i", pts, k), k) * (1.0 - numpy.cos(theta))
+        pts * np.cos(theta)
+        + np.cross(k, pts) * np.sin(theta)
+        + np.outer(np.einsum("ij,j->i", pts, k), k) * (1.0 - np.cos(theta))
     )
     meshio.write_points_cells("out.vtk", pts, {"triangle": cells})
     return pts, cells

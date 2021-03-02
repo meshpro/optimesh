@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import pytest
 
 import optimesh
@@ -45,7 +45,7 @@ def test_circle():
         r = 1.0
         # simply project onto the circle
         y = (x.T - x0).T
-        r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
+        r = np.sqrt(np.einsum("ij,ij->j", y, y))
         return ((y / r * r).T + x0).T
 
     # ODT can't handle the random circle; some cells too flat near the boundary lead to

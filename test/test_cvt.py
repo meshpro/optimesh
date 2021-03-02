@@ -1,5 +1,5 @@
 import meshplex
-import numpy
+import numpy as np
 import pytest
 from scipy.spatial import Delaunay
 
@@ -80,7 +80,7 @@ def test_cvt_qnb_boundary(n=10):
         r = 1.0
         # simply project onto the circle
         y = (x.T - x0).T
-        r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
+        r = np.sqrt(np.einsum("ij,ij->j", y, y))
         return ((y / r * r).T + x0).T
 
     mesh = meshplex.MeshTri(X, cells)
@@ -122,18 +122,16 @@ def test_cvt_qnf(mesh, ref):
 
 
 def create_random_circle(n, radius, seed=0):
-    k = numpy.arange(n)
-    boundary_pts = radius * numpy.column_stack(
-        [numpy.cos(2 * numpy.pi * k / n), numpy.sin(2 * numpy.pi * k / n)]
+    k = np.arange(n)
+    boundary_pts = radius * np.column_stack(
+        [np.cos(2 * np.pi * k / n), np.sin(2 * np.pi * k / n)]
     )
 
     # Compute the number of interior points such that all triangles can be somewhat
     # equilateral.
-    edge_length = 2 * numpy.pi * radius / n
-    domain_area = numpy.pi - n * (
-        radius ** 2 / 2 * (edge_length - numpy.sin(edge_length))
-    )
-    cell_area = numpy.sqrt(3) / 4 * edge_length ** 2
+    edge_length = 2 * np.pi * radius / n
+    domain_area = np.pi - n * (radius ** 2 / 2 * (edge_length - np.sin(edge_length)))
+    cell_area = np.sqrt(3) / 4 * edge_length ** 2
     target_num_cells = domain_area / cell_area
     # Euler:
     # 2 * num_points - num_boundary_edges - 2 = num_cells
@@ -145,18 +143,18 @@ def create_random_circle(n, radius, seed=0):
     # <http://mathworld.wolfram.com/DiskPointPicking.html>.
     # Choose the seed such that the fully smoothened mesh has no random boundary points.
     if seed is not None:
-        numpy.random.seed(seed)
-    r = numpy.random.rand(m)
-    alpha = 2 * numpy.pi * numpy.random.rand(m)
+        np.random.seed(seed)
+    r = np.random.rand(m)
+    alpha = 2 * np.pi * np.random.rand(m)
 
-    interior_pts = numpy.column_stack(
-        [numpy.sqrt(r) * numpy.cos(alpha), numpy.sqrt(r) * numpy.sin(alpha)]
+    interior_pts = np.column_stack(
+        [np.sqrt(r) * np.cos(alpha), np.sqrt(r) * np.sin(alpha)]
     )
 
-    pts = numpy.concatenate([boundary_pts, interior_pts])
+    pts = np.concatenate([boundary_pts, interior_pts])
 
     tri = Delaunay(pts)
-    # pts = numpy.column_stack([pts[:, 0], pts[:, 1], numpy.zeros(pts.shape[0])])
+    # pts = np.column_stack([pts[:, 0], pts[:, 1], np.zeros(pts.shape[0])])
     return pts, tri.simplices
 
 
@@ -164,9 +162,9 @@ def create_random_circle(n, radius, seed=0):
 # methods choke. Mostly bugs in GhostedMesh.
 @pytest.mark.parametrize("seed", [0, 4, 20])
 def test_for_breakdown(seed):
-    numpy.random.seed(seed)
+    np.random.seed(seed)
 
-    n = numpy.random.randint(10, 20)
+    n = np.random.randint(10, 20)
     pts, cells = create_random_circle(n=n, radius=1.0)
 
     optimesh.optimize_points_cells(
