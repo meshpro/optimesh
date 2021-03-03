@@ -89,7 +89,8 @@ def _optimize(
         callback(k, mesh)
 
     # mesh.write("out0.vtk")
-    mesh.flip_until_delaunay()
+    if hasattr(mesh, "flip_until_delaunay"):
+        mesh.flip_until_delaunay()
     # mesh.write("out1.vtk")
 
     while True:

@@ -13,6 +13,7 @@ simple0 = meshes.simple0()
 simple1 = meshes.simple1()
 simple2 = meshes.simple2()
 simple3 = meshes.simple3()
+simple_line = meshes.simple_line()
 pacman = meshes.pacman()
 
 
@@ -92,6 +93,8 @@ def test_jac(mesh, ref):
 @pytest.mark.parametrize(
     "method, mesh, ref",
     [
+        ("cpt (fixed-point)", simple_line, [1.0, 2.0, 3.0]),
+        #
         ("cpt (fixed-point)", simple1, [5.0, 2.1213203435596424, 1.0]),
         ("cpt (fixed-point)", simple2, [7.390123456790124, 2.804687217072868, 1.7]),
         ("cpt (fixed-point)", simple3, [12.0, 3.9765648779799356, 2.0]),

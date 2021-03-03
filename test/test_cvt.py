@@ -12,11 +12,14 @@ from .helpers import assert_norm_equality
 
 pacman = meshes.pacman()
 simple1 = meshes.simple1()
+simple_line = meshes.simple_line()
 
 
 @pytest.mark.parametrize(
     "mesh, num_steps, ref",
     [
+        (simple_line, 1, [4.9319444444444445e00, 2.1063181153582713e00, 1.0]),
+        #
         (simple1, 1, [4.9319444444444445e00, 2.1063181153582713e00, 1.0]),
         (simple1, 100, [4.9863354526224510, 2.1181412069258942, 1.0]),
         # We're adding relatively many tests here. The reason is that even small changes

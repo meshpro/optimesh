@@ -62,6 +62,19 @@ def print_stats(mesh, extra_cols=None):
 #     return min(np.min(t0[t0 > 0]), np.min(t1[t1 > 0]))
 
 
+def add_at(out_shape, idx, vals):
+    """A fancy (and correct) way of summing up vals into an array of out_shape
+    according to idx. np.add.at is thought out for this, but is really slow. np.bincount
+    is a lot faster (https://github.com/numpy/numpy/issues/5922#issuecomment-511477435),
+    but doesn't handle dimensionality. This function does.
+    """
+    vals = vals.reshape(vals.shape[0], -1)
+    return np.array([
+        np.bincount(idx, weights=vals[:, k], minlength=out_shape[0])
+        for k in range(vals.shape[1])
+    ]).reshape(out_shape)
+
+
 def get_new_points_averaged(mesh, reference_points, weights=None):
     """Provided reference points for each cell (e.g., the barycenter), for each point
     this method returns the (weighted) average of the reference points of all adjacent
@@ -79,12 +92,10 @@ def get_new_points_averaged(mesh, reference_points, weights=None):
     # for i in mesh.cells["points"].T:
     #     np.add.at(omega, i, mesh.cell_volumes)
 
-    n = mesh.points.shape[0]
     new_points = np.zeros(mesh.points.shape)
+    n = new_points.shape[0]
     for i in mesh.cells["points"].T:
-        new_points += np.array(
-            [np.bincount(i, vals, minlength=n) for vals in scaled_rp]
-        ).T
+        new_points += add_at(new_points.shape, i, scaled_rp)
 
     if weights is None:
         omega = np.bincount(mesh.cells["points"].reshape(-1), minlength=n)
@@ -93,5 +104,4 @@ def get_new_points_averaged(mesh, reference_points, weights=None):
         for i in mesh.cells["points"].T:
             omega += np.bincount(i, weights, minlength=n)
 
-    new_points /= omega[:, None]
-    return new_points
+    return (new_points.T / omega).T
