@@ -9,8 +9,8 @@ this_dir = pathlib.Path(__file__).resolve().parent
 
 
 def simple_line():
-    X = np.array([0.0, 0.1, 1.0])
-    cells = np.array([[0, 1], [1, 2]])
+    X = np.array([0.0, 0.1, 0.4, 1.0])
+    cells = np.array([[0, 1], [1, 2], [2, 3]])
     return meshplex.Mesh(X, cells)
 
 

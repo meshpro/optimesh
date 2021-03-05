@@ -121,16 +121,23 @@ def _optimize(
         np.minimum.at(
             max_step,
             mesh.cells["points"].reshape(-1),
-            np.repeat(mesh.cell_inradius, 3),
+            np.repeat(mesh.cell_inradius, mesh.cells["points"].shape[1]),
         )
         max_step *= 0.5
         #
-        step_lengths = np.sqrt(np.einsum("ij,ij->i", diff, diff))
+        step_lengths = np.sqrt(
+            np.einsum(
+                "ij,ij->i",
+                diff.reshape(diff.shape[0], -1),
+                diff.reshape(diff.shape[0], -1),
+            )
+        )
+
         # alpha = np.min(max_step / step_lengths)
         # alpha = np.min([alpha, 1.0])
         # diff *= alpha
         idx = step_lengths > max_step
-        diff[idx] *= max_step[idx, None] / step_lengths[idx, None]
+        diff[idx] = (diff[idx].T * (max_step[idx] / step_lengths[idx])).T
 
         new_points = mesh.points + diff
 
@@ -153,7 +160,9 @@ def _optimize(
         # mesh.show()
 
         # Abort the loop if the update was small
-        diff_norm_2 = np.einsum("ij,ij->i", diff, diff)
+        diff_norm_2 = np.einsum(
+            "ij,ij->i", diff.reshape(diff.shape[0], -1), diff.reshape(diff.shape[0], -1)
+        )
         is_final = np.all(diff_norm_2 < tol ** 2) or k >= max_num_steps
 
         if is_final or step_filename_format:

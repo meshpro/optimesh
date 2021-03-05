@@ -93,7 +93,7 @@ def test_jac(mesh, ref):
 @pytest.mark.parametrize(
     "method, mesh, ref",
     [
-        ("cpt (fixed-point)", simple_line, [1.0, 2.0, 3.0]),
+        ("cpt (fixed-point)", simple_line, [2.0, 1.2472191289241747e00, 1.0]),
         #
         ("cpt (fixed-point)", simple1, [5.0, 2.1213203435596424, 1.0]),
         ("cpt (fixed-point)", simple2, [7.390123456790124, 2.804687217072868, 1.7]),
