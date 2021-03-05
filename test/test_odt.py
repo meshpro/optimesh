@@ -8,6 +8,7 @@ import optimesh
 from . import meshes
 from .helpers import assert_norm_equality
 
+simple_line = meshes.simple_line()
 simple0 = meshes.simple0()
 simple1 = meshes.simple1()
 simple2 = meshes.simple2()
@@ -18,6 +19,8 @@ pacman = meshes.pacman()
 @pytest.mark.parametrize(
     "mesh, ref",
     [
+        (simple_line, [1.9987021872424522e00, 1.2467122478953498e00, 1.0]),
+        #
         (simple1, [5.0, 2.1213203435596424, 1.0]),
         (simple2, [7.390123456790124, 2.804687217072868, 1.7]),
         (simple3, [12.00095727371816, 3.9768056113618786, 2.0]),

@@ -155,7 +155,8 @@ def _optimize(
                 fval = implicit_surface.f(new_points.T)
 
         mesh.points = new_points
-        mesh.flip_until_delaunay()
+        if hasattr(mesh, "flip_until_delaunay"):
+            mesh.flip_until_delaunay()
         # mesh.show(control_volume_centroid_color="C1")
         # mesh.show()
 
