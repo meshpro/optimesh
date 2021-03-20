@@ -1,5 +1,4 @@
-import math
-
+import npx
 import numpy as np
 import termplotlib as tpl
 
@@ -64,31 +63,6 @@ def print_stats(mesh, extra_cols=None):
 #     return min(np.min(t0[t0 > 0]), np.min(t1[t1 > 0]))
 
 
-def sum_at(a, idx, minlength):
-    """A fancy (and correct) way of summing up vals into an array of out_shape according
-    to idx. np.add.at is thought out for this, but is really slow. np.bincount is a lot
-    faster (https://github.com/numpy/numpy/issues/5922#issuecomment-511477435), but
-    doesn't handle dimensionality. This function does.
-
-    vals has to have shape (idx.shape, ...),
-    """
-    assert len(a.shape) >= len(idx.shape)
-    m = len(idx.shape)
-    assert idx.shape == a.shape[:m]
-
-    out_shape = (minlength, *a.shape[m:])
-
-    idx = idx.reshape(-1)
-    a = a.reshape(math.prod(a.shape[:m]), math.prod(a.shape[m:]))
-
-    return np.array(
-        [
-            np.bincount(idx, weights=a[:, k], minlength=minlength)
-            for k in range(a.shape[1])
-        ]
-    ).T.reshape(out_shape)
-
-
 def get_new_points_averaged(mesh, reference_points, weights=None):
     """Provided reference points for each cell (e.g., the barycenter), for each point
     this method returns the (weighted) average of the reference points of all adjacent
@@ -110,7 +84,7 @@ def get_new_points_averaged(mesh, reference_points, weights=None):
 
     n = new_points.shape[0]
     for i in mesh.cells["points"].T:
-        new_points += sum_at(scaled_rp.T, i, new_points.shape[0])
+        new_points += npx.sum_at(scaled_rp.T, i, new_points.shape[0])
 
     if weights is None:
         omega = np.bincount(mesh.cells["points"].reshape(-1), minlength=n)
