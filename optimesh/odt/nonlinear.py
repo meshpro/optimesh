@@ -20,12 +20,12 @@ def _energy(mesh, uniform_density=False):
     where u(x) = ||x||^2 and u_l is its piecewise linearization on the mesh.
     """
     # E = 1/(d+1) sum_i ||x_i||^2 |omega_i| - int_Omega_i ||x||^2
-    dim = mesh.cells["points"].shape[1] - 1
+    dim = mesh.cells("points").shape[1] - 1
 
     n = mesh.points.shape[0]
     star_volume = np.zeros(n)
     for i in range(3):
-        idx = mesh.cells["points"][:, i]
+        idx = mesh.cells("points")[:, i]
         if uniform_density:
             # rho = 1,
             # int_{star} phi_i * rho = 1/(d+1) sum_{triangles in star} |triangle|
@@ -42,7 +42,7 @@ def _energy(mesh, uniform_density=False):
     # could be cached
     assert dim == 2
     x = mesh.points[:, :2]
-    triangles = np.moveaxis(x[mesh.cells["points"]], 0, 1)
+    triangles = np.moveaxis(x[mesh.cells("points")], 0, 1)
     # Get a scheme with order 2
     scheme = quadpy.t2.get_good_scheme(2)
     val = scheme.integrate(lambda x: x[0] ** 2 + x[1] ** 2, triangles)
@@ -121,7 +121,7 @@ def nonlinear_optimization(
         grad = np.zeros(mesh.points.shape)
         n = grad.shape[0]
         cc = mesh.cell_circumcenters
-        for mcn in mesh.cells["points"].T:
+        for mcn in mesh.cells("points").T:
             vals = (mesh.points[mcn] - cc).T * mesh.cell_volumes
             # np.add.at(grad, mcn, vals)
             grad += np.array([np.bincount(mcn, val, minlength=n) for val in vals]).T

@@ -19,7 +19,7 @@ from meshplex import MeshTri
 
 def get_new_points(mesh):
     # do one Newton step
-    cells = mesh.cells["points"]
+    cells = mesh.cells("points")
     jac_x = _jac_uniform(mesh.points, cells)
     return mesh.points - _solve_hessian_approx_uniform(mesh.points, cells, jac_x)
 
@@ -40,8 +40,8 @@ def _jac_uniform(X, cells):
     mesh = MeshTri(X, cells)
 
     jac = np.zeros(X.shape)
-    for k in range(mesh.cells["points"].shape[1]):
-        i = mesh.cells["points"][:, k]
+    for k in range(mesh.cells("points").shape[1]):
+        i = mesh.cells("points")[:, k]
         vals = (mesh.points[i] - mesh.cell_barycenters).T * mesh.cell_volumes
         # np.add.at(jac, i, vals)
         jac += np.array([np.bincount(i, val, minlength=jac.shape[0]) for val in vals]).T
@@ -73,7 +73,7 @@ def _solve_hessian_approx_uniform(X, cells, rhs):
     col_idx = []
     val = []
 
-    cells = mesh.cells["points"].T
+    cells = mesh.cells("points").T
     n = X.shape[0]
 
     # Main diagonal, 2/(d+1) |omega_i| x_i

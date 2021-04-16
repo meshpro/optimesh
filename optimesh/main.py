@@ -53,9 +53,15 @@ def optimize(mesh, method: str, *args, **kwargs):
 
 
 def optimize_points_cells(X, cells, method: str, *args, **kwargs):
-    mesh = meshplex.MeshTri(X, cells)
+    cells = np.asarray(cells)
+    if cells.shape[1] == 2:
+        # line mesh
+        mesh = meshplex.Mesh(X, cells)
+    else:
+        assert cells.shape[1] == 3
+        mesh = meshplex.MeshTri(X, cells)
     optimize(mesh, method, *args, **kwargs)
-    return mesh.points, mesh.cells["points"]
+    return mesh.points, mesh.cells("points")
 
 
 def _optimize(
@@ -120,8 +126,8 @@ def _optimize(
         max_step = np.full(mesh.points.shape[0], np.inf)
         np.minimum.at(
             max_step,
-            mesh.cells["points"].reshape(-1),
-            np.repeat(mesh.cell_inradius, mesh.cells["points"].shape[1]),
+            mesh.cells("points").reshape(-1),
+            np.repeat(mesh.cell_inradius, mesh.cells("points").shape[1]),
         )
         max_step *= 0.5
         #

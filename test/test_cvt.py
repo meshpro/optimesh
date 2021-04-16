@@ -46,7 +46,7 @@ def test_cvt_lloyd(mesh, num_steps, ref):
     assert_norm_equality(m.points, ref, 1.0e-12)
 
     # try the other way of calling optimesh
-    X, c = mesh.points.copy(), mesh.cells["points"].copy()
+    X, c = mesh.points.copy(), mesh.cells("points").copy()
     X, _ = optimesh.optimize_points_cells(X, c, "lloyd", 1.0e-2, num_steps)
     assert_norm_equality(X, ref, 1.0e-12)
 

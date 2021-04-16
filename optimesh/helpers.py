@@ -74,23 +74,23 @@ def get_new_points_averaged(mesh, reference_points, weights=None):
         scaled_rp = reference_points.T * weights
 
     # new_points = np.zeros(mesh.points.shape)
-    # for i in mesh.cells["points"].T:
+    # for i in mesh.cells("points").T:
     #     np.add.at(new_points, i, scaled_rp)
     # omega = np.zeros(len(mesh.points))
-    # for i in mesh.cells["points"].T:
+    # for i in mesh.cells("points").T:
     #     np.add.at(omega, i, mesh.cell_volumes)
 
     new_points = np.zeros(mesh.points.shape)
 
     n = new_points.shape[0]
-    for i in mesh.cells["points"].T:
+    for i in mesh.cells("points").T:
         new_points += npx.sum_at(scaled_rp.T, i, new_points.shape[0])
 
     if weights is None:
-        omega = np.bincount(mesh.cells["points"].reshape(-1), minlength=n)
+        omega = np.bincount(mesh.cells("points").reshape(-1), minlength=n)
     else:
         omega = np.zeros(n)
-        for i in mesh.cells["points"].T:
+        for i in mesh.cells("points").T:
             omega += np.bincount(i, weights, minlength=n)
 
     return (new_points.T / omega).T
