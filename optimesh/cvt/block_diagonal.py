@@ -12,14 +12,14 @@ def get_new_points(mesh):
     # on the boundary.
     # There are other possible heuristics too. For example, one could restrict the mask
     # to cells at or near the boundary.
-    mask = np.all(mesh.ce_ratios > -0.5, axis=0)
+    mask = np.any(mesh.ce_ratios < -0.5, axis=0)
 
     X = mesh.points.copy()
     # Collect the diagonal blocks.
     diagonal_blocks = np.zeros((X.shape[0], X.shape[1], X.shape[1]))
 
     # First the Lloyd part.
-    cv = mesh.get_control_volumes(idx=mask)
+    cv = mesh.get_control_volumes(cell_mask=mask)
     for k in range(X.shape[1]):
         diagonal_blocks[:, k, k] += 2 * cv
 

@@ -17,9 +17,9 @@ def update(mesh):
     # cells on the boundary.
     # There are other possible heuristics too. For example, one could restrict the
     # mask to cells at or near the boundary.
-    mask = np.all(mesh.ce_ratios > -0.5, axis=0)
+    mask = np.any(mesh.ce_ratios < -0.5, axis=0)
 
-    hec = mesh.half_edge_coords[:, mask]
+    hec = mesh.half_edge_coords[:, ~mask]
     ei_outer_ei = np.einsum("...k,...l->...kl", hec, hec)
 
     # create approximate Hessian
@@ -27,14 +27,14 @@ def update(mesh):
     col_idx = []
     vals = []
 
-    M = -0.5 * ei_outer_ei * mesh.ce_ratios[:, mask, None, None]
+    M = -0.5 * ei_outer_ei * mesh.ce_ratios[:, ~mask, None, None]
 
     block_size = M.shape[2]
     assert block_size == M.shape[3]
 
     for k in range(M.shape[0]):
-        idx0 = mesh.idx_hierarchy[0, k, mask]
-        idx1 = mesh.idx_hierarchy[1, k, mask]
+        idx0 = mesh.idx_hierarchy[0, k, ~mask]
+        idx1 = mesh.idx_hierarchy[1, k, ~mask]
         # The diagonal blocks are always positive definite if the mesh is Delaunay.
         # (i0, i0) block
         for i in range(block_size):
@@ -55,7 +55,7 @@ def update(mesh):
         # are. Hence, if there is any masked cell, use the block variant for robustness.
         # (This corresponds to eliminating all off-diagonal blocks.)
         # TODO find a better criterion
-        if np.any(mask):
+        if not np.all(mask):
             # (i0, i1) block
             for i in range(block_size):
                 for j in range(block_size):
@@ -70,7 +70,7 @@ def update(mesh):
                     vals += [M[k, :, i, j]]
 
     # add diagonal
-    cv = mesh.get_control_volumes(idx=mask)
+    cv = mesh.get_control_volumes(cell_mask=mask)
     n = cv.shape[0]
     for k in range(block_size):
         row_idx.append(block_size * np.arange(n) + k)

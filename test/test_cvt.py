@@ -68,7 +68,7 @@ def test_cvt_lloyd_overrelaxed(mesh, ref):
     "mesh, ref",
     [
         (simple1, [4.9957677170205690e00, 2.1203267741647247e00, 1.0]),
-        (pacman, [1.9368768318452251e03, 7.5956311677633323e01, 5.0]),
+        (pacman, [1.9368767852858994e03, 7.5956310821186079e01, 5.0]),
     ],
 )
 def test_cvt_qnb(mesh, ref):
