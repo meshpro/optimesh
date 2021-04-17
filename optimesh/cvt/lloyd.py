@@ -21,14 +21,14 @@ def get_new_points(mesh):
     # on the boundary.
     # There are other possible heuristics too. For example, one could restrict the mask
     # to cells at or near the boundary.
-    ce2 = mesh.ce_ratios.reshape(mesh.ce_ratios.shape[0], -1)
-    cell_mask = np.any(ce2 < -0.5, axis=1)
+    ce2 = mesh.ce_ratios.reshape(-1, mesh.ce_ratios.shape[-1])
+    cell_mask = np.any(ce2 < -0.5, axis=0)
 
     X = mesh.get_control_volume_centroids(cell_mask)
 
     # When using a cell mask, it can happen that some points don't get any contribution
     # at all because they are adjacent only to masked cells. Reset those, too.
-    x = X.reshape(*X.shape, -1)
+    x = X.reshape(X.shape[0], -1)
     idx = np.any(np.isnan(x), axis=1)
     X[idx] = mesh.points[idx]
     return X

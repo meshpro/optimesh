@@ -19,7 +19,7 @@ simple_line = meshes.simple_line()
     "mesh, num_steps, ref",
     [
         (simple_line, 1, [1.55, 1.0972978173677372, 1.0]),
-        (simple_line, 100, [1.9550946819363164e+00, 1.2295013498442391e+00, 1.0]),
+        (simple_line, 100, [1.9550946819363164e00, 1.2295013498442391e00, 1.0]),
         #
         (simple1, 1, [4.9319444444444445e00, 2.1063181153582713e00, 1.0]),
         (simple1, 100, [4.9863354526224510, 2.1181412069258942, 1.0]),
@@ -34,19 +34,15 @@ simple_line = meshes.simple_line()
         (pacman, 20, [1.9407096235482659e03, 7.6028721177100564e01, 5.0]),
         (pacman, 30, [1.9397254043011189e03, 7.6011552957849773e01, 5.0]),
         (pacman, 40, [1.9391902386060749e03, 7.6005991941058554e01, 5.0]),
-        (pacman, 50, [1.9387458681863050e03, 7.6000274907001128e01, 5.0]),
-        (pacman, 75, [1.9382955586258918e03, 7.5996522104610762e01, 5.0]),
-        (pacman, 100, [1.9378484402198492e03, 7.5989305418917112e01, 5.0]),
+        (pacman, 50, [1.9387458681835806e03, 7.6000274906909084e01, 5.0]),
+        (pacman, 75, [1.9382955551211201e03, 7.5996521988033109e01, 5.0]),
+        (pacman, 100, [1.9378417327750931e03, 7.5989047199412425e01, 5.0]),
     ],
 )
 def test_cvt_lloyd(mesh, num_steps, ref):
-    print(mesh)
     print(num_steps)
     m = copy.deepcopy(mesh)
-    m.show()
     optimesh.optimize(m, "Lloyd", 1.0e-2, num_steps, verbose=False)
-    print(m.points)
-    m.show()
     assert_norm_equality(m.points, ref, 1.0e-12)
 
     # try the other way of calling optimesh
@@ -59,7 +55,7 @@ def test_cvt_lloyd(mesh, num_steps, ref):
     "mesh, ref",
     [
         (simple1, [4.9959407761650168e00, 2.1203672449514870e00, 1.0]),
-        (pacman, [1.9366904328888943e03, 7.5960601959936454e01, 5.0]),
+        (pacman, [1.9365908128670440e03, 7.5956544340158885e01, 5.0]),
     ],
 )
 def test_cvt_lloyd_overrelaxed(mesh, ref):
