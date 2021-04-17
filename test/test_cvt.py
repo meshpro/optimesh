@@ -18,7 +18,8 @@ simple_line = meshes.simple_line()
 @pytest.mark.parametrize(
     "mesh, num_steps, ref",
     [
-        (simple_line, 1, [4.9319444444444445e00, 2.1063181153582713e00, 1.0]),
+        (simple_line, 1, [1.55, 1.0972978173677372, 1.0]),
+        (simple_line, 100, [1.9550946819363164e+00, 1.2295013498442391e+00, 1.0]),
         #
         (simple1, 1, [4.9319444444444445e00, 2.1063181153582713e00, 1.0]),
         (simple1, 100, [4.9863354526224510, 2.1181412069258942, 1.0]),
@@ -42,7 +43,10 @@ def test_cvt_lloyd(mesh, num_steps, ref):
     print(mesh)
     print(num_steps)
     m = copy.deepcopy(mesh)
+    m.show()
     optimesh.optimize(m, "Lloyd", 1.0e-2, num_steps, verbose=False)
+    print(m.points)
+    m.show()
     assert_norm_equality(m.points, ref, 1.0e-12)
 
     # try the other way of calling optimesh

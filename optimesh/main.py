@@ -101,7 +101,6 @@ def _optimize(
 
     while True:
         k += 1
-
         new_points = get_new_points(mesh)
 
         # Move boundary points to the domain boundary, if given. If not just move the
@@ -117,11 +116,11 @@ def _optimize(
         diff = omega * (new_points - mesh.points)
 
         # Some methods are stable (CPT), others can break down if the mesh isn't very
-        # smooth. A break-down manifests, for example, in a step size that lets
-        # triangles become completely flat or even "overshoot". After that, anything can
-        # happen. To prevent this, restrict the maximum step size to half of the minimum
-        # the incircle radius of all adjacent cells. This makes sure that triangles
-        # cannot "flip".
+        # smooth. A break-down manifests, for example, in a step size that lets cells
+        # become completely flat or even "overshoot". After that, anything can happen.
+        # To prevent this, restrict the maximum step size to half of the minimum the
+        # incircle radius of all adjacent cells. This makes sure that triangles cannot
+        # "flip".
         # <https://stackoverflow.com/a/57261082/353337>
         max_step = np.full(mesh.points.shape[0], np.inf)
         np.minimum.at(
