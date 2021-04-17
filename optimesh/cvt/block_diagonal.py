@@ -39,15 +39,15 @@ def get_new_points(mesh):
     M = -0.5 * ei_outer_ei * mesh.ce_ratios[:, ~mask, None, None]
 
     # dg = diagonal_blocks.copy()
-    # np.add.at(dg, mesh.idx_hierarchy[0][:, ~mask], M)
-    # np.add.at(dg, mesh.idx_hierarchy[1][:, ~mask], M)
+    # np.add.at(dg, mesh.idx[-1][0][:, ~mask], M)
+    # np.add.at(dg, mesh.idx[-1][1][:, ~mask], M)
 
     n = diagonal_blocks.shape[0]
     diagonal_blocks += np.array(
         [
             [
                 np.bincount(
-                    mesh.idx_hierarchy[0][:, ~mask].reshape(-1),
+                    mesh.idx[-1][0][:, ~mask].reshape(-1),
                     M[..., i, j].reshape(-1),
                     minlength=n,
                 )
@@ -60,7 +60,7 @@ def get_new_points(mesh):
         [
             [
                 np.bincount(
-                    mesh.idx_hierarchy[1][:, ~mask].reshape(-1),
+                    mesh.idx[-1][1][:, ~mask].reshape(-1),
                     M[..., i, j].reshape(-1),
                     minlength=n,
                 )

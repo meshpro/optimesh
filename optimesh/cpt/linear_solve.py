@@ -23,7 +23,7 @@ def get_new_points(mesh):
 
 
 def _build_graph_laplacian(mesh):
-    i = mesh.idx_hierarchy
+    i = mesh.idx[-1]
     row_idx = np.array([i[0], i[1], i[0], i[1]]).flat
     col_idx = np.array([i[0], i[1], i[1], i[0]]).flat
     a = np.ones(i.shape[1:], dtype=int)

@@ -33,8 +33,8 @@ def update(mesh):
     assert block_size == M.shape[3]
 
     for k in range(M.shape[0]):
-        idx0 = mesh.idx_hierarchy[0, k, ~mask]
-        idx1 = mesh.idx_hierarchy[1, k, ~mask]
+        idx0 = mesh.idx[-1][0, k, ~mask]
+        idx1 = mesh.idx[-1][1, k, ~mask]
         # The diagonal blocks are always positive definite if the mesh is Delaunay.
         # (i0, i0) block
         for i in range(block_size):
