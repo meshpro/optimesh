@@ -55,7 +55,7 @@ def update(mesh):
         # are. Hence, if there is any masked cell, use the block variant for robustness.
         # (This corresponds to eliminating all off-diagonal blocks.)
         # TODO find a better criterion
-        if not np.all(mask):
+        if not np.any(mask):
             # (i0, i1) block
             for i in range(block_size):
                 for j in range(block_size):
