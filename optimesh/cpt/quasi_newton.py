@@ -12,14 +12,14 @@ problem.
 This method makes the simplifying assumption that |tau_j| does in fact _not_ depend
 on the point coordinates. With this, one still only needs to solve a linear system.
 """
-import numpy
+import numpy as np
 import scipy.sparse.linalg
 from meshplex import MeshTri
 
 
 def get_new_points(mesh):
     # do one Newton step
-    cells = mesh.cells["points"]
+    cells = mesh.cells("points")
     jac_x = _jac_uniform(mesh.points, cells)
     return mesh.points - _solve_hessian_approx_uniform(mesh.points, cells, jac_x)
 
@@ -39,14 +39,12 @@ def _jac_uniform(X, cells):
     dim = 2
     mesh = MeshTri(X, cells)
 
-    jac = numpy.zeros(X.shape)
-    for k in range(mesh.cells["points"].shape[1]):
-        i = mesh.cells["points"][:, k]
+    jac = np.zeros(X.shape)
+    for k in range(mesh.cells("points").shape[1]):
+        i = mesh.cells("points")[:, k]
         vals = (mesh.points[i] - mesh.cell_barycenters).T * mesh.cell_volumes
-        # numpy.add.at(jac, i, vals)
-        jac += numpy.array(
-            [numpy.bincount(i, val, minlength=jac.shape[0]) for val in vals]
-        ).T
+        # np.add.at(jac, i, vals)
+        jac += np.array([np.bincount(i, val, minlength=jac.shape[0]) for val in vals]).T
 
     return 2 / (dim + 1) * jac
 
@@ -75,7 +73,7 @@ def _solve_hessian_approx_uniform(X, cells, rhs):
     col_idx = []
     val = []
 
-    cells = mesh.cells["points"].T
+    cells = mesh.cells("points").T
     n = X.shape[0]
 
     # Main diagonal, 2/(d+1) |omega_i| x_i
@@ -98,9 +96,9 @@ def _solve_hessian_approx_uniform(X, cells, rhs):
         col_idx += [edges[1], edges[2]]
         val += [-a, -a]
 
-    row_idx = numpy.concatenate(row_idx)
-    col_idx = numpy.concatenate(col_idx)
-    val = numpy.concatenate(val)
+    row_idx = np.concatenate(row_idx)
+    col_idx = np.concatenate(col_idx)
+    val = np.concatenate(val)
 
     # Set Dirichlet conditions on the boundary
     matrix = scipy.sparse.coo_matrix((val, (row_idx, col_idx)), shape=(n, n))
@@ -109,7 +107,7 @@ def _solve_hessian_approx_uniform(X, cells, rhs):
 
     # Apply Dirichlet conditions.
     # Set all Dirichlet rows to 0.
-    for i in numpy.where(mesh.is_boundary_point)[0]:
+    for i in np.where(mesh.is_boundary_point)[0]:
         matrix.data[matrix.indptr[i] : matrix.indptr[i + 1]] = 0.0
     # Set the diagonal and RHS.
     d = matrix.diagonal()
@@ -125,7 +123,7 @@ def _solve_hessian_approx_uniform(X, cells, rhs):
     # # Keep an eye on multiple rhs-solves in pyamg,
     # # <https://github.com/pyamg/pyamg/issues/215>.
     # tol = 1.0e-10
-    # out = numpy.column_stack(
+    # out = np.column_stack(
     #     [ml.solve(rhs[:, 0], tol=tol), ml.solve(rhs[:, 1], tol=tol)]
     # )
     return out

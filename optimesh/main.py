@@ -1,7 +1,7 @@
 import re
 
 import meshplex
-import numpy
+import numpy as np
 
 from . import cpt, cvt, laplace, odt
 from .helpers import print_stats
@@ -53,9 +53,15 @@ def optimize(mesh, method: str, *args, **kwargs):
 
 
 def optimize_points_cells(X, cells, method: str, *args, **kwargs):
-    mesh = meshplex.MeshTri(X, cells)
+    cells = np.asarray(cells)
+    if cells.shape[1] == 2:
+        # line mesh
+        mesh = meshplex.Mesh(X, cells)
+    else:
+        assert cells.shape[1] == 3
+        mesh = meshplex.MeshTri(X, cells)
     optimize(mesh, method, *args, **kwargs)
-    return mesh.points, mesh.cells["points"]
+    return mesh.points, mesh.cells("points")
 
 
 def _optimize(
@@ -89,12 +95,12 @@ def _optimize(
         callback(k, mesh)
 
     # mesh.write("out0.vtk")
-    mesh.flip_until_delaunay()
+    if hasattr(mesh, "flip_until_delaunay"):
+        mesh.flip_until_delaunay()
     # mesh.write("out1.vtk")
 
     while True:
         k += 1
-
         new_points = get_new_points(mesh)
 
         # Move boundary points to the domain boundary, if given. If not just move the
@@ -110,35 +116,42 @@ def _optimize(
         diff = omega * (new_points - mesh.points)
 
         # Some methods are stable (CPT), others can break down if the mesh isn't very
-        # smooth. A break-down manifests, for example, in a step size that lets
-        # triangles become completely flat or even "overshoot". After that, anything can
-        # happen. To prevent this, restrict the maximum step size to half of the minimum
-        # the incircle radius of all adjacent cells. This makes sure that triangles
-        # cannot "flip".
+        # smooth. A break-down manifests, for example, in a step size that lets cells
+        # become completely flat or even "overshoot". After that, anything can happen.
+        # To prevent this, restrict the maximum step size to half of the minimum the
+        # incircle radius of all adjacent cells. This makes sure that triangles cannot
+        # "flip".
         # <https://stackoverflow.com/a/57261082/353337>
-        max_step = numpy.full(mesh.points.shape[0], numpy.inf)
-        numpy.minimum.at(
+        max_step = np.full(mesh.points.shape[0], np.inf)
+        np.minimum.at(
             max_step,
-            mesh.cells["points"].reshape(-1),
-            numpy.repeat(mesh.cell_inradius, 3),
+            mesh.cells("points").reshape(-1),
+            np.repeat(mesh.cell_inradius, mesh.cells("points").shape[1]),
         )
         max_step *= 0.5
         #
-        step_lengths = numpy.sqrt(numpy.einsum("ij,ij->i", diff, diff))
-        # alpha = numpy.min(max_step / step_lengths)
-        # alpha = numpy.min([alpha, 1.0])
+        step_lengths = np.sqrt(
+            np.einsum(
+                "ij,ij->i",
+                diff.reshape(diff.shape[0], -1),
+                diff.reshape(diff.shape[0], -1),
+            )
+        )
+
+        # alpha = np.min(max_step / step_lengths)
+        # alpha = np.min([alpha, 1.0])
         # diff *= alpha
         idx = step_lengths > max_step
-        diff[idx] *= max_step[idx, None] / step_lengths[idx, None]
+        diff[idx] = (diff[idx].T * (max_step[idx] / step_lengths[idx])).T
 
         new_points = mesh.points + diff
 
         # project all points back to the surface, if any
         if implicit_surface is not None:
             fval = implicit_surface.f(new_points.T)
-            while numpy.any(numpy.abs(fval) > implicit_surface_tol):
+            while np.any(np.abs(fval) > implicit_surface_tol):
                 grad = implicit_surface.grad(new_points.T)
-                grad_dot_grad = numpy.einsum("ij,ij->j", grad, grad)
+                grad_dot_grad = np.einsum("ij,ij->j", grad, grad)
                 # The step is chosen in the direction of the gradient with a step size
                 # such that, if the function was linear, the boundary (fval=0) would be
                 # hit in one step.
@@ -147,13 +160,16 @@ def _optimize(
                 fval = implicit_surface.f(new_points.T)
 
         mesh.points = new_points
-        mesh.flip_until_delaunay()
+        if hasattr(mesh, "flip_until_delaunay"):
+            mesh.flip_until_delaunay()
         # mesh.show(control_volume_centroid_color="C1")
         # mesh.show()
 
         # Abort the loop if the update was small
-        diff_norm_2 = numpy.einsum("ij,ij->i", diff, diff)
-        is_final = numpy.all(diff_norm_2 < tol ** 2) or k >= max_num_steps
+        diff_norm_2 = np.einsum(
+            "ij,ij->i", diff.reshape(diff.shape[0], -1), diff.reshape(diff.shape[0], -1)
+        )
+        is_final = np.all(diff_norm_2 < tol ** 2) or k >= max_num_steps
 
         if is_final or step_filename_format:
             if is_final:
@@ -179,4 +195,4 @@ def _optimize(
         if is_final:
             break
 
-    return k, numpy.max(numpy.sqrt(diff_norm_2))
+    return k, np.max(np.sqrt(diff_norm_2))

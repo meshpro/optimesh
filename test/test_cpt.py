@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import pytest
 import quadpy
 from meshplex import MeshTri
@@ -6,8 +6,15 @@ from meshplex import MeshTri
 import optimesh
 from optimesh.cpt.quasi_newton import _jac_uniform
 
+from . import meshes
 from .helpers import assert_norm_equality
-from .meshes import circle_random2, pacman, simple0, simple1, simple2, simple3
+
+simple0 = meshes.simple0()
+simple1 = meshes.simple1()
+simple2 = meshes.simple2()
+simple3 = meshes.simple3()
+simple_line = meshes.simple_line()
+pacman = meshes.pacman()
 
 
 def _energy_uniform_per_point(X, cells):
@@ -20,16 +27,16 @@ def _energy_uniform_per_point(X, cells):
     """
     mesh = MeshTri(X, cells)
 
-    star_integrals = numpy.zeros(mesh.points.shape[0])
+    star_integrals = np.zeros(mesh.points.shape[0])
     # Python loop over the cells... slow!
-    for cell in mesh.cells["points"]:
+    for cell in mesh.cells("points"):
         for idx in cell:
             xi = mesh.points[idx]
             tri = mesh.points[cell]
             # Get a scheme of order 2
             scheme = quadpy.t2.get_good_scheme(2)
             val = scheme.integrate(
-                lambda x: numpy.einsum("ij,ij->i", x.T - xi, x.T - xi), tri
+                lambda x: np.einsum("ij,ij->i", x.T - xi, x.T - xi), tri
             )
             star_integrals[idx] += val
 
@@ -38,7 +45,7 @@ def _energy_uniform_per_point(X, cells):
 
 
 def _energy_uniform(X, cells):
-    return numpy.sum(_energy_uniform_per_point(X, cells))
+    return np.sum(_energy_uniform_per_point(X, cells))
 
 
 @pytest.mark.parametrize(
@@ -46,13 +53,13 @@ def _energy_uniform(X, cells):
     [(simple0, 5.0 / 18.0), (simple1, 17.0 / 60.0), (pacman, 7.320400634147646)],
 )
 def test_energy(mesh, ref):
-    X, cells = mesh()
+    X, cells = mesh.points, mesh.cells("points")
     energy = _energy_uniform(X, cells)
     assert abs(energy - ref) < 1.0e-12 * ref
 
 
 def test_simple1_jac():
-    X, cells = simple1()
+    X, cells = simple1.points, simple1.cells("points")
     # First assert that the Jacobian at interior points coincides with the finite
     # difference computed for the energy component from that point. Note that the
     # contribution from all other points is disregarded here, just like in the
@@ -78,7 +85,7 @@ def test_simple1_jac():
     ],
 )
 def test_jac(mesh, ref):
-    X, cells = mesh()
+    X, cells = mesh.points, mesh.cells("points")
     jac = _jac_uniform(X, cells)
     assert_norm_equality(jac, ref, 1.0e-12)
 
@@ -86,6 +93,8 @@ def test_jac(mesh, ref):
 @pytest.mark.parametrize(
     "method, mesh, ref",
     [
+        ("cpt (fixed-point)", simple_line, [2.0, 1.2472191289241747e00, 1.0]),
+        #
         ("cpt (fixed-point)", simple1, [5.0, 2.1213203435596424, 1.0]),
         ("cpt (fixed-point)", simple2, [7.390123456790124, 2.804687217072868, 1.7]),
         ("cpt (fixed-point)", simple3, [12.0, 3.9765648779799356, 2.0]),
@@ -98,15 +107,15 @@ def test_jac(mesh, ref):
     ],
 )
 def test_methods(method, mesh, ref):
-    X_in, cells_in = mesh()
+    X_in, cells_in = mesh.points, mesh.cells("points")
 
     # X_before = X_in.copy()
     # cells_before = cells_in.copy()
 
     X, _ = optimesh.optimize_points_cells(X_in, cells_in, method, 1.0e-12, 100)
 
-    # assert numpy.all(cells_in == cells_before)
-    # assert numpy.all(numpy.abs(X_in == X_before) < 1.0e-15)
+    # assert np.all(cells_in == cells_before)
+    # assert np.all(np.abs(X_in == X_before) < 1.0e-15)
 
     # Test if we're dealing with the mesh we expect.
     assert_norm_equality(X, ref, 1.0e-12)
@@ -120,7 +129,7 @@ def test_methods(method, mesh, ref):
     ],
 )
 def test_density_preserving(mesh, ref):
-    X, cells = mesh()
+    X, cells = mesh.points, mesh.cells("points")
     X, cells = optimesh.optimize_points_cells(X, cells, "cpt (linear solve)", 0.0, 10)
     assert_norm_equality(X, ref, 1.0e-12)
 
@@ -131,10 +140,10 @@ def test_circle():
         r = 1.0
         # simply project onto the circle
         y = (x.T - x0).T
-        r = numpy.sqrt(numpy.einsum("ij,ij->j", y, y))
+        r = np.sqrt(np.einsum("ij,ij->j", y, y))
         return ((y / r * r).T + x0).T
 
-    X, cells = circle_random2(150, 1.0)
+    X, cells = meshes.circle_random2(150, 1.0)
     X, cells = optimesh.optimize_points_cells(
         X, cells, "cpt (fixed-point)", 1.0e-3, 100, boundary_step=boundary_step
     )

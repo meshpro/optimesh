@@ -6,7 +6,7 @@ Efficient mesh optimization schemes based on Optimal Delaunay Triangulations,
 Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984,
 <https://doi.org/10.1016/j.cma.2010.11.007>.
 """
-import numpy
+import numpy as np
 import quadpy
 
 from ..helpers import print_stats
@@ -20,37 +20,37 @@ def _energy(mesh, uniform_density=False):
     where u(x) = ||x||^2 and u_l is its piecewise linearization on the mesh.
     """
     # E = 1/(d+1) sum_i ||x_i||^2 |omega_i| - int_Omega_i ||x||^2
-    dim = mesh.cells["points"].shape[1] - 1
+    dim = mesh.cells("points").shape[1] - 1
 
     n = mesh.points.shape[0]
-    star_volume = numpy.zeros(n)
+    star_volume = np.zeros(n)
     for i in range(3):
-        idx = mesh.cells["points"][:, i]
+        idx = mesh.cells("points")[:, i]
         if uniform_density:
             # rho = 1,
             # int_{star} phi_i * rho = 1/(d+1) sum_{triangles in star} |triangle|
-            # numpy.add.at(star_volume, idx, mesh.cell_volumes)
-            star_volume += numpy.bincount(idx, mesh.cell_volumes, minlength=n)
+            # np.add.at(star_volume, idx, mesh.cell_volumes)
+            star_volume += np.bincount(idx, mesh.cell_volumes, minlength=n)
         else:
             # rho = 1 / tau_j,
             # int_{star} phi_i * rho = 1/(d+1) |num triangles in star|
-            # numpy.add.at(star_volume, idx, numpy.ones(idx.shape, dtype=float))
-            star_volume += numpy.bincount(idx, numpy.ones(idx.shape), minlength=n)
-    x2 = numpy.einsum("ij,ij->i", mesh.points, mesh.points)
-    out = 1 / (dim + 1) * numpy.dot(star_volume, x2)
+            # np.add.at(star_volume, idx, np.ones(idx.shape, dtype=float))
+            star_volume += np.bincount(idx, np.ones(idx.shape), minlength=n)
+    x2 = np.einsum("ij,ij->i", mesh.points, mesh.points)
+    out = 1 / (dim + 1) * np.dot(star_volume, x2)
 
     # could be cached
     assert dim == 2
     x = mesh.points[:, :2]
-    triangles = numpy.moveaxis(x[mesh.cells["points"]], 0, 1)
+    triangles = np.moveaxis(x[mesh.cells("points")], 0, 1)
     # Get a scheme with order 2
     scheme = quadpy.t2.get_good_scheme(2)
     val = scheme.integrate(lambda x: x[0] ** 2 + x[1] ** 2, triangles)
     if uniform_density:
-        val = numpy.sum(val)
+        val = np.sum(val)
     else:
         rho = 1.0 / mesh.cell_volumes
-        val = numpy.dot(val, rho)
+        val = np.dot(val, rho)
 
     assert out >= val
     return out - val
@@ -118,15 +118,13 @@ def nonlinear_optimization(
     def jac(x):
         mesh.set_points(x.reshape(-1, X.shape[1]), mesh.is_interior_point)
 
-        grad = numpy.zeros(mesh.points.shape)
+        grad = np.zeros(mesh.points.shape)
         n = grad.shape[0]
         cc = mesh.cell_circumcenters
-        for mcn in mesh.cells["points"].T:
+        for mcn in mesh.cells("points").T:
             vals = (mesh.points[mcn] - cc).T * mesh.cell_volumes
-            # numpy.add.at(grad, mcn, vals)
-            grad += numpy.array(
-                [numpy.bincount(mcn, val, minlength=n) for val in vals]
-            ).T
+            # np.add.at(grad, mcn, vals)
+            grad += np.array([np.bincount(mcn, val, minlength=n) for val in vals]).T
         gdim = 2
         grad *= 2 / (gdim + 1)
         return grad[mesh.is_interior_point].flatten()

@@ -1,6 +1,6 @@
 import dufte
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 
 import optimesh
 
@@ -38,12 +38,12 @@ def test_comparison():
         "odt-bfgs",
     ]
 
-    avg_quality = numpy.empty((len(names), num_steps + 1))
+    avg_quality = np.empty((len(names), num_steps + 1))
 
     for i, name in enumerate(names):
 
         def callback(k, mesh):
-            avg_quality[i, k] = numpy.average(mesh.q_radius_ratio)
+            avg_quality[i, k] = np.average(mesh.q_radius_ratio)
             return
 
         X_in = X.copy()
@@ -59,7 +59,7 @@ def test_comparison():
             )
 
     # sort by best final quality
-    idx = numpy.argsort(avg_quality[:, -1])[::-1]
+    idx = np.argsort(avg_quality[:, -1])[::-1]
 
     sorted_labels = [names[i] for i in idx]
 

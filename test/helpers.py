@@ -1,18 +1,18 @@
 from math import fsum
 
-import numpy
+import numpy as np
 
 
 def near_equal(a, b, tol):
-    return numpy.allclose(a, b, rtol=0.0, atol=tol)
+    return np.allclose(a, b, rtol=0.0, atol=tol)
 
 
 def run(mesh, volume, convol_norms, ce_ratio_norms, cellvol_norms, tol=1.0e-12):
     # Check cell volumes.
     total_cellvolume = fsum(mesh.cell_volumes)
     assert abs(volume - total_cellvolume) < tol * volume
-    norm2 = numpy.linalg.norm(mesh.cell_volumes, ord=2)
-    norm_inf = numpy.linalg.norm(mesh.cell_volumes, ord=numpy.Inf)
+    norm2 = np.linalg.norm(mesh.cell_volumes, ord=2)
+    norm_inf = np.linalg.norm(mesh.cell_volumes, ord=np.Inf)
     assert near_equal(cellvol_norms, [norm2, norm_inf], tol)
 
     # If everything is Delaunay and the boundary elements aren't flat, the
@@ -35,22 +35,22 @@ def run(mesh, volume, convol_norms, ce_ratio_norms, cellvol_norms, tol=1.0e-12):
     vol = fsum(mesh.get_control_volumes())
     assert abs(volume - vol) < tol * volume
     # Check control volume norms.
-    norm2 = numpy.linalg.norm(mesh.get_control_volumes(), ord=2)
-    norm_inf = numpy.linalg.norm(mesh.get_control_volumes(), ord=numpy.Inf)
+    norm2 = np.linalg.norm(mesh.get_control_volumes(), ord=2)
+    norm_inf = np.linalg.norm(mesh.get_control_volumes(), ord=np.Inf)
     assert near_equal(convol_norms, [norm2, norm_inf], tol)
 
 
 def assert_norm_equality(X, ref, tol):
     nc = X.flatten()
-    ref = numpy.asarray(ref)
-    val = numpy.array(
+    ref = np.asarray(ref)
+    val = np.array(
         [
-            numpy.linalg.norm(nc, ord=1),
-            numpy.linalg.norm(nc, ord=2),
-            numpy.linalg.norm(nc, ord=numpy.inf),
+            np.linalg.norm(nc, ord=1),
+            np.linalg.norm(nc, ord=2),
+            np.linalg.norm(nc, ord=np.inf),
         ]
     )
-    assert numpy.all(numpy.abs(val - ref) < tol * ref), (
+    assert np.all(np.abs(val - ref) < tol * ref), (
         "Norms don't coincide.\n"
         f"Expected:  [{ref[0]:.16e}, {ref[1]:.16e}, {ref[2]:.16e}]\n"
         f"Computed:  [{val[0]:.16e}, {val[1]:.16e}, {val[2]:.16e}]"

@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 
 from ._helpers import jac_uniform
 
@@ -12,11 +12,11 @@ def get_new_points(mesh):
     # on the boundary.
     # There are other possible heuristics too. For example, one could restrict the mask
     # to cells at or near the boundary.
-    mask = numpy.any(mesh.ce_ratios < -0.5, axis=0)
+    mask = np.any(mesh.ce_ratios < -0.5, axis=0)
 
     X = mesh.points.copy()
     # Collect the diagonal blocks.
-    diagonal_blocks = numpy.zeros((X.shape[0], X.shape[1], X.shape[1]))
+    diagonal_blocks = np.zeros((X.shape[0], X.shape[1], X.shape[1]))
 
     # First the Lloyd part.
     cv = mesh.get_control_volumes(cell_mask=mask)
@@ -24,11 +24,11 @@ def get_new_points(mesh):
         diagonal_blocks[:, k, k] += 2 * cv
 
     hec = mesh.half_edge_coords[:, ~mask]
-    ei_outer_ei = numpy.einsum("ijk, ijl->ijkl", hec, hec)
+    ei_outer_ei = np.einsum("ijk, ijl->ijkl", hec, hec)
 
     # Without adding the control volumes above, the update would be
     # ```
-    # m = 0.5 * ce * (numpy.eye(X.shape[1]) * numpy.dot(ei, ei) - ei_outer_ei)
+    # m = 0.5 * ce * (np.eye(X.shape[1]) * np.dot(ei, ei) - ei_outer_ei)
     # ```
     # instead of
     # ```
@@ -39,15 +39,15 @@ def get_new_points(mesh):
     M = -0.5 * ei_outer_ei * mesh.ce_ratios[:, ~mask, None, None]
 
     # dg = diagonal_blocks.copy()
-    # numpy.add.at(dg, mesh.idx_hierarchy[0][:, ~mask], M)
-    # numpy.add.at(dg, mesh.idx_hierarchy[1][:, ~mask], M)
+    # np.add.at(dg, mesh.idx[-1][0][:, ~mask], M)
+    # np.add.at(dg, mesh.idx[-1][1][:, ~mask], M)
 
     n = diagonal_blocks.shape[0]
-    diagonal_blocks += numpy.array(
+    diagonal_blocks += np.array(
         [
             [
-                numpy.bincount(
-                    mesh.idx_hierarchy[0][:, ~mask].reshape(-1),
+                np.bincount(
+                    mesh.idx[-1][0][:, ~mask].reshape(-1),
                     M[..., i, j].reshape(-1),
                     minlength=n,
                 )
@@ -56,11 +56,11 @@ def get_new_points(mesh):
             for i in range(diagonal_blocks.shape[1])
         ]
     ).T
-    diagonal_blocks += numpy.array(
+    diagonal_blocks += np.array(
         [
             [
-                numpy.bincount(
-                    mesh.idx_hierarchy[1][:, ~mask].reshape(-1),
+                np.bincount(
+                    mesh.idx[-1][1][:, ~mask].reshape(-1),
                     M[..., i, j].reshape(-1),
                     minlength=n,
                 )
@@ -74,12 +74,12 @@ def get_new_points(mesh):
 
     # When using a cell mask, it can happen that some points don't get any contribution
     # at all because they are adjacent only to masked cells.
-    idx = numpy.any(numpy.isnan(rhs), axis=1)
+    idx = np.any(np.isnan(rhs), axis=1)
     diagonal_blocks[idx] = 0.0
     for k in range(X.shape[1]):
         diagonal_blocks[idx, k, k] = 1.0
     rhs[idx] = 0.0
 
-    X += numpy.linalg.solve(diagonal_blocks, rhs)
+    X += np.linalg.solve(diagonal_blocks, rhs)
 
     return X

@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import pytest
 
 import optimesh
@@ -9,9 +9,9 @@ from .meshes import circle_random
 def _rotate(X, theta, k):
     # <https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula>
     return (
-        X * numpy.cos(theta)
-        + numpy.cross(k, X) * numpy.sin(theta)
-        + numpy.outer(numpy.einsum("ij,j->i", X, k), k) * (1.0 - numpy.cos(theta))
+        X * np.cos(theta)
+        + np.cross(k, X) * np.sin(theta)
+        + np.outer(np.einsum("ij,j->i", X, k), k) * (1.0 - np.cos(theta))
     )
 
 
@@ -32,7 +32,7 @@ def _rotate(X, theta, k):
 )
 def test_rotated(method):
     X, cells = circle_random(40, 1.0)
-    X = numpy.column_stack([X, numpy.zeros(X.shape[0])])
+    X = np.column_stack([X, np.zeros(X.shape[0])])
 
     # Apply a robust method first to avoid too crazy meshes.
     X, cells = optimesh.optimize_points_cells(X, cells, "cpt (linear solve)", 0.0, 2)
@@ -45,8 +45,8 @@ def test_rotated(method):
     X_ref, cells_ref = optimesh.optimize_points_cells(X, cells, method, 0.0, num_steps)
 
     # Create a rotated mesh
-    theta = numpy.pi / 4
-    k = numpy.array([1.0, 0.0, 0.0])
+    theta = np.pi / 4
+    k = np.array([1.0, 0.0, 0.0])
     X_rot = _rotate(X_orig, theta, k)
     cells_rot = cells_orig.copy()
     X2, cells2 = optimesh.optimize_points_cells(
@@ -55,5 +55,5 @@ def test_rotated(method):
     # rotate back
     X2 = _rotate(X2, -theta, k)
 
-    assert numpy.all(cells_ref == cells2)
-    assert numpy.all(numpy.abs(X_ref - X2) < 1.0e-12)
+    assert np.all(cells_ref == cells2)
+    assert np.all(np.abs(X_ref - X2) < 1.0e-12)

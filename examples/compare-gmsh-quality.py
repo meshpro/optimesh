@@ -4,7 +4,7 @@ import create_circle
 import matplotlib.pyplot as plt
 import meshio
 import meshplex
-import numpy
+import numpy as np
 import scipy.sparse
 from dolfin import (
     Constant,
@@ -65,15 +65,15 @@ def get_poisson_condition(pts, cells):
 
     # ev = eigvals(A.todense())
     ev_max = scipy.sparse.linalg.eigs(A, k=1, which="LM")[0][0]
-    assert numpy.abs(ev_max.imag) < 1.0e-15
+    assert np.abs(ev_max.imag) < 1.0e-15
     ev_max = ev_max.real
     ev_min = scipy.sparse.linalg.eigs(A, k=1, which="SM")[0][0]
-    assert numpy.abs(ev_min.imag) < 1.0e-15
+    assert np.abs(ev_min.imag) < 1.0e-15
     ev_min = ev_min.real
     cond = ev_max / ev_min
 
     # solve poisson system, count num steps
-    # b = numpy.ones(A.shape[0])
+    # b = np.ones(A.shape[0])
     # out = pykry.gmres(A, b)
     # num_steps = len(out.resnorms)
     return cond, num_steps
@@ -85,7 +85,7 @@ def process(name, t):
     data[name]["cond"].append(cond)
     data[name]["cg"].append(num_steps)
     mesh = meshplex.MeshTri(pts, cells)
-    avg_q = numpy.sum(mesh.q_radius_ratio) / len(mesh.q_radius_ratio)
+    avg_q = np.sum(mesh.q_radius_ratio) / len(mesh.q_radius_ratio)
     data[name]["q"].append(avg_q)
     print(f"{cond:.2e}", num_steps, f"{avg_q:.2f}", f"({t:.2f}s)")
     # mesh.show()
@@ -103,7 +103,7 @@ mesh = meshplex.MeshTri(pts, cells)
 mesh.save("out0.png", **kwargs)
 #
 pts, cells = optimesh.cvt.quasi_newton_uniform_blocks(
-    pts, cells, tol=1.0e-6, max_num_steps=numpy.inf
+    pts, cells, tol=1.0e-6, max_num_steps=np.inf
 )
 pts, cells = optimesh.cvt.quasi_newton_uniform_full(
     pts, cells, tol=1.0e-4, max_num_steps=100
@@ -113,7 +113,7 @@ mesh.save("out1.png", **kwargs)
 #
 pts, cells = create_circle.dmsh(num_points)
 pts, cells = optimesh.cvt.quasi_newton_uniform_blocks(
-    pts, cells, tol=1.0e-6, max_num_steps=numpy.inf
+    pts, cells, tol=1.0e-6, max_num_steps=np.inf
 )
 # pts, cells = optimesh.cvt.quasi_newton_uniform_full(
 #     pts, cells, tol=1.0e-4, max_num_steps=100
@@ -141,7 +141,7 @@ for num_points in range(1000, 10000, 1000):
     # print(ev_random[-1] / ev_random[0])
     t = time.time()
     pts, cells = optimesh.cvt.quasi_newton_uniform_blocks(
-        pts, cells, tol=1.0e-4, max_num_steps=numpy.inf
+        pts, cells, tol=1.0e-4, max_num_steps=np.inf
     )
     # pts, cells = optimesh.cvt.quasi_newton_uniform_full(
     #     pts, cells, tol=1.0e-4, max_num_steps=200
@@ -152,7 +152,7 @@ for num_points in range(1000, 10000, 1000):
     t = time.time()
     pts, cells = create_circle.dmsh(num_points)
     # pts, cells = optimesh.cvt.quasi_newton_uniform_blocks(
-    #     pts, cells, tol=1.0e-4, max_num_steps=numpy.inf
+    #     pts, cells, tol=1.0e-4, max_num_steps=np.inf
     # )
     # pts, cells = optimesh.cvt.quasi_newton_uniform_full(
     #     pts, cells, tol=1.0e-4, max_num_steps=100

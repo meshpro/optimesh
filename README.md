@@ -8,6 +8,8 @@
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/optimesh)
 [![PyPi downloads](https://img.shields.io/pypi/dm/optimesh.svg?style=flat-square)](https://pypistats.org/packages/optimesh)
 
+[![Discord](https://img.shields.io/static/v1?logo=discord&label=chat&message=on%20discord&color=7289da&style=flat-square)](https://discord.gg/PBCCvwHqpv)
+
 [![gh-actions](https://img.shields.io/github/workflow/status/nschloe/optimesh/ci?style=flat-square)](https://github.com/nschloe/optimesh/actions?query=workflow%3Aci)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg?style=flat-square)](https://codecov.io/gh/nschloe/optimesh)
 [![LGTM](https://img.shields.io/lgtm/grade/python/github/nschloe/optimesh.svg?style=flat-square)](https://lgtm.com/projects/g/nschloe/optimesh)

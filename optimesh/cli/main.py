@@ -4,7 +4,7 @@ import sys
 
 import meshio
 import meshplex
-import numpy
+import numpy as np
 
 from ..__about__ import __version__
 from ..main import optimize_points_cells
@@ -128,11 +128,11 @@ def _get_parser():
 
 
 def prune(mesh):
-    ncells = numpy.concatenate([numpy.concatenate(data) for _, data in mesh.cells])
-    uvertices, uidx = numpy.unique(ncells, return_inverse=True)
+    ncells = np.concatenate([np.concatenate(data) for _, data in mesh.cells])
+    uvertices, uidx = np.unique(ncells, return_inverse=True)
     k = 0
     for _, data in mesh.cells:
-        n = numpy.prod(data.shape)
+        n = np.prod(data.shape)
         data[:] = uidx[k : k + n].reshape(data.shape)
         k += n
     mesh.points = mesh.points[uvertices]
@@ -156,10 +156,10 @@ def main(argv=None):
 
     if args.subdomain_field_name:
         field = mesh.cell_data["triangle"][args.subdomain_field_name]
-        subdomain_idx = numpy.unique(field)
+        subdomain_idx = np.unique(field)
         cell_sets = [idx == field for idx in subdomain_idx]
     else:
-        cell_sets = [numpy.ones(mesh.get_cells_type("triangle").shape[0], dtype=bool)]
+        cell_sets = [np.ones(mesh.get_cells_type("triangle").shape[0], dtype=bool)]
 
     cells = mesh.get_cells_type("triangle")
 

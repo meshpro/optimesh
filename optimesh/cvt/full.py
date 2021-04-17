@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import scipy.sparse
 
 from ._helpers import jac_uniform
@@ -17,10 +17,10 @@ def update(mesh):
     # cells on the boundary.
     # There are other possible heuristics too. For example, one could restrict the
     # mask to cells at or near the boundary.
-    mask = numpy.any(mesh.ce_ratios < -0.5, axis=0)
+    mask = np.any(mesh.ce_ratios < -0.5, axis=0)
 
     hec = mesh.half_edge_coords[:, ~mask]
-    ei_outer_ei = numpy.einsum("...k,...l->...kl", hec, hec)
+    ei_outer_ei = np.einsum("...k,...l->...kl", hec, hec)
 
     # create approximate Hessian
     row_idx = []
@@ -33,8 +33,8 @@ def update(mesh):
     assert block_size == M.shape[3]
 
     for k in range(M.shape[0]):
-        idx0 = mesh.idx_hierarchy[0, k, ~mask]
-        idx1 = mesh.idx_hierarchy[1, k, ~mask]
+        idx0 = mesh.idx[-1][0, k, ~mask]
+        idx1 = mesh.idx[-1][1, k, ~mask]
         # The diagonal blocks are always positive definite if the mesh is Delaunay.
         # (i0, i0) block
         for i in range(block_size):
@@ -55,7 +55,7 @@ def update(mesh):
         # are. Hence, if there is any masked cell, use the block variant for robustness.
         # (This corresponds to eliminating all off-diagonal blocks.)
         # TODO find a better criterion
-        if ~numpy.any(mask):
+        if not np.any(mask):
             # (i0, i1) block
             for i in range(block_size):
                 for j in range(block_size):
@@ -73,13 +73,13 @@ def update(mesh):
     cv = mesh.get_control_volumes(cell_mask=mask)
     n = cv.shape[0]
     for k in range(block_size):
-        row_idx.append(block_size * numpy.arange(n) + k)
-        col_idx.append(block_size * numpy.arange(n) + k)
+        row_idx.append(block_size * np.arange(n) + k)
+        col_idx.append(block_size * np.arange(n) + k)
         vals.append(2 * cv)
 
-    row_idx = numpy.concatenate(row_idx)
-    col_idx = numpy.concatenate(col_idx)
-    vals = numpy.concatenate(vals)
+    row_idx = np.concatenate(row_idx)
+    col_idx = np.concatenate(col_idx)
+    vals = np.concatenate(vals)
 
     matrix = scipy.sparse.coo_matrix(
         (vals, (row_idx, col_idx)), shape=(block_size * n, block_size * n)
@@ -98,11 +98,11 @@ def update(mesh):
     # Instead of hard Dirichlet conditions, we would have to insert conditions for the
     # points to move along the surface. Before this is implemented, just use Dirichlet.
     #
-    # Set all Dirichlet rows to 0. When using a cell mask, it can happen that some points
-    # don't get any contribution at all because they are adjacent only to masked cells.
-    # Reset those, too.
-    idx = numpy.any(numpy.isnan(rhs), axis=1) | mesh.is_boundary_point
-    i_reset = numpy.where(idx)[0]
+    # Set all Dirichlet rows to 0. When using a cell mask, it can happen that some
+    # points don't get any contribution at all because they are adjacent only to masked
+    # cells.  Reset those, too.
+    idx = np.any(np.isnan(rhs), axis=1) | mesh.is_boundary_point
+    i_reset = np.where(idx)[0]
     for i in i_reset:
         for k in range(block_size):
             s = block_size * i + k
@@ -120,7 +120,7 @@ def update(mesh):
     # out = ml.solve(rhs, tol=1.0e-12)
     dX = out.reshape(-1, block_size)
 
-    # idx = numpy.any(numpy.isnan(rhs), axis=1) | mesh.is_boundary_point
+    # idx = np.any(np.isnan(rhs), axis=1) | mesh.is_boundary_point
     # dX[idx] = 0.0
 
     return dX
