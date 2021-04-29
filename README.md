@@ -5,6 +5,7 @@
 
 [![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg?style=flat-square)](https://pypi.org/project/optimesh/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/optimesh.svg?style=flat-square)](https://pypi.org/project/optimesh/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4728056.svg?style=flat-square)](https://doi.org/10.5281/zenodo.4728056)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/optimesh)
 [![PyPi downloads](https://img.shields.io/pypi/dm/optimesh.svg?style=flat-square)](https://pypistats.org/packages/optimesh)
 
