@@ -186,7 +186,7 @@ def circle_random(n, radius):
     # num_interior_points ~= 0.5 * (num_cells + num_boundary_edges) + 1 - num_boundary_points
     m = int(0.5 * (target_num_cells + n) + 1 - n)
 
-    # generate random points in circle; <http://mathworld.wolfram.com/DiskPointPicking.html>
+    # generate random points in circle; <https://mathworld.wolfram.com/DiskPointPicking.html>
     np.random.seed(0)
     r = np.random.rand(m)
     alpha = 2 * np.pi * np.random.rand(m)
@@ -208,7 +208,7 @@ def circle_random(n, radius):
 
 def circle_random2(n, radius, seed=0):
     """Boundary points are random, too."""
-    # generate random points in circle; <http://mathworld.wolfram.com/DiskPointPicking.html>
+    # generate random points in circle; <https://mathworld.wolfram.com/DiskPointPicking.html>
     np.random.seed(seed)
     r = np.random.rand(n)
     alpha = 2 * np.pi * np.random.rand(n)

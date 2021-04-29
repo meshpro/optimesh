@@ -3,15 +3,15 @@
   <p align="center">Triangular mesh optimization.</p>
 </p>
 
-[![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg?style=flat-square)](https://pypi.org/project/optimesh)
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/optimesh.svg?style=flat-square)](https://pypi.org/pypi/optimesh/)
+[![PyPi Version](https://img.shields.io/pypi/v/optimesh.svg?style=flat-square)](https://pypi.org/project/optimesh/)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/optimesh.svg?style=flat-square)](https://pypi.org/project/optimesh/)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/optimesh.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/optimesh)
 [![PyPi downloads](https://img.shields.io/pypi/dm/optimesh.svg?style=flat-square)](https://pypistats.org/packages/optimesh)
 
 [![Discord](https://img.shields.io/static/v1?logo=discord&label=chat&message=on%20discord&color=7289da&style=flat-square)](https://discord.gg/PBCCvwHqpv)
 
 [![gh-actions](https://img.shields.io/github/workflow/status/nschloe/optimesh/ci?style=flat-square)](https://github.com/nschloe/optimesh/actions?query=workflow%3Aci)
-[![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg?style=flat-square)](https://codecov.io/gh/nschloe/optimesh)
+[![codecov](https://img.shields.io/codecov/c/github/nschloe/optimesh.svg?style=flat-square)](https://app.codecov.io/gh/nschloe/optimesh)
 [![LGTM](https://img.shields.io/lgtm/grade/python/github/nschloe/optimesh.svg?style=flat-square)](https://lgtm.com/projects/g/nschloe/optimesh)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
@@ -236,7 +236,7 @@ to install.
    SIAM Rev., 41(4), 1999, 637–676.](https://doi.org/10.1137/S0036144599352836)
 
  * [Yang Liu et al., _On centroidal Voronoi tessellation—Energy smoothness and fast computation_,
-   ACM Transactions on Graphics, Volume 28, Issue 4, August 2009.](https://dl.acm.org/citation.cfm?id=1559758)
+   ACM Transactions on Graphics, Volume 28, Issue 4, August 2009.](https://dl.acm.org/doi/10.1145/1559755.1559758)
 
  * [Long Chen, Michael Holst, _Efficient mesh optimization schemes based on Optimal Delaunay Triangulations_,
    Comput. Methods Appl. Mech. Engrg. 200 (2011) 967–984.](https://doi.org/10.1016/j.cma.2010.11.007)

@@ -54,7 +54,7 @@ def create_random_circle(num_boundary_points, num_interior_points, radius):
     # m = int(0.5 * (target_num_cells + n) + 1 - n)
 
     # Generate random points in circle;
-    # <http://mathworld.wolfram.com/DiskPointPicking.html>.
+    # <https://mathworld.wolfram.com/DiskPointPicking.html>.
     seed = 0
     while True:
         np.random.seed(seed)

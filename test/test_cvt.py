@@ -35,8 +35,8 @@ simple_line = meshes.simple_line()
         (pacman, 30, [1.9397254043011189e03, 7.6011552957849773e01, 5.0]),
         (pacman, 40, [1.9391902386060749e03, 7.6005991941058554e01, 5.0]),
         (pacman, 50, [1.9387458681835806e03, 7.6000274906909084e01, 5.0]),
-        (pacman, 75, [1.9382955551211201e03, 7.5996521988033109e01, 5.0]),
-        (pacman, 100, [1.9378417327750931e03, 7.5989047199412425e01, 5.0]),
+        (pacman, 75, [1.9382955570646300e03, 7.5996522030844588e01, 5.0]),
+        (pacman, 100, [1.9378463822717290e03, 7.5989210861590919e01, 5.0]),
     ],
 )
 def test_cvt_lloyd(mesh, num_steps, ref):
@@ -55,7 +55,7 @@ def test_cvt_lloyd(mesh, num_steps, ref):
     "mesh, ref",
     [
         (simple1, [4.9959407761650168e00, 2.1203672449514870e00, 1.0]),
-        (pacman, [1.9365908128670440e03, 7.5956544340158885e01, 5.0]),
+        (pacman, [1.9366587758940354e03, 7.5962435325397195e01, 5.0]),
     ],
 )
 def test_cvt_lloyd_overrelaxed(mesh, ref):
@@ -68,7 +68,7 @@ def test_cvt_lloyd_overrelaxed(mesh, ref):
     "mesh, ref",
     [
         (simple1, [4.9957677170205690e00, 2.1203267741647247e00, 1.0]),
-        (pacman, [1.9368767852858994e03, 7.5956310821186079e01, 5.0]),
+        (pacman, [1.9368767965360332e03, 7.5956311041431888e01, 5.0]),
     ],
 )
 def test_cvt_qnb(mesh, ref):
@@ -108,7 +108,7 @@ def test_cvt_qnb_boundary(n=10):
     "mesh, ref",
     [
         (simple1, [4.9971490009329251e00, 2.1206501666066013e00, 1.0]),
-        (pacman, [1.9384925318615785e03, 7.5993866522370624e01, 5.0]),
+        (pacman, [1.9385249442149425e03, 7.5995141991060208e01, 5.0]),
     ],
 )
 def test_cvt_qnf(mesh, ref):
@@ -138,7 +138,7 @@ def create_random_circle(n, radius, seed=0):
     m = int(0.5 * (target_num_cells + n) + 1 - n)
 
     # Generate random points in circle;
-    # <http://mathworld.wolfram.com/DiskPointPicking.html>.
+    # <https://mathworld.wolfram.com/DiskPointPicking.html>.
     # Choose the seed such that the fully smoothened mesh has no random boundary points.
     if seed is not None:
         np.random.seed(seed)
