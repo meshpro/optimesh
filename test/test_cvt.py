@@ -138,7 +138,7 @@ def create_random_circle(n, radius, seed=0):
     m = int(0.5 * (target_num_cells + n) + 1 - n)
 
     # Generate random points in circle;
-    # <http://mathworld.wolfram.com/DiskPointPicking.html>.
+    # <https://mathworld.wolfram.com/DiskPointPicking.html>.
     # Choose the seed such that the fully smoothened mesh has no random boundary points.
     if seed is not None:
         np.random.seed(seed)
