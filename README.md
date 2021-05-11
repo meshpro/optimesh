@@ -98,7 +98,7 @@ optimization method. The latter typically leads to better results.
 ### Using optimesh from Python
 
 You can also use optimesh in a Python program. Try
-<!--exdown-skip-->
+<!--pytest-codeblocks:skip-->
 ```python
 import optimesh
 
@@ -116,7 +116,7 @@ optimesh.optimize(mesh, "CVT (block-diagonal)", 1.0e-5, 100)
 # mesh.points, mesh.cells, ...
 ```
 If you only want to do one optimization step, do
-<!--exdown-skip-->
+<!--pytest-codeblocks:skip-->
 ```python
 points = optimesh.get_new_points(mesh, "CVT (block-diagonal)")
 ```
@@ -215,7 +215,7 @@ iterations in _half_.
 ### Access from Python
 
 All optimesh functions can also be accessed from Python directly, for example:
-<!--exdown-skip-->
+<!--pytest-codeblocks:skip-->
 ```python
 import optimesh
 
