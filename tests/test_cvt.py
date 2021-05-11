@@ -74,7 +74,7 @@ def test_cvt_lloyd_overrelaxed(mesh, ref):
 def test_cvt_qnb(mesh, ref):
     m = copy.deepcopy(mesh)
     optimesh.optimize(m, "CVT (block-diagonal)", 1.0e-2, 100)
-    assert_norm_equality(m.points, ref, 1.0e-10)
+    assert_norm_equality(m.points, ref, 1.0e-9)
 
 
 def test_cvt_qnb_boundary(n=10):
