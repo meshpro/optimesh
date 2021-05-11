@@ -98,7 +98,7 @@ optimization method. The latter typically leads to better results.
 ### Using optimesh from Python
 
 You can also use optimesh in a Python program. Try
-<!--exdown-skip-->
+<!--pytest-codeblocks:skip-->
 ```python
 import optimesh
 
@@ -116,7 +116,7 @@ optimesh.optimize(mesh, "CVT (block-diagonal)", 1.0e-5, 100)
 # mesh.points, mesh.cells, ...
 ```
 If you only want to do one optimization step, do
-<!--exdown-skip-->
+<!--pytest-codeblocks:skip-->
 ```python
 points = optimesh.get_new_points(mesh, "CVT (block-diagonal)")
 ```
@@ -143,8 +143,6 @@ class Sphere:
 
 
 # You can use all methods in optimesh:
-# points, cells = optimesh.cpt.fixed_point_uniform(
-# points, cells = optimesh.odt.fixed_point_uniform(
 points, cells = optimesh.optimize_points_cells(
     points,
     cells,
@@ -215,11 +213,11 @@ iterations in _half_.
 ### Access from Python
 
 All optimesh functions can also be accessed from Python directly, for example:
-<!--exdown-skip-->
+<!--pytest-codeblocks:skip-->
 ```python
 import optimesh
 
-X, cells = optimesh.odt.fixed_point_uniform(X, cells, 1.0e-2, 100, verbose=False)
+X, cells = optimesh.odt.fixed_point(X, cells, 1.0e-2, 100, verbose=False)
 ```
 
 ### Installation
