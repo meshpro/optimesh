@@ -14,6 +14,7 @@
 
 * Run with the desired method
   ```python
+  import meshzoo
   import optimesh
 
   points, cells = meshzoo.tetra_sphere(20)
