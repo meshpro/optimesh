@@ -143,8 +143,6 @@ class Sphere:
 
 
 # You can use all methods in optimesh:
-# points, cells = optimesh.cpt.fixed_point_uniform(
-# points, cells = optimesh.odt.fixed_point_uniform(
 points, cells = optimesh.optimize_points_cells(
     points,
     cells,
