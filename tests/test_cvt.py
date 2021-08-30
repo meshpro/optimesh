@@ -77,7 +77,7 @@ def test_cvt_qnb(mesh, ref):
     assert_norm_equality(m.points, ref, 1.0e-9)
 
 
-def test_cvt_qnb_boundary(n=50):
+def test_cvt_qnb_boundary(n=10):
     X, cells = create_random_circle(n=n, radius=1.0)
 
     def boundary_step(x):
