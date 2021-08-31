@@ -2,6 +2,7 @@ import copy
 
 import numpy as np
 import pytest
+from meshplex import MeshTri
 
 import optimesh
 
@@ -51,11 +52,11 @@ def test_nonlinear_optimization(mesh, ref):
 def test_circle():
     def boundary_step(x):
         x0 = [0.0, 0.0]
-        r = 1.0
+        R = 1.0
         # simply project onto the circle
         y = (x.T - x0).T
         r = np.sqrt(np.einsum("ij,ij->j", y, y))
-        return ((y / r * r).T + x0).T
+        return ((y / r * R).T + x0).T
 
     # ODT can't handle the random circle; some cells too flat near the boundary lead to
     # a breakdown.
@@ -64,6 +65,9 @@ def test_circle():
     X, cells = optimesh.optimize_points_cells(
         X, cells, "ODT (fixed-point)", 1.0e-3, 100, boundary_step=boundary_step
     )
+
+    mesh = MeshTri(X, cells)
+    mesh.show()
 
 
 if __name__ == "__main__":

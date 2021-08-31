@@ -137,16 +137,19 @@ def test_density_preserving(mesh, ref):
 def test_circle():
     def boundary_step(x):
         x0 = [0.0, 0.0]
-        r = 1.0
+        R = 1.0
         # simply project onto the circle
         y = (x.T - x0).T
         r = np.sqrt(np.einsum("ij,ij->j", y, y))
-        return ((y / r * r).T + x0).T
+        return ((y / r * R).T + x0).T
 
     X, cells = meshes.circle_random2(150, 1.0)
     X, cells = optimesh.optimize_points_cells(
         X, cells, "cpt (fixed-point)", 1.0e-3, 100, boundary_step=boundary_step
     )
+
+    mesh = MeshTri(X, cells)
+    mesh.show()
 
 
 if __name__ == "__main__":

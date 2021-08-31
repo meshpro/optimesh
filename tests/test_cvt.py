@@ -82,11 +82,11 @@ def test_cvt_qnb_boundary(n=10):
 
     def boundary_step(x):
         x0 = [0.0, 0.0]
-        r = 1.0
+        R = 1.0
         # simply project onto the circle
         y = (x.T - x0).T
         r = np.sqrt(np.einsum("ij,ij->j", y, y))
-        return ((y / r * r).T + x0).T
+        return ((y / r * R).T + x0).T
 
     mesh = meshplex.MeshTri(X, cells)
     optimesh.optimize(mesh, "Lloyd", 1.0e-2, 100, boundary_step=boundary_step)
