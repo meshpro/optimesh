@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def get_new_points(mesh):
+def get_new_points(mesh) -> np.ndarray:
     """Perform one steps of Laplacian smoothing to the mesh, i.e., move each interior
     vertex to the arithmetic average of its neighboring points.
     """

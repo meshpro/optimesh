@@ -1,7 +1,9 @@
 import re
+from typing import Callable, Optional
 
 import meshplex
 import numpy as np
+from numpy.typing import ArrayLike
 
 from . import cpt, cvt, laplace, odt
 from .helpers import print_stats
@@ -22,7 +24,7 @@ methods = {
 }
 
 
-def _normalize_method(name: str):
+def _normalize_method(name: str) -> str:
     # Normalize the method name, e.g.,
     #   ODT  (block diagonal) -> odt-block-diagonal
     return "-".join(
@@ -52,7 +54,7 @@ def optimize(mesh, method: str, *args, **kwargs):
     return _optimize(methods[method].get_new_points, mesh, *args, **kwargs)
 
 
-def optimize_points_cells(X, cells, method: str, *args, **kwargs):
+def optimize_points_cells(X: ArrayLike, cells: ArrayLike, method: str, *args, **kwargs):
     cells = np.asarray(cells)
     if cells.shape[1] == 2:
         # line mesh
@@ -65,18 +67,18 @@ def optimize_points_cells(X, cells, method: str, *args, **kwargs):
 
 
 def _optimize(
-    get_new_points,
+    get_new_points: Callable,
     mesh,
     tol: float,
-    max_num_steps,
+    max_num_steps: int,
     omega: float = 1.0,
-    method_name=None,
-    verbose=False,
-    callback=None,
-    step_filename_format=None,
+    method_name: Optional[str] = None,
+    verbose: bool = False,
+    callback: Optional[Callable] = None,
+    step_filename_format: Optional[str] = None,
     implicit_surface=None,
-    implicit_surface_tol=1.0e-10,
-    boundary_step=None,
+    implicit_surface_tol: float = 1.0e-10,
+    boundary_step: Optional[Callable] = None,
 ):
     k = 0
 

@@ -107,7 +107,7 @@ def nonlinear_optimization(
 
     if verbose:
         print("Before:")
-        extra_cols = ["energy: {:.5e}".format(_energy(mesh))]
+        extra_cols = [f"energy: {_energy(mesh):.5e}"]
         print_stats(mesh, extra_cols=extra_cols)
 
     def f(x):
@@ -175,6 +175,6 @@ def nonlinear_optimization(
     )
     if verbose:
         print(f"\nFinal ({info})")
-        extra_cols = ["energy: {:.5e}".format(_energy(mesh))]
+        extra_cols = [f"energy: {_energy(mesh):.5e}"]
         print_stats(mesh, extra_cols=extra_cols)
         print()

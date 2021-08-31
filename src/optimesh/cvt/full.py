@@ -1,17 +1,18 @@
+import meshplex
 import numpy as np
 import scipy.sparse
 
 from ._helpers import jac_uniform
 
 
-def get_new_points(mesh):
+def get_new_points(mesh: meshplex.Mesh) -> np.ndarray:
     # TODO need copy?
     x = mesh.points.copy()
     x += update(mesh)
     return x
 
 
-def update(mesh):
+def update(mesh: meshplex.Mesh):
     # Exclude all cells which have a too negative covolume-edgelength ratio. This is
     # necessary to prevent points to be dragged outside of the domain by very flat
     # cells on the boundary.

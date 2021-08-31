@@ -1,9 +1,10 @@
+import meshplex
 import numpy as np
 
 from ._helpers import jac_uniform
 
 
-def get_new_points(mesh):
+def get_new_points(mesh: meshplex.Mesh) -> np.ndarray:
     """Lloyd's algorithm can be though of a diagonal-only Hessian; this method
     incorporates the diagonal blocks, too. It's almost as cheap but performs better.
     """

@@ -20,14 +20,14 @@ def print_stats(mesh, extra_cols=None):
         (1, 4 + len(extra_cols)), column_widths=None, border_style=None
     )
     grid[0, 0].hist(angles_hist, angles_bin_edges, grid=[24], bar_width=1, strip=True)
-    grid[0, 1].aprint("min angle:     {:7.3f}".format(np.min(angles)))
-    grid[0, 1].aprint("avg angle:     {:7.3f}".format(60))
-    grid[0, 1].aprint("max angle:     {:7.3f}".format(np.max(angles)))
-    grid[0, 1].aprint("std dev angle: {:7.3f}".format(np.std(angles)))
+    grid[0, 1].aprint(f"min angle:     {np.min(angles):7.3f}")
+    grid[0, 1].aprint(f"avg angle:     {60:7.3f}")
+    grid[0, 1].aprint(f"max angle:     {np.max(angles):7.3f}")
+    grid[0, 1].aprint(f"std dev angle: {np.std(angles):7.3f}")
     grid[0, 2].hist(q_hist, q_bin_edges, bar_width=1, strip=True)
-    grid[0, 3].aprint("min quality: {:5.3f}".format(np.min(q)))
-    grid[0, 3].aprint("avg quality: {:5.3f}".format(np.average(q)))
-    grid[0, 3].aprint("max quality: {:5.3f}".format(np.max(q)))
+    grid[0, 3].aprint(f"min quality: {np.min(q):5.3f}")
+    grid[0, 3].aprint(f"avg quality: {np.average(q):5.3f}")
+    grid[0, 3].aprint(f"max quality: {np.max(q):5.3f}")
 
     for k, col in enumerate(extra_cols):
         grid[0, 4 + k].aprint(col)
