@@ -1,7 +1,8 @@
+import meshplex
 import numpy as np
 
 
-def get_new_points(mesh):
+def get_new_points(mesh: meshplex.Mesh) -> np.ndarray:
     """Lloyd's algorithm.
     Check out
 

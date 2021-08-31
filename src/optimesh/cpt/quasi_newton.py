@@ -12,19 +12,20 @@ problem.
 This method makes the simplifying assumption that |tau_j| does in fact _not_ depend
 on the point coordinates. With this, one still only needs to solve a linear system.
 """
+import meshplex
 import numpy as np
 import scipy.sparse.linalg
-from meshplex import MeshTri
+from numpy.typing import ArrayLike
 
 
-def get_new_points(mesh):
+def get_new_points(mesh: meshplex.Mesh) -> np.ndarray:
     # do one Newton step
     cells = mesh.cells("points")
     jac_x = _jac_uniform(mesh.points, cells)
     return mesh.points - _solve_hessian_approx_uniform(mesh.points, cells, jac_x)
 
 
-def _jac_uniform(X, cells):
+def _jac_uniform(X: ArrayLike, cells: ArrayLike):
     """The approximated Jacobian is
 
       partial_i E = 2/(d+1) (x_i int_{omega_i} rho(x) dx - int_{omega_i} x rho(x) dx)
@@ -37,8 +38,9 @@ def _jac_uniform(X, cells):
     with b_j being the ordinary barycenter.
     """
     dim = 2
-    mesh = MeshTri(X, cells)
+    mesh = meshplex.MeshTri(X, cells)
 
+    X = np.asarray(X)
     jac = np.zeros(X.shape)
     for k in range(mesh.cells("points").shape[1]):
         i = mesh.cells("points")[:, k]
@@ -49,7 +51,9 @@ def _jac_uniform(X, cells):
     return 2 / (dim + 1) * jac
 
 
-def _solve_hessian_approx_uniform(X, cells, rhs):
+def _solve_hessian_approx_uniform(
+    X: ArrayLike, cells: ArrayLike, rhs: ArrayLike
+) -> np.ndarray:
     """As discussed above, the approximated Jacobian is
 
       partial_i E = 2/(d+1) sum_{tau_j in omega_i} (x_i - b_j) |tau_j|.
@@ -66,7 +70,7 @@ def _solve_hessian_approx_uniform(X, cells, rhs):
     contributions from the barycentric terms.
     """
     dim = 2
-    mesh = MeshTri(X, cells)
+    mesh = meshplex.MeshTri(X, cells)
 
     # Create matrix in IJV format
     row_idx = []
@@ -74,6 +78,7 @@ def _solve_hessian_approx_uniform(X, cells, rhs):
     val = []
 
     cells = mesh.cells("points").T
+    X = np.asarray(X)
     n = X.shape[0]
 
     # Main diagonal, 2/(d+1) |omega_i| x_i
@@ -114,6 +119,7 @@ def _solve_hessian_approx_uniform(X, cells, rhs):
     d[mesh.is_boundary_point] = 1.0
     matrix.setdiag(d)
 
+    rhs = np.asarray(rhs)
     rhs[mesh.is_boundary_point] = 0.0
 
     out = scipy.sparse.linalg.spsolve(matrix, rhs)

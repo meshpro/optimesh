@@ -1,9 +1,10 @@
+import meshplex
 import numpy as np
 import scipy.sparse.linalg
 
 
 # The density-preserving CPT is exactly Laplacian smoothing.
-def get_new_points(mesh):
+def get_new_points(mesh: meshplex.Mesh) -> np.ndarray:
     matrix = _build_graph_laplacian(mesh)
 
     n = mesh.points.shape[0]
@@ -22,7 +23,7 @@ def get_new_points(mesh):
     return out
 
 
-def _build_graph_laplacian(mesh):
+def _build_graph_laplacian(mesh: meshplex.Mesh):
     i = mesh.idx[-1]
     row_idx = np.array([i[0], i[1], i[0], i[1]]).flat
     col_idx = np.array([i[0], i[1], i[1], i[0]]).flat

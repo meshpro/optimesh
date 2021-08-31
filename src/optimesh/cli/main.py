@@ -1,6 +1,6 @@
 import argparse
 import math
-import sys
+from sys import version_info
 
 import meshio
 import meshplex
@@ -105,15 +105,11 @@ def _get_parser():
         help="name of the subdomain field in in the input file (default: None)",
     )
 
+    python_version = f"{version_info.major}.{version_info.minor}.{version_info.micro}"
     version = "\n".join(
         [
-            "optimesh {} [Python {}.{}.{}]".format(
-                __version__,
-                sys.version_info.major,
-                sys.version_info.minor,
-                sys.version_info.micro,
-            ),
-            "Copyright (C) 2018-2020 Nico Schlömer <nico.schloemer@gmail.com>",
+            f"optimesh {__version__} [Python {python_version}]"
+            "Copyright (C) 2018-2021 Nico Schlömer <nico.schloemer@gmail.com>",
         ]
     )
 
