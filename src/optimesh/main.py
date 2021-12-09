@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import re
-from typing import Callable, Optional
+from typing import Callable
 
 import meshplex
 import numpy as np
@@ -71,13 +73,13 @@ def _optimize(
     tol: float,
     max_num_steps: int,
     omega: float = 1.0,
-    method_name: Optional[str] = None,
+    method_name: str | None = None,
     verbose: bool = False,
-    callback: Optional[Callable] = None,
-    step_filename_format: Optional[str] = None,
+    callback: Callable | None = None,
+    step_filename_format: str | None = None,
     implicit_surface=None,
     implicit_surface_tol: float = 1.0e-10,
-    boundary_step: Optional[Callable] = None,
+    boundary_step: Callable | None = None,
 ):
     k = 0
 
