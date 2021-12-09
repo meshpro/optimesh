@@ -1,5 +1,5 @@
-import dufte
 import matplotlib.pyplot as plt
+import matplotx
 import numpy as np
 
 import optimesh
@@ -8,7 +8,7 @@ from .meshes import circle_random
 
 
 def test_comparison():
-    plt.style.use(dufte.style)
+    plt.style.use(matplotx.styles.dufte)
 
     X, cells = circle_random(40, 1.0)
 
@@ -70,7 +70,7 @@ def test_comparison():
     plt.ylim(0.93, 1.0)
     plt.xlabel("step")
     plt.title("average cell quality")
-    dufte.legend()
+    matplotx.line_labels()
 
     plt.savefig("comparison.svg", transparent=True, bbox_inches="tight")
     # plt.show()
