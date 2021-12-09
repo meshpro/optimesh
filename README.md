@@ -55,7 +55,7 @@ randomly generated disk mesh above. The cell coloring indicates quality; dark gr
 bad, yellow is good.
 
 
-#### CVT (centroidal Voronoi tesselation)
+#### CVT (centroidal Voronoi tessellation)
 
 ![cvt-uniform-lloyd2](https://nschloe.github.io/optimesh/lloyd2.webp) | ![cvt-uniform-qnb](https://nschloe.github.io/optimesh/cvt-uniform-qnb.webp) | ![cvt-uniform-qnf](https://nschloe.github.io/optimesh/cvt-uniform-qnf.webp) |
 :------------------------:|:---------------------:|:----:|
@@ -66,7 +66,7 @@ of the oldest and most reliable approaches. optimesh provides classical Lloyd sm
 as well as several variants that result in better meshes.
 
 
-#### CPT (centroidal patch tesselation)
+#### CPT (centroidal patch tessellation)
 
 ![cpt-cp](https://nschloe.github.io/optimesh/cpt-dp.png) | ![cpt-uniform-fp](https://nschloe.github.io/optimesh/cpt-uniform-fp.webp) | ![cpt-uniform-qn](https://nschloe.github.io/optimesh/cpt-uniform-qn.webp) |
 :-----------------------------------------------------------------------:|:-----------------------------------------------------------------:|:--------------------------------------------------------:|
@@ -81,7 +81,7 @@ The uniform-density variants are implemented classically as a fixed-point iterat
 as a quasi-Newton method. The latter typically converges faster.
 
 
-#### ODT (optimal Delaunay tesselation)
+#### ODT (optimal Delaunay tessellation)
 
 ![odt-dp-fp](https://nschloe.github.io/optimesh/odt-dp-fp.webp) | ![odt-uniform-fp](https://nschloe.github.io/optimesh/odt-uniform-fp.webp) | ![odt-uniform-bfgs](https://nschloe.github.io/optimesh/odt-uniform-bfgs.webp) |
 :--------------------------------------------------------------:|:-----------------------------------------------------------------:|:------------------------------------------------------------------:|

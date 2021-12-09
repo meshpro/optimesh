@@ -1,5 +1,5 @@
 """
-Optimal Delaunay Tesselation.
+Optimal Delaunay Tessellation.
 
 Long Chen, Michael Holst,
 Efficient mesh optimization schemes based on Optimal Delaunay Triangulations,
@@ -74,7 +74,7 @@ def nonlinear_optimization(
     step_filename_format=None,
     callback=None,
 ):
-    """Optimal Delaunay Tesselation smoothing.
+    """Optimal Delaunay Tessellation smoothing.
 
     This method minimizes the energy
 
@@ -171,7 +171,7 @@ def nonlinear_optimization(
 
     info = (
         f"{out.nit} steps,"
-        + "Optimal Delaunay Tesselation (ODT), uniform density, BFGS variant"
+        + "Optimal Delaunay Tessellation (ODT), uniform density, BFGS variant"
     )
     if verbose:
         print(f"\nFinal ({info})")

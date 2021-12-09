@@ -32,11 +32,11 @@ def _normalize_method(name: str) -> str:
     )
 
 
-def get_new_points(mesh, method: str):
+def get_new_points(mesh: meshplex.MeshTri, method: str):
     return methods[_normalize_method(method)].get_new_points(mesh)
 
 
-def optimize(mesh, method: str, *args, **kwargs):
+def optimize(mesh: meshplex.MeshTri, method: str, *args, **kwargs):
     method = _normalize_method(method)
 
     # Special treatment for ODT. We're using scipy.optimize there.
@@ -46,7 +46,6 @@ def optimize(mesh, method: str, *args, **kwargs):
             assert kwargs["omega"] == 1.0
             kwargs.pop("omega")
         odt.nonlinear_optimization(mesh, min_method, *args, **kwargs)
-        return
 
     if method not in methods:
         raise KeyError(f"Choose one of {', '.join(methods.keys())}.")
@@ -68,7 +67,7 @@ def optimize_points_cells(X: ArrayLike, cells: ArrayLike, method: str, *args, **
 
 def _optimize(
     get_new_points: Callable,
-    mesh,
+    mesh: meshplex.MeshTri,
     tol: float,
     max_num_steps: int,
     omega: float = 1.0,

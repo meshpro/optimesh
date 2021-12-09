@@ -156,7 +156,7 @@ def create_random_circle(n, radius, seed=0):
     return pts, tri.simplices
 
 
-# This test iterates over a few meshes that produce weird sitations that did have the
+# This test iterates over a few meshes that produce weird situations that did have the
 # methods choke. Mostly bugs in GhostedMesh.
 @pytest.mark.parametrize("seed", [0, 4, 20])
 def test_for_breakdown(seed):
