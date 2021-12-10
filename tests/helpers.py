@@ -41,17 +41,19 @@ def run(mesh, volume, convol_norms, ce_ratio_norms, cellvol_norms, tol=1.0e-12):
 
 
 def assert_norm_equality(X, ref, tol):
-    nc = X.flatten()
+    xflat = X.flatten()
     ref = np.asarray(ref)
     val = np.array(
         [
-            np.linalg.norm(nc, ord=1),
-            np.linalg.norm(nc, ord=2),
-            np.linalg.norm(nc, ord=np.inf),
+            np.linalg.norm(xflat, ord=1),
+            np.linalg.norm(xflat, ord=2),
+            np.linalg.norm(xflat, ord=np.inf),
         ]
     )
+    dif = np.abs(val - ref) / ref
     assert np.all(np.abs(val - ref) < tol * ref), (
         "Norms don't coincide.\n"
-        f"Expected:  [{ref[0]:.16e}, {ref[1]:.16e}, {ref[2]:.16e}]\n"
-        f"Computed:  [{val[0]:.16e}, {val[1]:.16e}, {val[2]:.16e}]"
+        + f"Expected:  [{ref[0]:.16e}, {ref[1]:.16e}, {ref[2]:.16e}]\n"
+        + f"Computed:  [{val[0]:.16e}, {val[1]:.16e}, {val[2]:.16e}]\n\n"
+        + f"max tol:   [{dif[0]:.16e}, {dif[1]:.16e}, {dif[2]:.16e}]"
     )

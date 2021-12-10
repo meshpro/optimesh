@@ -1,5 +1,5 @@
 """
-Centroidal Patch Tesselation. Mimics the definition of Centroidal
+Centroidal Patch Tessellation. Mimics the definition of Centroidal
 Voronoi Tessellations for which the generator and centroid of each Voronoi
 region coincide. From
 

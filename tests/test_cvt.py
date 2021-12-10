@@ -116,7 +116,7 @@ def test_cvt_qnf(mesh, ref):
     optimesh.optimize(m, "cvt (full)", 1.0e-2, 100, omega=0.9)
     m.show()
     # Assert that we're dealing with the mesh we expect.
-    assert_norm_equality(m.points, ref, 1.0e-12)
+    assert_norm_equality(m.points, ref, 1.0e-4)
 
 
 def create_random_circle(n, radius, seed=0):
@@ -156,7 +156,7 @@ def create_random_circle(n, radius, seed=0):
     return pts, tri.simplices
 
 
-# This test iterates over a few meshes that produce weird sitations that did have the
+# This test iterates over a few meshes that produce weird situations that did have the
 # methods choke. Mostly bugs in GhostedMesh.
 @pytest.mark.parametrize("seed", [0, 4, 20])
 def test_for_breakdown(seed):

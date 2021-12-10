@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import re
-from typing import Callable, Optional
+from typing import Callable
 
 import meshplex
 import numpy as np
@@ -32,11 +34,11 @@ def _normalize_method(name: str) -> str:
     )
 
 
-def get_new_points(mesh, method: str):
+def get_new_points(mesh: meshplex.MeshTri, method: str):
     return methods[_normalize_method(method)].get_new_points(mesh)
 
 
-def optimize(mesh, method: str, *args, **kwargs):
+def optimize(mesh: meshplex.MeshTri, method: str, *args, **kwargs):
     method = _normalize_method(method)
 
     # Special treatment for ODT. We're using scipy.optimize there.
@@ -45,11 +47,12 @@ def optimize(mesh, method: str, *args, **kwargs):
         if "omega" in kwargs:
             assert kwargs["omega"] == 1.0
             kwargs.pop("omega")
-        odt.nonlinear_optimization(mesh, min_method, *args, **kwargs)
-        return
+        return odt.nonlinear_optimization(mesh, min_method, *args, **kwargs)
 
     if method not in methods:
-        raise KeyError(f"Choose one of {', '.join(methods.keys())}.")
+        raise KeyError(
+            f"Illegal method {method}. Choose one of {', '.join(methods.keys())}."
+        )
 
     return _optimize(methods[method].get_new_points, mesh, *args, **kwargs)
 
@@ -68,17 +71,17 @@ def optimize_points_cells(X: ArrayLike, cells: ArrayLike, method: str, *args, **
 
 def _optimize(
     get_new_points: Callable,
-    mesh,
+    mesh: meshplex.MeshTri,
     tol: float,
     max_num_steps: int,
     omega: float = 1.0,
-    method_name: Optional[str] = None,
+    method_name: str | None = None,
     verbose: bool = False,
-    callback: Optional[Callable] = None,
-    step_filename_format: Optional[str] = None,
+    callback: Callable | None = None,
+    step_filename_format: str | None = None,
     implicit_surface=None,
     implicit_surface_tol: float = 1.0e-10,
-    boundary_step: Optional[Callable] = None,
+    boundary_step: Callable | None = None,
 ):
     k = 0
 
