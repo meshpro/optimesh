@@ -47,7 +47,7 @@ def optimize(mesh: meshplex.MeshTri, method: str, *args, **kwargs):
         if "omega" in kwargs:
             assert kwargs["omega"] == 1.0
             kwargs.pop("omega")
-        odt.nonlinear_optimization(mesh, min_method, *args, **kwargs)
+        return odt.nonlinear_optimization(mesh, min_method, *args, **kwargs)
 
     if method not in methods:
         raise KeyError(
