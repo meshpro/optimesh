@@ -116,7 +116,7 @@ def test_cvt_qnf(mesh, ref):
     optimesh.optimize(m, "cvt (full)", 1.0e-2, 100, omega=0.9)
     m.show()
     # Assert that we're dealing with the mesh we expect.
-    assert_norm_equality(m.points, ref, 1.0e-12)
+    assert_norm_equality(m.points, ref, 1.0e-8)
 
 
 def create_random_circle(n, radius, seed=0):
