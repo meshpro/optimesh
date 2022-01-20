@@ -52,6 +52,6 @@ Code = "https://github.com/nschloe/optimesh"
 Issues = "https://github.com/nschloe/optimesh/issues"
 Funding = "https://github.com/sponsors/nschloe"
 
-[project.entry-points.console_scripts]
+[project.scripts]
 optimesh = "optimesh.cli:main"
 optimesh-info = "optimesh.cli:info"
