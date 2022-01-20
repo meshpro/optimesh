@@ -124,12 +124,14 @@ def _get_parser():
 
 
 def prune(mesh):
-    ncells = np.concatenate([np.concatenate(data) for _, data in mesh.cells])
+    ncells = np.concatenate(
+        [np.concatenate(cell_block.data) for cell_block in mesh.cells]
+    )
     uvertices, uidx = np.unique(ncells, return_inverse=True)
     k = 0
-    for _, data in mesh.cells:
-        n = np.prod(data.shape)
-        data[:] = uidx[k : k + n].reshape(data.shape)
+    for cell_block in mesh.cells:
+        n = np.prod(cell_block.data.shape)
+        cell_block.data[:] = uidx[k : k + n].reshape(cell_block.data.shape)
         k += n
     mesh.points = mesh.points[uvertices]
     for key in mesh.point_data:

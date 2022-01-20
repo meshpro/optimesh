@@ -35,8 +35,8 @@ def info(argv=None):
 
     print(f"Number of points: {mesh.points.shape[0]}")
     print("Number of elements:")
-    for cell_type, value in mesh.cells:
-        print(f"  {cell_type}: {value.shape[0]}")
+    for cell_block in mesh.cells:
+        print(f"  {cell_block.type}: {cell_block.data.shape[0]}")
 
     mesh = MeshTri(mesh.points, cells)
     print_stats(mesh)
