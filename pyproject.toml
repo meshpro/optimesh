@@ -10,7 +10,7 @@ name = "optimesh"
 authors = [{name = "Nico Schlömer", email = "nico.schloemer@gmail.com"}]
 description = "Mesh optimization/smoothing"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {file = "LICENSE.txt"}
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Science/Research",
