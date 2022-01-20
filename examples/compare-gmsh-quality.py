@@ -74,8 +74,8 @@ def get_poisson_condition(pts, cells):
 
     # solve poisson system, count num steps
     # b = np.ones(A.shape[0])
-    # out = pykry.gmres(A, b)
-    # num_steps = len(out.resnorms)
+    # out, info  = krylov.gmres(A, b)
+    # num_steps = len(info.numsteps)
     return cond, num_steps
 
 
