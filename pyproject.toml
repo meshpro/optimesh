@@ -1,6 +1,57 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
 [tool.isort]
 profile = "black"
+
+[project]
+name = "optimesh"
+authors = [{name = "Nico Schlömer", email = "nico.schloemer@gmail.com"}]
+description = "Mesh optimization/smoothing"
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Utilities",
+]
+keywords = [
+  "mathematics",
+  "physics",
+  "engineering",
+  "mesh",
+  "mesh generation",
+  "optimization",
+]
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+  "meshio >= 5, <6",
+  "meshplex >= 0.16.0, < 0.17.0",
+  "numpy >= 1.20.0",
+  "npx",
+  "quadpy >= 0.16.1, < 0.17.0",
+  "termplotlib",
+]
+
+[project.optional-dependencies]
+all = ["matplotlib"]
+plot = ["matplotlib"]
+
+[project.urls]
+Code = "https://github.com/nschloe/optimesh"
+Issues = "https://github.com/nschloe/optimesh/issues"
+Funding = "https://github.com/sponsors/nschloe"
+
+[project.entry-points.console_scripts]
+optimesh = "optimesh.cli:main"
+optimesh-info = "optimesh.cli:info"
