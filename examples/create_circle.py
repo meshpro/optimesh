@@ -29,7 +29,7 @@ def _compute_num_boundary_points(total_num_points):
     # for the number of boundary points.
     sqrt3_pi = np.sqrt(3) * np.pi
     num_boundary_points = -sqrt3_pi / 2 + np.sqrt(
-        3 / 4 * np.pi ** 2 - (2 - 2 * total_num_points) * sqrt3_pi
+        3 / 4 * np.pi**2 - (2 - 2 * total_num_points) * sqrt3_pi
     )
     return num_boundary_points
 
