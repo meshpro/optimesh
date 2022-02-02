@@ -36,7 +36,7 @@ dynamic = ["version"]
 requires-python = ">=3.7"
 dependencies = [
   "meshio >= 5, <6",
-  "meshplex >= 0.16.0, < 0.17.0",
+  "meshplex >= 0.16.0, < 0.18.0",
   "numpy >= 1.20.0",
   "npx",
   "quadpy >= 0.16.1, < 0.17.0",

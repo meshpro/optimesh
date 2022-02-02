@@ -128,8 +128,8 @@ def create_random_circle(n, radius, seed=0):
     # Compute the number of interior points such that all triangles can be somewhat
     # equilateral.
     edge_length = 2 * np.pi * radius / n
-    domain_area = np.pi - n * (radius ** 2 / 2 * (edge_length - np.sin(edge_length)))
-    cell_area = np.sqrt(3) / 4 * edge_length ** 2
+    domain_area = np.pi - n * (radius**2 / 2 * (edge_length - np.sin(edge_length)))
+    cell_area = np.sqrt(3) / 4 * edge_length**2
     target_num_cells = domain_area / cell_area
     # Euler:
     # 2 * num_points - num_boundary_edges - 2 = num_cells

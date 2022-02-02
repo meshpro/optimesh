@@ -174,7 +174,7 @@ def _optimize(
         diff_norm_2 = np.einsum(
             "ij,ij->i", diff.reshape(diff.shape[0], -1), diff.reshape(diff.shape[0], -1)
         )
-        is_final = np.all(diff_norm_2 < tol ** 2) or k >= max_num_steps
+        is_final = np.all(diff_norm_2 < tol**2) or k >= max_num_steps
 
         if is_final or step_filename_format:
             if is_final:

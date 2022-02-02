@@ -148,7 +148,7 @@ def _compute_num_boundary_points(total_num_points):
     # for the number of boundary points.
     sqrt3_pi = np.sqrt(3) * np.pi
     num_boundary_points = -sqrt3_pi / 2 + np.sqrt(
-        3 / 4 * np.pi ** 2 - (2 - 2 * total_num_points) * sqrt3_pi
+        3 / 4 * np.pi**2 - (2 - 2 * total_num_points) * sqrt3_pi
     )
     return num_boundary_points
 
@@ -177,8 +177,8 @@ def circle_random(n, radius):
     # Compute the number of interior points such that all triangles can be somewhat
     # equilateral.
     edge_length = 2 * np.pi * radius / n
-    domain_area = np.pi - n * (radius ** 2 / 2 * (edge_length - np.sin(edge_length)))
-    cell_area = np.sqrt(3) / 4 * edge_length ** 2
+    domain_area = np.pi - n * (radius**2 / 2 * (edge_length - np.sin(edge_length)))
+    cell_area = np.sqrt(3) / 4 * edge_length**2
     target_num_cells = domain_area / cell_area
     # Euler:
     # 2 * num_points - num_boundary_edges - 2 = num_cells
