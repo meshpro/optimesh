@@ -21,11 +21,30 @@ Several mesh smoothing/optimization methods with one simple interface. optimesh
 - supports all mesh formats that [meshio](https://github.com/nschloe/meshio) can
   handle.
 
-Install with
+### Installation
+
+Install optimesh [from PyPI](https://pypi.org/project/optimesh/) with
 
 ```
 pip install optimesh
 ```
+
+### How to get a license
+
+Licenses for personal and academic use can be purchased
+[here](https://buy.stripe.com/5kA3eV8t8af83iE9AE).
+You'll receive a confirmation email with a license key.
+Install the key with
+
+```
+plm add <your-license-key>
+```
+
+on your machine and you're good to go.
+
+For commerical use, please contact support@mondaytech.com.
+
+### Using optimesh
 
 Example call:
 
