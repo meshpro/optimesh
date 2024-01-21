@@ -37,12 +37,12 @@ You'll receive a confirmation email with a license key.
 Install the key with
 
 ```
-plm add <your-license-key>
+slim install <your-license-key>
 ```
 
 on your machine and you're good to go.
 
-For commerical use, please contact support@mondaytech.com.
+For commercial use, please contact support@mondaytech.com.
 
 ### Using optimesh
 
